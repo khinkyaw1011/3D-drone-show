@@ -1,8 +1,8 @@
 'use client';
 
-import { ArrowDown, ArrowRight, Box, Gauge, ImageUp, Move3d, Rocket, Share2, Shapes, Type, X } from 'lucide-react';
+import { ArrowDown, ArrowRight, Box, Gauge, ImageUp, Move3d, Share2, Shapes, Type, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FleetStats } from '@/components/show/FleetStats';
 import { LiveShow } from '@/components/show/LiveShow';
 import { QuickControls } from '@/components/show/QuickControls';
@@ -17,6 +17,8 @@ import { useInView } from '@/hooks/useInView';
 import { useIsDesktop } from '@/hooks/useMediaQuery';
 import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
+import { BUILTIN_SHOWS } from '@/engine/presets/builtin';
+import { useStudio } from '@/store';
 import { dispatch } from '@/store/dispatch';
 
 const STEPS = ['design', 'animate', 'share'] as const;
@@ -54,9 +56,16 @@ export function Landing() {
   const [exploring, setExploring] = useState(false);
   const immersive = exploring || walking;
   useImmersive(exploring && !walking, () => setExploring(false));
-  const start = () => {
-    void dispatch({ type: 'playback.seek', t: 0 }).then(() => dispatch({ type: 'playback.play' }));
-  };
+  // Every visit opens on a different show, lifting off from the launch deck by itself.
+  const picked = useRef(false);
+  useEffect(() => {
+    if (!hydrated || picked.current) return;
+    picked.current = true;
+    const current = useStudio.getState().show.id;
+    const others = BUILTIN_SHOWS.filter((show) => show.id !== current);
+    const next = others[Math.floor(Math.random() * others.length)];
+    if (next) void dispatch({ type: 'preset.apply', presetId: next.id });
+  }, [hydrated]);
 
   return (
     <>
@@ -88,11 +97,7 @@ export function Landing() {
             <h1 className="display mt-3 text-[clamp(2.6rem,9vw,5rem)] text-paper [text-shadow:0_2px_24px_rgb(7_8_13/0.9)] lg:text-6xl">{t('title')}</h1>
             <p className="mx-auto mt-4 max-w-md text-base text-paper/80 [text-shadow:0_1px_12px_rgb(7_8_13/0.9)] sm:text-lg lg:mx-0">{t('tagline')}</p>
             <div className={cn('mt-7 flex flex-wrap items-center justify-center gap-3 lg:justify-start', !immersive && 'pointer-events-auto')}>
-              <Button size="lg" className="h-11 rounded-full px-6 text-sm" onClick={start} tabIndex={immersive ? -1 : 0}>
-                <Rocket />
-                {t('start')}
-              </Button>
-              <Button variant="outline" size="lg" className="h-11 rounded-full bg-ink/40 px-6 text-sm backdrop-blur" onClick={() => setExploring(true)} tabIndex={immersive ? -1 : 0}>
+              <Button size="lg" className="h-11 rounded-full px-6 text-sm" onClick={() => setExploring(true)} tabIndex={immersive ? -1 : 0}>
                 <Move3d />
                 {t('explore')}
               </Button>
@@ -170,8 +175,8 @@ export function Landing() {
             </ol>
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <Button size="lg" className="h-11 rounded-full px-6 text-sm" onClick={() => stage.current?.scrollIntoView({ behavior: 'smooth' })}>
-                <Rocket aria-hidden="true" />
-                {t('start')}
+                <ArrowDown className="rotate-180" aria-hidden="true" />
+                {t('backToShow')}
               </Button>
               <Link href="/guide" className="inline-flex items-center gap-2 text-sm text-paper/70 hover:text-paper">
                 {t('guide.more')}

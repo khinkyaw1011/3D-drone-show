@@ -83,6 +83,8 @@ Where the build departs from, or sharpens, the original spec, and why.
 ## Fonts, project page
 
 - **Two font slots, no typeface names in components.** `font-body` (= `font-sans`) and `font-heading` are the only font utilities components use. Both default to Geist. The font picker (`src/lib/fonts.ts`, `FontPicker`) re-points `--font-body-face` / `--font-heading-face` inline on `<html>`; alternatives are loaded with `next/font` and `preload: false`, so they are only downloaded once chosen. Each `next/font` loader must be its own module-scope `const` (a loader call inside an array literal fails the build).
-- **`/project` renders `content/project.md`** with `react-markdown` + `remark-gfm` (trusted, static content read at build time). `NEXT_PUBLIC_SHOW_PROJECT_PAGE=false` turns the route into a 404 and removes its nav links (`src/lib/site.ts`); it is read at build time.
+- **`/project` renders `content/project.<locale>.md`** (one file per language) with `react-markdown` + `remark-gfm` (trusted, static content read at build time). `NEXT_PUBLIC_SHOW_PROJECT_PAGE=false` turns the route into a 404 and removes its nav links (`src/lib/site.ts`); it is read at build time.
 - **CJK text is flat.** Dense characters are unreadable when split over two depth layers; they are now one layer placed by best-candidate sampling.
+- **Landing opens on a random built-in show** each visit and lifts off by itself, so the "Launch the show" button is gone; the crowd camera now aims below the middle of the show so the launch deck is in frame (higher on tall phone screens, and never below ground when pulled back).
+- **The landing header is clear over the hero and gets its backdrop once the page scrolls past it**, so text never slides under bare links.
 

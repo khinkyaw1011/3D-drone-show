@@ -2,6 +2,7 @@
 
 import { Menu } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useSyncExternalStore } from 'react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Link, usePathname } from '@/i18n/navigation';
@@ -20,12 +21,35 @@ const PAGES = [
 /** The project page and its links can be switched off from the environment (see `lib/site.ts`). */
 export const NAV = PAGES.filter((page) => page.key !== 'project' || SHOW_PROJECT_PAGE);
 
+const HEADER_HEIGHT = 56;
+const subscribeToScroll = (notify: () => void) => {
+  window.addEventListener('scroll', notify, { passive: true });
+  window.addEventListener('resize', notify);
+  return () => {
+    window.removeEventListener('scroll', notify);
+    window.removeEventListener('resize', notify);
+  };
+};
+
 /** Top navigation for the marketing pages. Floats over the show on the landing page. */
 export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
   const t = useTranslations('Site');
   const pathname = usePathname();
+  // Over the hero the bar is clear, so the show is uninterrupted; once the page has scrolled past
+  // it the bar gets its backdrop, so text sliding underneath never runs into the links.
+  const solid = useSyncExternalStore(
+    subscribeToScroll,
+    () => !overlay || window.scrollY > window.innerHeight - HEADER_HEIGHT,
+    () => !overlay,
+  );
   return (
-    <header className={cn('inset-x-0 top-0 z-40', overlay ? 'fixed' : 'sticky border-b border-line bg-ink/80 backdrop-blur-xl')}>
+    <header
+      className={cn(
+        'inset-x-0 top-0 z-40 border-b transition-[background-color,border-color,backdrop-filter] duration-300',
+        overlay ? 'fixed' : 'sticky',
+        solid ? 'border-line bg-ink/85 backdrop-blur-xl' : 'border-transparent',
+      )}
+    >
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
         <Link href="/" aria-label={t('home')} className="rounded-md">
           <Wordmark />

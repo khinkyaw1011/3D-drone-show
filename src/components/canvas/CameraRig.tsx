@@ -14,7 +14,8 @@ type Preset = Exclude<SceneSettings['cameraPreset'], 'walk'>;
 
 export const CAMERA_SHOTS: Record<Preset, { position: Vec3; target: Vec3; orbit: number }> = {
   // Standing in the crowd, looking up at the show.
-  spectator: { position: [0, 1.7, 40], target: [0, SKY, 0], orbit: 0.6 },
+  // Aimed below the middle of the show, so the launch deck on the ground stays in frame with the formation above it.
+  spectator: { position: [0, 1.7, 40], target: [0, SKY - 8, 0], orbit: 0.6 },
   // In among the fleet: close enough to see airframes, skids and spinning propellers.
   'close-up': { position: [5, SKY + 1.5, 13], target: [0, SKY, 0], orbit: 1 },
   front: { position: [0, SKY - 3, 36], target: [0, SKY, 0], orbit: 1 },
@@ -75,11 +76,15 @@ export function CameraRig({ preset, autoOrbit, interactive, reducedMotion }: Cam
     if (!c) return;
     const shot = CAMERA_SHOTS[preset];
     const pullBack = preset === 'close-up' ? 1 : Math.min(1.9, Math.max(1, 1.5 / aspect));
-    const [tx, ty, tz] = shot.target;
+    const [tx, baseY, tz] = shot.target;
+    // On a tall phone screen the pulled-back crowd view already shows the ground; aim higher so the
+    // formation sits mid-screen, clear of the headline.
+    const ty = baseY + (preset === 'spectator' && aspect < 1 ? 6 : 0);
     const [px, py, pz] = shot.position;
     void c.setLookAt(
       tx + (px - tx) * pullBack,
-      ty + (py - ty) * pullBack,
+      // Pulling back along the view line must never take a low camera under the ground.
+      Math.max(Math.min(py, 1.5), ty + (py - ty) * pullBack),
       tz + (pz - tz) * pullBack,
       tx,
       ty,
