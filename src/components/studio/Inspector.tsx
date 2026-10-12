@@ -8,6 +8,7 @@ import { SchemaForm } from '@/components/controls/SchemaForm';
 import { FormationThumb } from '@/components/show/FormationThumb';
 import { ColorControls, ColorSection, DroneSection, EnvironmentPicker, FireworksSection, FlightSection, ScopeReset, SkySection, VenueSection, useSettings } from '@/components/show/settings';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ModelAnimation } from '@/components/show/FileTools';
 import { getSource } from '@/engine/formations/registry';
 import { CAMERA_PRESETS, EASE_CURVES, EFFECTS, MOTIONS, ORDERS, SIM_CURVES } from '@/engine/presets/schema';
 import type { Keyframe } from '@/engine/types';
@@ -17,7 +18,7 @@ import { INSPECTOR_TABS, type InspectorTab } from '@/store/slices/ui';
 const TAB_ICONS: Record<InspectorTab, typeof Shapes> = { formation: Shapes, drones: Sparkles, flight: Wind, scene: MoonStar, camera: Camera, fx: Wand2 };
 const INHERIT = '__inherit';
 /** Inputs owned by upload UI or baked data, never shown as form fields. */
-const HIDDEN_FIELDS = ['src', 'name', 'svg', 'p', 'c', 'label'];
+const HIDDEN_FIELDS = ['src', 'name', 'svg', 'p', 'c', 'label', 'fileId', 'clips', 'clip', 'pose'];
 /** GSAP ease names contain dots and brackets, which message keys may not. */
 const messageKey = (value: string) => value.replace(/[^a-zA-Z0-9]/g, '_');
 const seconds = (v: number) => `${v.toFixed(1)} s`;
@@ -65,6 +66,7 @@ function FormationTab() {
           hidden={HIDDEN_FIELDS}
           onChange={(input) => run({ type: 'formation.update', id: keyframe.id, input })}
         />
+        <ModelAnimation keyframe={keyframe} />
         <SliderField label={t('spin')} value={keyframe.spin} min={-60} max={60} step={1} format={(v) => `${v.toFixed(0)}°/s`} onChange={(spin) => set({ spin })} />
       </FieldGroup>
 

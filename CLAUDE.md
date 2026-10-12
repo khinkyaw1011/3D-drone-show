@@ -29,6 +29,7 @@ Skyloom is a virtual drone-show studio (Next.js App Router, three.js WebGPU/TSL,
 - Step the simulation by `playheadDelta()` (how far the show clock moved), never by frame delta or wall time.
 - A new resettable setting must be listed under its feature in `engine/presets/reset.ts`, or its reset button will not see it.
 - Firework timing lives in `FIREWORK_SCHEDULE` (`engine/materials/lighting.ts`), shared by the shader and the ground light. Do not move it back into shader-only hashes.
+- Files from the visitor's device (models, large SVG) are linked through `src/lib/files.ts` (file handle or IndexedDB copy); a formation input stores only `fileId` + `name` and receives the bytes as `opts.file`. Never put file contents in the show.
 - Heavy work (sampling, model parsing) runs in the comlink worker (`src/workers/sampler.worker.ts`). Keep `./worker-shim` as its first import.
 
 ## Localisation

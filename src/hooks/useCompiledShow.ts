@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CompiledShow } from '@/engine/timeline/compile';
 import type { Show } from '@/engine/types';
+import { FileMissingError } from '@/engine/formations/files';
+import { useLinkedFilesVersion } from '@/lib/files';
 import { isAbort, requestFormation, sampler } from '@/lib/formations';
 
 export interface CompiledState {
@@ -17,8 +19,9 @@ export interface CompiledState {
 export function useCompiledShow(show: Show | null, droneCount?: number): CompiledState {
   const [state, setState] = useState<CompiledState>({ compiled: null, show: null, status: 'loading', error: null });
   // Recompile only for changes that move or recolour drones; glow, sky, camera or FX tweaks must not re-plan the fleet.
+  const files = useLinkedFilesVersion();
   const key = show
-    ? JSON.stringify([droneCount ?? show.droneCount, show.id, show.flight, show.look.colorMode, show.look.colors, show.look.gradientAxis, show.keyframes])
+    ? JSON.stringify([files, droneCount ?? show.droneCount, show.id, show.flight, show.look.colorMode, show.look.colors, show.look.gradientAxis, show.keyframes])
     : null;
   const latest = useRef(show);
   useEffect(() => {
@@ -36,7 +39,12 @@ export function useCompiledShow(show: Show | null, droneCount?: number): Compile
       try {
         const formations = await Promise.all(
           effective.keyframes.map((kf) =>
-            requestFormation(kf.formation.sourceId, kf.formation.input, effective.droneCount, controller.signal),
+            requestFormation(kf.formation.sourceId, kf.formation.input, effective.droneCount, controller.signal).catch((error) => {
+              // A linked file that cannot be read must not take the whole show down: fly a stand-in
+              // until the visitor locates it (the prompt is driven by `useMissingFiles`).
+              if (error instanceof FileMissingError) return requestFormation('shape', { shape: 'ring' }, effective.droneCount, controller.signal);
+              throw error;
+            }),
           ),
         );
         if (controller.signal.aborted) return;

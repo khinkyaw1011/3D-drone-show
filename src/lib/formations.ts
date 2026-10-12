@@ -1,6 +1,8 @@
-import { type Remote, wrap } from 'comlink';
+import { type Remote, transfer, wrap } from 'comlink';
 import { formationKey, generateFormation, getSource } from '@/engine/formations/registry';
+import { linkedFile } from '@/engine/formations/files';
 import type { FormationData } from '@/engine/types';
+import { linkedFilesVersion, readLinkedFile } from '@/lib/files';
 import type { SamplerApi } from '@/workers/sampler.worker';
 
 let remote: Remote<SamplerApi> | null = null;
@@ -22,7 +24,9 @@ const cache = new Map<string, Promise<FormationData>>();
  * needs the DOM. Aborting stops waiting immediately and cancels the worker job at its next checkpoint.
  */
 export function requestFormation(sourceId: string, input: unknown, count: number, signal?: AbortSignal): Promise<FormationData> {
-  const key = formationKey(sourceId, input, count);
+  const link = linkedFile(input);
+  // A linked file read again after being re-located must not hit the entry cached from before.
+  const key = formationKey(sourceId, input, count) + (link ? `@${linkedFilesVersion()}` : '');
   let entry = cache.get(key);
   if (entry) {
     // Refresh recency.
@@ -30,10 +34,14 @@ export function requestFormation(sourceId: string, input: unknown, count: number
     cache.set(key, entry);
   } else {
     const requestId = nextRequestId++;
-    entry =
-      getSource(sourceId).runsIn === 'main'
-        ? generateFormation(sourceId, input, { count, signal })
-        : sampler().generate(requestId, sourceId, input, count);
+    const onMain = getSource(sourceId).runsIn === 'main';
+    entry = (link ? readLinkedFile(link.fileId, link.name) : Promise.resolve(undefined)).then((file) =>
+      onMain
+        ? generateFormation(sourceId, input, { count, signal, file })
+        : file
+          ? sampler().generate(requestId, sourceId, input, count, transfer(file, [file]))
+          : sampler().generate(requestId, sourceId, input, count),
+    );
     signal?.addEventListener('abort', () => void remote?.cancel(requestId), { once: true });
     entry.catch(() => cache.delete(key)); // never cache failures
     cache.set(key, entry);

@@ -33,6 +33,8 @@ export interface FormationData {
 export interface GenerateOptions {
   count: number;
   signal?: AbortSignal;
+  /** Bytes of the linked file named by the input's `fileId` (see `formations/files.ts`). */
+  file?: ArrayBuffer;
 }
 
 /** Plugin interface: register new formation types in `formations/registry.ts`. */

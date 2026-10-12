@@ -12,7 +12,9 @@ import { BUILTIN_SHOWS } from '@/engine/presets/builtin';
 import { CAMERA_PRESETS } from '@/engine/presets/schema';
 import { Link } from '@/i18n/navigation';
 import { useIsDesktop } from '@/hooks/useMediaQuery';
+import { MODEL_ACCEPT } from '@/lib/files';
 import { IMAGE_ACCEPT } from '@/lib/image';
+import { MissingFiles, ModelAnimation, usePickFormationFile } from './FileTools';
 import { cn } from '@/lib/utils';
 import { useStudio } from '@/store';
 import { FleetStats } from './FleetStats';
@@ -69,8 +71,14 @@ export function QuickControls({ className }: { className?: string }) {
   const progress = playback.duration > 0 ? playback.time / playback.duration : 0;
   const status = playback.playing ? 'playing' : playback.time > 0 ? 'paused' : 'standby';
 
-  const { getRootProps, getInputProps, open: openFilePicker, isDragActive } = useDropzone({
-    accept: { ...IMAGE_ACCEPT, 'model/gltf-binary': ['.glb'] },
+  const pickFormationFile = usePickFormationFile();
+  const openFilePicker = async () => {
+    setBusy(true);
+    await pickFormationFile();
+    setBusy(false);
+  };
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: { ...IMAGE_ACCEPT, ...MODEL_ACCEPT },
     multiple: false,
     noClick: true,
     noKeyboard: true,
@@ -168,6 +176,7 @@ export function QuickControls({ className }: { className?: string }) {
           <p className="mx-3.5 mt-2.5 text-xs leading-snug text-muted-foreground sm:mx-4">{t(`about.${tab}`)}</p>
 
           <div className="scrollbar-thin max-h-[38svh] overflow-y-auto px-3.5 pb-4 pt-3.5 sm:px-4 lg:max-h-[calc(100svh-19rem)]">
+            <MissingFiles className="mb-3.5" />
             <TabsContent value="show" className="space-y-4">
               <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('formations')}>
                 {show.keyframes.map((kf, i) => (
@@ -201,6 +210,7 @@ export function QuickControls({ className }: { className?: string }) {
                   </span>
                 ))}
               </div>
+              <ModelAnimation keyframe={current} />
               <div role="group" aria-label={t('view')}>
                 <p className="mb-1.5 text-[0.8125rem] text-foreground/85">{t('view')}</p>
                 <div className="flex flex-wrap gap-1.5">

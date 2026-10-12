@@ -28,7 +28,8 @@
   },
   "Actions": {
     "failed": "That did not work",
-    "fileFailed": "Could not use that file"
+    "fileFailed": "Could not use that file",
+    "glbOnly": "Only binary .glb models are supported. Export your model as .glb (Blender: File › Export › glTF 2.0 › Format: glTF Binary)."
   },
   "Stats": {
     "drones": "drones",
@@ -317,7 +318,10 @@
     "threshold": "Threshold",
     "invert": "Invert",
     "depth": "Depth",
-    "saturation": "Saturation"
+    "saturation": "Saturation",
+    "pose": "Animation pose",
+    "outline": "Outline only",
+    "clip": "Animation"
   },
   "Studio": {
     "meta": {
@@ -668,5 +672,19 @@
     "wind": "Wind",
     "windHint": "Bends the grass and trees, and pushes drones during wind moments.",
     "windDirection": "Wind direction"
+  },
+  "Files": {
+    "missingTitle": "A file this show uses needs your attention",
+    "missing": "“{name}” was moved, deleted or linked on another device. A ring is flying in its place.",
+    "permission": "“{name}” is still linked. Your browser asks you to allow reading it again after a restart.",
+    "locate": "Locate file",
+    "allow": "Allow",
+    "restored": "File linked again",
+    "animation": "Animation",
+    "clip": "Animation {index}",
+    "pose": "Pose",
+    "play": "Play as formations",
+    "playHint": "Adds {count} poses of this animation as formations; the fleet flies through them in a loop.",
+    "linkedNote": "Linked from your device. The file is read where it is, not copied into the show."
   }
 }

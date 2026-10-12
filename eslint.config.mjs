@@ -19,6 +19,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored Draco decoder for compressed .glb models (copied from three.js).
+    "public/draco/**",
   ]),
 ]);
 

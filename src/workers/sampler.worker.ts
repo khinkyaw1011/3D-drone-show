@@ -1,7 +1,7 @@
 import './worker-shim';
 import { expose, transfer } from 'comlink';
 import { bake } from '@/engine/formations/sources/baked';
-import { type GlbOptions, sampleGlb } from '@/engine/formations/sources/model';
+import { type GlbOptions, inspectGlb, sampleGlb } from '@/engine/formations/sources/model';
 import { generateFormation } from '@/engine/formations/registry';
 import { type CompiledShow, compileShow } from '@/engine/timeline/compile';
 import type { FormationData, Show } from '@/engine/types';
@@ -13,11 +13,11 @@ const send = (data: FormationData) =>
 
 const api = {
   /** Generate any registered formation off the main thread. */
-  async generate(requestId: number, sourceId: string, input: unknown, count: number): Promise<FormationData> {
+  async generate(requestId: number, sourceId: string, input: unknown, count: number, file?: ArrayBuffer): Promise<FormationData> {
     const controller = new AbortController();
     running.set(requestId, controller);
     try {
-      return send(await generateFormation(sourceId, input, { count, signal: controller.signal }));
+      return send(await generateFormation(sourceId, input, { count, signal: controller.signal, file }));
     } finally {
       running.delete(requestId);
     }
@@ -35,6 +35,10 @@ const api = {
   /** Abort a request; takes effect at the generator's next checkpoint. */
   cancel(requestId: number) {
     running.get(requestId)?.abort();
+  },
+  /** Animation names in a GLB, read once when the file is linked. */
+  inspectGlb(buffer: ArrayBuffer) {
+    return inspectGlb(buffer);
   },
   /** Sample an uploaded GLB and freeze it into a shareable `baked` input. */
   async bakeGlb(buffer: ArrayBuffer, options: Omit<GlbOptions, 'signal'>) {

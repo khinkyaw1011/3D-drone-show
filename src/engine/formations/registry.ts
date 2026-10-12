@@ -1,7 +1,7 @@
 import type { FormationData, FormationSource, GenerateOptions } from '../types';
 import { bakedSource } from './sources/baked';
 import { imageSource } from './sources/image';
-import { modelSource } from './sources/model';
+import { glbSource, modelSource } from './sources/model';
 import { shapeSource } from './sources/shape';
 import { svgSource } from './sources/svg';
 import { textSource } from './sources/text';
@@ -38,5 +38,6 @@ registerSource(shapeSource);
 registerSource(textSource);
 registerSource(imageSource);
 registerSource(modelSource);
+registerSource(glbSource);
 registerSource(svgSource);
 registerSource(bakedSource);

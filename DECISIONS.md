@@ -71,3 +71,12 @@ Where the build departs from, or sharpens, the original spec, and why.
 - **Show volume raised** (centre 17 m to 20 m) and **landed drones stand on their skids**: the draw-time floor is deck height plus skid length times the airframe scale, so they neither sink into the deck nor hover over it.
 - **Built-in shows no longer use the physics burst.** Drones dropping to the ground looked like a crash, which no real show does. The effect is still available in the studio.
 
+## Files from the visitor's device
+
+- **Models and large artwork are linked, not stored in the show.** A web page is never given a file's path, so a link is the file's `FileSystemFileHandle` kept in IndexedDB (`idb-keyval`) where the browser has the File System Access API (Chromium): nothing is copied and the file is read from disk each time. Safari and Firefox have no handles, so there a copy of the file goes in IndexedDB instead. The show (localStorage) holds only `{ fileId, name }`. Everything is in `src/lib/files.ts`.
+- **A file that cannot be read never breaks the show.** `useCompiledShow` flies a ring in its place and `MissingFiles` offers the one fix: "Allow" when the browser only wants permission again (it does after every restart), "Locate file" when the file moved, was deleted, or the show came from another device. Re-linking keeps the same id, so every formation using it recovers.
+- **`.glb` only**, including Draco- and meshopt-compressed ones (decoder vendored in `public/draco`). `.gltf` with side files, FBX and OBJ are refused with an export hint: multi-file formats cannot be linked as one file. Replaces the old "bake the upload into the show" path for models; `baked` remains for share links.
+- **SVG**: fills, and now strokes too (line icons used to produce "no filled shapes"); an "outline only" option; artwork up to 120 KB stays inline so share links still carry it, larger files are linked.
+- **Model animation = formations.** `pose` (0..1 through a clip) samples the model with morph targets and skinning applied. "Play as formations" adds six poses as ordinary formations the fleet flies through: that is how a real drone show animates a figure, and it needed no new playback machinery.
+- Shows shared by link do not include linked files; the recipient sees the stand-in and the locate prompt.
+

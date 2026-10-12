@@ -10,6 +10,8 @@ import { useShowActions } from '@/components/show/useShowActions';
 import { Button } from '@/components/ui/button';
 import { MODELS, type ModelName } from '@/engine/formations/sources/model';
 import { SHAPES } from '@/engine/formations/sources/shape';
+import { MissingFiles, usePickFormationFile } from '@/components/show/FileTools';
+import { MODEL_ACCEPT } from '@/lib/files';
 import { IMAGE_ACCEPT } from '@/lib/image';
 import { cn } from '@/lib/utils';
 
@@ -34,8 +36,14 @@ export function FormationPanel() {
   const [word, setWord] = useState('');
   const [busy, setBusy] = useState(false);
 
-  const { getRootProps, getInputProps, open, isDragActive } = useDropzone({
-    accept: { ...IMAGE_ACCEPT, 'model/gltf-binary': ['.glb'] },
+  const pickFormationFile = usePickFormationFile();
+  const open = async () => {
+    setBusy(true);
+    await pickFormationFile();
+    setBusy(false);
+  };
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: { ...IMAGE_ACCEPT, ...MODEL_ACCEPT },
     multiple: false,
     noClick: true,
     noKeyboard: true,
@@ -54,6 +62,7 @@ export function FormationPanel() {
   return (
     <div {...getRootProps()} className={cn('scrollbar-thin h-full space-y-6 overflow-y-auto p-4 outline-none', isDragActive && 'ring-2 ring-inset ring-cyan/50')}>
       <input {...getInputProps()} />
+      <MissingFiles />
 
       <FieldGroup title={t('addWord')}>
         <form onSubmit={submit} className="flex gap-2">
