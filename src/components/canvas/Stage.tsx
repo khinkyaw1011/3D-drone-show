@@ -2,7 +2,8 @@
 
 import { type RootState, useFrame, useThree } from '@react-three/fiber';
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
-import type { WebGPURenderer } from 'three/webgpu';
+import { Color, type WebGPURenderer } from 'three/webgpu';
+import { FIREWORK_SHELLS, averageColor, burstLight, createSceneLight } from '@/engine/materials/lighting';
 import { type PhysicsMoment, ShowPlayer } from '@/engine/playback/ShowPlayer';
 import { fleetLimits, prefersReducedMotion } from '@/engine/renderer/capabilities';
 import { rendererCapabilities } from '@/engine/renderer/createRenderer';
@@ -146,9 +147,22 @@ export function Stage({
     handledSeek.current = seek.nonce;
   }, [player, loaded, seek, show.keyframes, compiledShow]);
 
+  // Light the show throws on the ground: the fleet's average colour, and firework flashes in step with the bursts.
+  const light = useMemo(() => createSceneLight(), []);
+  const fleetColor = useMemo(() => new Color(), []);
+  useEffect(() => {
+    const frame = compiled?.frames[index];
+    if (frame) averageColor(frame.colors, fleetColor);
+  }, [compiled, index, fleetColor]);
+  const burstColor = useMemo(() => new Color(show.scene.fireworks.palette === 'show' ? show.look.colors[0] : '#ffe2b0'), [show.scene.fireworks.palette, show.look.colors]);
+
   const watchdog = useRef({ frames: 0, time: 0, reported: 0 });
-  useFrame((_, dt) => {
+  useFrame(({ clock }, dt) => {
     player?.update(gl, dt);
+    const dimmed = physics?.effect === 'drop' ? 0.3 : 1;
+    light.fleet.value.copy(fleetColor).multiplyScalar(scene.venue.glow * 2 * dimmed);
+    const shells = Math.ceil(scene.fireworks.intensity * FIREWORK_SHELLS);
+    light.burst.value.copy(burstColor).multiplyScalar(burstLight(clock.elapsedTime, shells));
     // Measure only while the show is actually flying; report once per fleet size.
     const w = watchdog.current;
     if (!loaded || !playing || w.reported === count || dt > 0.5) return;
@@ -168,7 +182,7 @@ export function Stage({
   return (
     <>
       <Sky scene={scene} />
-      <Ground scene={scene} tier={capabilities.tier} />
+      <Ground scene={scene} tier={capabilities.tier} count={count} light={light} />
       {scene.ground !== 'none' && <LaunchPad count={count} />}
       <Fireworks scene={scene} colors={look.colors} />
       <VenueLights scene={scene} colors={look.colors} />

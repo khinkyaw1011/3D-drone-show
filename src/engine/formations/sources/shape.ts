@@ -37,6 +37,7 @@ export const SHAPES = [
   'pyramid',
   'tornado',
   'butterfly',
+  'bird',
 ] as const;
 export type ShapeName = (typeof SHAPES)[number];
 
@@ -81,6 +82,15 @@ function starShape(points = 5, inner = 0.42): Shape {
   }
   s.closePath();
   return s;
+}
+
+/** A soaring bird seen from above: one swept wing, in the x-y plane before it is laid flat. */
+function birdWing(side: 1 | -1): Shape {
+  const wing = new Shape();
+  wing.moveTo(0.12 * side, 0.42);
+  wing.bezierCurveTo(0.9 * side, 0.62, 1.7 * side, 0.45, 2.35 * side, -0.05); // leading edge to the tip
+  wing.bezierCurveTo(1.7 * side, -0.02, 1.0 * side, -0.28, 0.12 * side, -0.3); // trailing edge back to the body
+  return wing;
 }
 
 /** One side of a butterfly: a large upper wing and a smaller lower wing, as closed curves from the body. */
@@ -129,6 +139,14 @@ const GEOMETRY: Partial<Record<ShapeName, () => BufferGeometry>> = {
     const pos = g.attributes.position;
     for (let i = 0; i < pos.count; i++) pos.setZ(i, Math.abs(pos.getX(i)) * 0.35);
     return g.rotateX(-0.9);
+  },
+  // Wings span x and the body runs along z, which is the frame the flap movement works in.
+  bird: () => {
+    const wings = new ShapeGeometry([birdWing(1), birdWing(-1)], 24).rotateX(-Math.PI / 2);
+    const tail = new ShapeGeometry(new Shape().moveTo(0, 0).lineTo(0.42, -0.62).lineTo(-0.42, -0.62).lineTo(0, 0), 4).rotateX(-Math.PI / 2).translate(0, 0, 0.72);
+    const body = new SphereGeometry(1, 14, 10).scale(0.16, 0.15, 0.82);
+    const head = new SphereGeometry(0.13, 10, 8).translate(0, 0.03, -0.92);
+    return mergeGeometries([wings, tail, body, head].map((g) => g.toNonIndexed()));
   },
   diamond: () => new OctahedronGeometry(1, 0).scale(0.8, 1.15, 0.8),
   pyramid: () => new ConeGeometry(1, 1.35, 4, 6).rotateY(Math.PI / 4),

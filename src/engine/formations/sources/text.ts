@@ -68,7 +68,7 @@ function rasterText(lines: string[], count: number, signal?: AbortSignal): Float
   if (typeof OffscreenCanvas === 'undefined') throw new Error('This browser cannot draw that script as a formation');
   const size = 160;
   const lineHeight = size * 1.45;
-  const font = `700 ${size}px "Noto Sans JP", "Noto Sans Myanmar", "Hiragino Sans", "Myanmar Sangam MN", system-ui, sans-serif`;
+  const font = `700 ${size}px "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", "Noto Sans CJK JP", "Noto Sans Myanmar", "Myanmar Sangam MN", system-ui, sans-serif`;
   const probe = new OffscreenCanvas(8, 8).getContext('2d')!;
   probe.font = font;
   const width = Math.min(4096, Math.ceil(Math.max(...lines.map((l) => probe.measureText(l).width)) + size));

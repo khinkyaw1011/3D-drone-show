@@ -58,41 +58,56 @@ describe('persisted state migration', () => {
 });
 
 describe('reset to defaults', () => {
-  it('restores one area or everything, and keeps the formations', async () => {
+  it('restores one feature at a time, then everything, and keeps the formations', async () => {
     const { useStudio } = await import('@/store');
     const { dispatch } = await import('@/store/dispatch');
+    const { isScopeChanged } = await import('@/engine/presets/reset');
     const defaults = (await import('@/engine/presets/schema')).showSchema.parse({ id: 'd', name: 'd', keyframes: [] });
-    const formations = useStudio.getState().show.keyframes.length;
+    const show = () => useStudio.getState().show;
+    const formations = show().keyframes.length;
+    await dispatch({ type: 'settings.reset', scope: 'all' });
+    expect(isScopeChanged(show(), 'all')).toBe(false);
 
     await dispatch({ type: 'look.set', patch: { glow: 2.5, colorMode: 'random' } });
     await dispatch({ type: 'show.setDroneCount', count: 3000 });
-    await dispatch({ type: 'scene.set', patch: { stars: 1, fireworks: { intensity: 0.9 } } });
+    await dispatch({ type: 'scene.set', patch: { stars: 1, fireworks: { intensity: 0.9 }, venue: { beams: 1 } } });
     await dispatch({ type: 'flight.set', patch: { maxSpeed: 5 } });
+    expect(['look', 'color', 'sky', 'fireworks', 'venue', 'flight'].map((scope) => isScopeChanged(show(), scope as never))).toEqual(Array(6).fill(true));
+    expect(isScopeChanged(show(), 'fx')).toBe(false);
 
+    // Drones: size, glow and fleet size come back; colour is its own feature and stays.
     await dispatch({ type: 'settings.reset', scope: 'look' });
-    expect(useStudio.getState().show.look).toEqual(defaults.look);
-    expect(useStudio.getState().show.droneCount).toBe(defaults.droneCount);
-    expect(useStudio.getState().show.flight.maxSpeed).toBe(5);
+    expect(show().look.glow).toBe(defaults.look.glow);
+    expect(show().droneCount).toBe(defaults.droneCount);
+    expect(show().look.colorMode).toBe('random');
 
-    await dispatch({ type: 'settings.reset', scope: 'scene' });
-    expect(useStudio.getState().show.scene.stars).toBe(defaults.scene.stars);
-    expect(useStudio.getState().show.scene.fireworks.intensity).toBe(0.9);
+    // Sky: stars come back; fireworks and venue lighting are untouched.
+    await dispatch({ type: 'settings.reset', scope: 'sky' });
+    expect(show().scene.stars).toBe(defaults.scene.stars);
+    expect(show().scene.fireworks.intensity).toBe(0.9);
+    expect(show().scene.venue.beams).toBe(1);
+
+    await dispatch({ type: 'settings.reset', scope: 'fireworks' });
+    expect(show().scene.fireworks).toEqual(defaults.scene.fireworks);
 
     await dispatch({ type: 'settings.reset', scope: 'all' });
-    const { show } = useStudio.getState();
-    expect([show.look, show.scene, show.flight]).toEqual([defaults.look, defaults.scene, defaults.flight]);
-    expect(show.keyframes).toHaveLength(formations);
+    expect([show().look, show().scene, show().flight, show().droneCount]).toEqual([defaults.look, defaults.scene, defaults.flight, defaults.droneCount]);
+    expect(isScopeChanged(show(), 'all')).toBe(false);
+    expect(show().keyframes).toHaveLength(formations);
+  });
+
+  it('ships fireworks switched off, except in the shows built around them', async () => {
+    const lit = BUILTIN_SHOWS.filter((show) => show.scene.fireworks.intensity > 0).map((show) => show.id);
+    expect(lit).toEqual(['new-year']);
   });
 });
 
 describe('shows saved before a setting existed', () => {
   it('gain the new settings with their defaults when loaded', async () => {
     const { migratePersisted } = await import('@/store');
-    // A show as an older build stored it: no fireworks, flight rules, drone size or star size.
+    // A show as an older build stored it: no fireworks, flight rules, drone size, venue or star settings.
     const old = structuredClone(BUILTIN_SHOWS[0]) as unknown as { scene: Record<string, unknown>; look: Record<string, unknown>; flight?: unknown };
-    delete old.scene.fireworks;
-    delete old.scene.starSize;
-    delete old.scene.ambient;
+    for (const key of ['fireworks', 'venue', 'starSize', 'starTwinkle', 'milkyWay', 'ambient']) delete old.scene[key];
     delete old.look.body;
     delete old.flight;
     const { show } = migratePersisted({ show: old });

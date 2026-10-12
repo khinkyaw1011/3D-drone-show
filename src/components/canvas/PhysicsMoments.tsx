@@ -106,7 +106,7 @@ export default function PhysicsMoments({ sim, moment, from, settings }: PhysicsM
           <sphereGeometry args={[0.16, 6, 4]} />
         </instancedMesh>
       </InstancedRigidBodies>
-      <CuboidCollider position={[0, -0.35, 0]} args={[400, 0.5, 400]} restitution={settings.restitution} />
+      <CuboidCollider position={[0, -0.34, 0]} args={[400, 0.5, 400]} restitution={settings.restitution} />
     </Physics>
   );
 }

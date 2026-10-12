@@ -20,20 +20,22 @@ import {
   step,
   time,
   uniform,
+  uniformArray,
   uv,
   vec2,
   vec3,
   vec4,
 } from 'three/tsl';
 import { AdditiveBlending, Color, DoubleSide, MeshBasicNodeMaterial } from 'three/webgpu';
+import { FIREWORK_RISE, FIREWORK_SCHEDULE, FIREWORK_SHELLS } from './lighting';
 
-export const FIREWORK_SHELLS = 10;
+export { FIREWORK_SHELLS };
+
 export const FIREWORK_SPARKS = 200;
 export const FIREWORK_COUNT = FIREWORK_SHELLS * FIREWORK_SPARKS;
 export const FIREWORK_STYLE = { mixed: 0, peony: 1, willow: 2, ring: 3 } as const;
 
-/** Fraction of a shell's cycle spent climbing before it bursts. */
-const RISE = 0.24;
+const RISE = FIREWORK_RISE;
 /** How quickly sparks shed their launch speed (air drag). */
 const DRAG = 3.2;
 
@@ -70,8 +72,12 @@ export function createFireworksMaterial() {
   const spark = index.sub(shell.mul(FIREWORK_SPARKS));
 
   // Each shell loops on its own period and offset; `cycle` reseeds it every time it fires.
-  const period = hash(shell.mul(7.13)).mul(2.6).add(3.6);
-  const clock = time.div(period).add(hash(shell.mul(3.31)));
+  // (Timing comes from the shared schedule, so ground lighting can flash in step with the bursts.)
+  const periods = uniformArray(FIREWORK_SCHEDULE.map((s) => s.period), 'float');
+  const offsets = uniformArray(FIREWORK_SCHEDULE.map((s) => s.offset), 'float');
+  // (uniformArray elements are untyped in @types/three; they are floats.)
+  const perShell = (values: typeof periods) => values.element(shell.toInt()) as unknown as typeof shell;
+  const clock = time.div(perShell(periods)).add(perShell(offsets));
   const cycle = floor(clock);
   const phase = fract(clock);
   const seed = shell.mul(17).add(cycle.mul(31));
@@ -125,7 +131,7 @@ export function createFireworksMaterial() {
   // Spark 0 of every shell is the break flash: one large, very short bloom of light.
   const flashSpark = step(spark, 0.5);
   const flash = smoothstep(0.1, 0, burst).mul(exploded);
-  const brightness = mix(mix(climbing, fade.mul(glitter), exploded), flash.mul(0.35), flashSpark).mul(lit);
+  const brightness = mix(mix(climbing, fade.mul(glitter), exploded), flash.mul(0.2), flashSpark).mul(lit);
 
   // Billboard stretched along screen-space velocity: streaks while fast, points when slow.
   const viewCenter = cameraViewMatrix.mul(vec4(world, 1));

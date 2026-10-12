@@ -4,7 +4,7 @@ import { SHOW_VOLUME } from '../formations/fit';
 import { hash01 } from '../formations/order';
 import type { CompiledFrame } from '../timeline/compile';
 import type { PhysicsEffect } from '../types';
-import { GROUND_Y, SIM_MODE, SPRING, type Simulator, createBuffers, defaultSimParams, uploadFrame } from './Simulator';
+import { FLOOR_Y, GROUND_Y, SIM_MODE, SPRING, type Simulator, createBuffers, defaultSimParams, uploadFrame } from './Simulator';
 
 const { clamp, interpolate: lerp } = gsap.utils;
 
@@ -70,12 +70,13 @@ export class CpuSimulator implements Simulator {
 
   step(_renderer: unknown, rawDt: number, time: number) {
     const { P, V, C, S, T, SC, TC, D } = this.arrays;
-    const { progress, mode, stagger, swarm, gravity, restitution, wind, spinStart, spinTarget, launch } = this.params;
+    const { progress, rate, mode, stagger, swarm, gravity, restitution, wind, spinStart, spinTarget, launch } = this.params;
     const [cx, , cz] = SHOW_VOLUME.center;
     const rot = [Math.cos(spinStart), Math.sin(spinStart), Math.cos(spinTarget), Math.sin(spinTarget)];
     const from = [0, 0, 0];
     const to = [0, 0, 0];
     const pose = [0, 0, 0];
+    const live = rawDt > 0;
     const dt = Math.min(Math.max(rawDt, 1e-4), 1 / 20);
     const snap = this.pendingSnap;
     this.pendingSnap = false;
@@ -101,8 +102,11 @@ export class CpuSimulator implements Simulator {
       const bulge = detourWeight(local);
       for (let k = 0; k < 3; k++) pose[k] += D[o + k] * bulge;
 
+      // Acceleration rides in the spare w of position / velocity / colour, as on the GPU.
+      const accel = [P[o + 3], V[o + 3], C[o + 3]];
       for (let k = 0; k < 3; k++) {
         const a = o + k;
+        const before = V[a];
         if (snap) {
           P[a] = pose[k];
           V[a] = 0;
@@ -120,6 +124,13 @@ export class CpuSimulator implements Simulator {
           P[a] += V[a] * dt;
         }
         C[a] = lerp(SC[a], TC[a], eased);
+        if (snap) accel[k] = 0;
+        else if (!live) V[a] = before; // paused: nothing accelerates
+        else if (mode === SIM_MODE.ease) {
+          // Exact acceleration of the planned route (see GpuSimulator).
+          const localRate = rate * (1 + stagger);
+          accel[k] = local > 0.0001 && local < 0.9999 ? clamp(-12, 12, (to[k] - from[k]) * (6 - 12 * local) * localRate * localRate) : 0;
+        } else accel[k] += (clamp(-12, 12, (V[a] - before) / dt) - accel[k]) * 0.06;
       }
       if (mode === SIM_MODE.physics && P[o + 1] < GROUND_Y) {
         P[o + 1] = GROUND_Y;
@@ -131,8 +142,8 @@ export class CpuSimulator implements Simulator {
         const w = this.override[o + 3];
         for (let k = 0; k < 3; k++) P[o + k] = lerp(P[o + k], this.override[o + k], w);
       }
-      P[o + 3] = 1;
-      C[o + 3] = 1;
+      P[o + 1] = Math.max(P[o + 1], FLOOR_Y); // never under the ground
+      [P[o + 3], V[o + 3], C[o + 3]] = accel;
     }
     this.buffers.position.value.needsUpdate = true;
     this.buffers.velocity.value.needsUpdate = true;

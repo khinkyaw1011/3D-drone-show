@@ -11,14 +11,14 @@ npm run dev      # http://localhost:3000
 
 | Route | What it is |
 |---|---|
-| `/` | The live show with a control deck: pick a show, type a shape or word, upload a picture, change colours, fleet size, top speed and separation, switch views |
+| `/` | The live show with a control deck: pick a show, type a shape or word (English or Japanese), upload a picture, choose an environment, change colours, fleet size, top speed and separation, switch views. Scrolls normally; "Explore in 3D" enters the interactive view |
 | `/studio` | Full editor: formation library, sortable timeline, inspector, presets, undo/redo, share link, PNG and video export |
 | `/show` | Full-screen viewer for a share link (`#s=…`) or a built-in show (`?p=sakura-night`) |
 | `/gallery`, `/guide`, `/about` | Built-in shows, how to use it, how it works |
 
 Prefix any route with `/ja` or `/my` for Japanese or Myanmar.
 
-Also: fireworks behind the show, star and background-brightness controls, per-area and global reset to defaults. Everything you change is saved in this browser (localStorage) and can be undone in the studio.
+Also: fireworks (peony, willow, ring), a wind-blown grass field with trees lit by the fleet, searchlights, star and Milky Way controls, one-click environments, wing-beat and other formation movement, per-feature and global reset. Everything you change is saved in this browser (localStorage) and can be undone in the studio.
 
 Views: crowd (spectator), first-person walk (W A S D / arrows, drag to look), close-up, front, low, top, orbit.
 

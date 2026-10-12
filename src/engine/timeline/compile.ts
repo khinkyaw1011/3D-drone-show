@@ -2,7 +2,7 @@ import { type Assigner, improveAssignment, mortonAssign, permute } from '../form
 import { resolveColors } from '../formations/colors';
 import { groundGrid, padLayout } from '../formations/fit';
 import { launchDelays } from '../formations/order';
-import { UNIT_METERS, durationForSpeed, peakSpeed } from '../sim/path';
+import { MAX_ACCELERATION, UNIT_METERS, durationForAcceleration, durationForSpeed, peakSpeed } from '../sim/path';
 import type { FormationData, Show } from '../types';
 import { curveKind } from './buildTimeline';
 import { formationSpacing, planPaths } from './planPaths';
@@ -102,7 +102,14 @@ export function planTransition(
   const count = to.length / 3;
   let farthest = 0;
   for (let i = 0; i < to.length; i += 3) farthest = Math.max(farthest, Math.hypot(to[i] - from[i], to[i + 1] - from[i + 1], to[i + 2] - from[i + 2]));
-  const duration = flight.realistic ? Math.max(requested, durationForSpeed(farthest, flight.maxSpeed / UNIT_METERS, stagger, launch)) : requested;
+  // A real drone is limited in both how fast it flies and how hard it can accelerate.
+  const duration = flight.realistic
+    ? Math.max(
+        requested,
+        durationForSpeed(farthest, flight.maxSpeed / UNIT_METERS, stagger, launch),
+        durationForAcceleration(farthest, MAX_ACCELERATION / UNIT_METERS, stagger, launch),
+      )
+    : requested;
   // Never ask for more clearance than the formations themselves provide.
   const clearance = Math.min(flight.separation / UNIT_METERS, formationSpacing(to) * 0.85, spacingFrom * 0.85);
   const plan =

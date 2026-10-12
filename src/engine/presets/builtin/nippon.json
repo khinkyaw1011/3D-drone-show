@@ -1,0 +1,151 @@
+{
+  "version": 1,
+  "id": "nippon",
+  "name": "日本の夜",
+  "droneCount": 1400,
+  "look": {
+    "colorMode": "gradient",
+    "colors": [
+      "#ff5c7a",
+      "#ffffff"
+    ],
+    "gradientAxis": "y",
+    "glow": 1.3,
+    "twinkle": 0.2
+  },
+  "scene": {
+    "sky": "midnight",
+    "ground": "field",
+    "fog": 0.1,
+    "autoOrbit": 0,
+    "venue": {
+      "beams": 0.25,
+      "glow": 0.6
+    }
+  },
+  "keyframes": [
+    {
+      "id": "jp1",
+      "name": "東京",
+      "formation": {
+        "sourceId": "text",
+        "input": {
+          "text": "東京",
+          "font": "helvetiker",
+          "letterSpacing": 0.06,
+          "stacked": false,
+          "fill": 0.9
+        }
+      },
+      "hold": 5,
+      "spin": 0,
+      "transition": {
+        "duration": 4,
+        "curve": "power3.inOut",
+        "stagger": 0.35,
+        "order": "top-down"
+      }
+    },
+    {
+      "id": "jp2",
+      "name": "桜",
+      "formation": {
+        "sourceId": "shape",
+        "input": {
+          "shape": "blossom",
+          "fill": 0.85
+        }
+      },
+      "hold": 5,
+      "spin": 8,
+      "transition": {
+        "duration": 3.5,
+        "curve": "power3.inOut",
+        "stagger": 0.35,
+        "order": "radial"
+      },
+      "look": {
+        "colorMode": "formation"
+      },
+      "motion": "pulse",
+      "motionAmount": 0.6
+    },
+    {
+      "id": "jp3",
+      "name": "京都",
+      "formation": {
+        "sourceId": "text",
+        "input": {
+          "text": "京都",
+          "font": "helvetiker",
+          "letterSpacing": 0.06,
+          "stacked": false,
+          "fill": 0.9
+        }
+      },
+      "hold": 5,
+      "spin": 0,
+      "transition": {
+        "duration": 3.5,
+        "curve": "expo.inOut",
+        "stagger": 0.35,
+        "order": "radial"
+      }
+    },
+    {
+      "id": "jp4",
+      "name": "富士山",
+      "formation": {
+        "sourceId": "text",
+        "input": {
+          "text": "富士山",
+          "font": "helvetiker",
+          "letterSpacing": 0.06,
+          "stacked": false,
+          "fill": 0.9
+        }
+      },
+      "hold": 5,
+      "spin": 0,
+      "transition": {
+        "duration": 3.5,
+        "curve": "power3.inOut",
+        "stagger": 0.35,
+        "order": "top-down"
+      },
+      "look": {
+        "colorMode": "gradient",
+        "colors": [
+          "#7cc4ff",
+          "#ffffff"
+        ],
+        "gradientAxis": "y"
+      }
+    },
+    {
+      "id": "jp5",
+      "name": "ありがとう",
+      "formation": {
+        "sourceId": "text",
+        "input": {
+          "text": "ありがとう",
+          "font": "helvetiker",
+          "letterSpacing": 0.06,
+          "stacked": false,
+          "fill": 0.9
+        }
+      },
+      "hold": 6,
+      "spin": 0,
+      "transition": {
+        "duration": 3.5,
+        "curve": "sine.inOut",
+        "stagger": 0.35,
+        "order": "radial"
+      },
+      "look": {
+        "colorMode": "rainbow"
+      }
+    }
+  ]
+}

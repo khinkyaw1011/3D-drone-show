@@ -90,7 +90,8 @@
     "typeHint": "A shape name becomes that shape. Anything else is written in the sky.",
     "pickShape": "2 · Or pick a shape",
     "uploadIt": "3 · Or use your own file",
-    "uploadButton": "Choose a picture, SVG or .glb"
+    "uploadButton": "Choose a picture, SVG or .glb",
+    "deleteFormation": "Delete {name}"
   },
   "Options": {
     "shape": {
@@ -110,7 +111,8 @@
       "diamond": "Diamond",
       "pyramid": "Pyramid",
       "tornado": "Tornado",
-      "butterfly": "Butterfly"
+      "butterfly": "Butterfly",
+      "bird": "Bird"
     },
     "sky": {
       "midnight": "Midnight",
@@ -121,7 +123,8 @@
     "ground": {
       "water": "Water",
       "city": "City",
-      "none": "None"
+      "none": "None",
+      "field": "Field"
     },
     "camera": {
       "spectator": "Spectator",
@@ -217,17 +220,18 @@
       "festival": "Festival",
       "aurora": "Aurora night",
       "deep-space": "Deep space",
-      "blackout": "Blackout"
+      "blackout": "Blackout",
+      "meadow": "Night meadow"
     }
   },
   "Gallery": {
     "eyebrow": "Gallery",
-    "title": "Eight shows, ready to fly",
+    "title": "Nine shows, ready to fly",
     "lead": "Every preview is drawn from the same formation data the drones fly. Watch one, or remix it in the studio.",
     "previewOf": "Preview of {name}",
     "meta": {
       "title": "Gallery",
-      "description": "Eight ready-made drone shows to watch or remix."
+      "description": "Nine ready-made drone shows to watch or remix."
     },
     "fly": "Fly it here",
     "watch": "Watch",
@@ -239,8 +243,9 @@
       "new-year": "Three, two, one — a firework, then the new year in gold.",
       "ocean": "Waves, a flamingo and a globe in cool blues, ending in a waterspout.",
       "gold-gala": "A diamond, a word and a ring in warm gold.",
-      "wings": "A flamingo, a parrot and a butterfly that beat their wings as they turn.",
-      "cosmos": "A ringed planet, a spiral galaxy and a tornado of light."
+      "wings": "A bird, a parrot and a butterfly that beat their wings as they turn.",
+      "cosmos": "A ringed planet, a spiral galaxy and a tornado of light.",
+      "nippon": "Tokyo, Kyoto and Mount Fuji written in the sky in Japanese, with a cherry blossom between them."
     },
     "summary": "{formations, plural, one {# formation} other {# formations}} · {drones} drones"
   },
@@ -251,7 +256,7 @@
     "tagline": "Thousands of drones lift off, fly at real speeds and build 3D formations you design.",
     "start": "Launch the show",
     "openStudio": "Open Studio",
-    "hint": "Drag to look around · scroll or pinch to zoom · choose Walk in Look to stroll under the show",
+    "hint": "Scroll down to read on, or explore the show in 3D to orbit, zoom and walk under it.",
     "backToShow": "Back to the show",
     "gallery": {
       "eyebrow": "Gallery",
@@ -292,7 +297,11 @@
         "value": "0",
         "label": "Real aircraft"
       }
-    }
+    },
+    "explore": "Explore in 3D",
+    "exitExplore": "Exit 3D view",
+    "exploreHint": "Drag to look around · scroll or pinch to zoom · Esc to exit",
+    "scrollCue": "Scroll for the gallery"
   },
   "Fields": {
     "shape": "Shape",
@@ -651,6 +660,9 @@
       "sky": "Sky, ground, stars and how dark the night is.",
       "fireworks": "Bursts behind the show: how many, what kind, what colour.",
       "venue": "Searchlights and the glow on the ground."
-    }
+    },
+    "wind": "Wind",
+    "windHint": "Bends the grass and trees, and pushes drones during wind moments.",
+    "windDirection": "Wind direction"
   }
 }

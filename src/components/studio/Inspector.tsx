@@ -6,7 +6,7 @@ import type { z } from 'zod';
 import { FieldGroup, SegmentedField, SelectField, SliderField, SwitchField, TextField } from '@/components/controls/fields';
 import { SchemaForm } from '@/components/controls/SchemaForm';
 import { FormationThumb } from '@/components/show/FormationThumb';
-import { ColorControls, ColorSection, DroneSection, EnvironmentPicker, FireworksSection, FlightSection, SkySection, VenueSection, useSettings } from '@/components/show/settings';
+import { ColorControls, ColorSection, DroneSection, EnvironmentPicker, FireworksSection, FlightSection, ScopeReset, SkySection, VenueSection, useSettings } from '@/components/show/settings';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getSource } from '@/engine/formations/registry';
 import { CAMERA_PRESETS, EASE_CURVES, EFFECTS, MOTIONS, ORDERS, SIM_CURVES } from '@/engine/presets/schema';
@@ -178,7 +178,7 @@ export function Inspector() {
             <SliderField label={t('swarm')} value={look.swarm} min={0} max={1} onChange={(swarm) => setLook({ swarm })} />
             <SliderField label={t('hoverBob')} value={look.hoverBob} min={0} max={1} onChange={(hoverBob) => setLook({ hoverBob })} />
           </FieldGroup>
-          <FieldGroup title={t('physics')}>
+          <FieldGroup title={t('physics')} action={<ScopeReset scope="physics" />}>
             <SliderField label={t('gravity')} value={scene.physics.gravity} min={1} max={30} step={0.1} format={(v) => `${v.toFixed(1)} m/s²`} onChange={(gravity) => setScene({ physics: { gravity } })} />
             <SliderField label={t('restitution')} value={scene.physics.restitution} min={0} max={1} onChange={(restitution) => setScene({ physics: { restitution } })} />
             <SliderField label={t('windDirection')} value={scene.physics.windDirection} min={0} max={360} step={1} format={(v) => `${v.toFixed(0)}°`} onChange={(windDirection) => setScene({ physics: { windDirection } })} />
@@ -195,7 +195,7 @@ export function Inspector() {
         </TabsContent>
 
         <TabsContent value="camera" className="space-y-6">
-          <FieldGroup title={t('cameraShow')}>
+          <FieldGroup title={t('cameraShow')} action={<ScopeReset scope="camera" />}>
             <SelectField
               label={t('cameraPreset')}
               value={scene.cameraPreset}
@@ -210,7 +210,7 @@ export function Inspector() {
         </TabsContent>
 
         <TabsContent value="fx" className="space-y-6">
-          <FieldGroup title={t('bloom')}>
+          <FieldGroup title={t('bloom')} action={<ScopeReset scope="fx" />}>
             <SliderField label={t('strength')} value={scene.bloom.strength} min={0} max={3} onChange={(strength) => setScene({ bloom: { strength } })} />
             <SliderField label={t('radius')} value={scene.bloom.radius} min={0} max={1} onChange={(radius) => setScene({ bloom: { radius } })} />
             <SliderField label={t('threshold')} value={scene.bloom.threshold} min={0} max={1} onChange={(threshold) => setScene({ bloom: { threshold } })} />

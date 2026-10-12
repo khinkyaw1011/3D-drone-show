@@ -15,33 +15,40 @@
   },
   "scene": {
     "sky": "dusk",
-    "ground": "water",
+    "ground": "field",
     "fog": 0.12,
     "autoOrbit": 0
   },
   "keyframes": [
     {
       "id": "wg1",
-      "name": "Flamingo",
+      "name": "Bird",
       "formation": {
-        "sourceId": "model",
+        "sourceId": "shape",
         "input": {
-          "model": "flamingo",
-          "rotation": 90,
-          "useColors": true,
-          "fill": 0.9
+          "shape": "bird",
+          "fill": 0.95
         }
       },
-      "hold": 7,
-      "spin": 10,
+      "hold": 8,
+      "spin": 8,
+      "motion": "flap",
+      "motionAmount": 0.75,
       "transition": {
         "duration": 4,
         "curve": "power3.inOut",
         "stagger": 0.35,
         "order": "radial"
       },
-      "motion": "flap",
-      "motionAmount": 0.75
+      "look": {
+        "colorMode": "gradient",
+        "colors": [
+          "#fff1c9",
+          "#ffd27a",
+          "#ff8fb1"
+        ],
+        "gradientAxis": "x"
+      }
     },
     {
       "id": "wg2",
@@ -50,21 +57,21 @@
         "sourceId": "model",
         "input": {
           "model": "parrot",
-          "rotation": 90,
+          "rotation": 0,
           "useColors": true,
-          "fill": 0.9
+          "fill": 0.95
         }
       },
-      "hold": 7,
-      "spin": -10,
+      "hold": 8,
+      "spin": -8,
+      "motion": "flap",
+      "motionAmount": 0.7,
       "transition": {
         "duration": 3.5,
         "curve": "expo.inOut",
         "stagger": 0.35,
         "order": "top-down"
-      },
-      "motion": "flap",
-      "motionAmount": 0.8
+      }
     },
     {
       "id": "wg3",
@@ -76,16 +83,16 @@
           "fill": 0.9
         }
       },
-      "hold": 7,
+      "hold": 8,
       "spin": 6,
+      "motion": "flap",
+      "motionAmount": 1,
       "transition": {
         "duration": 3.5,
         "curve": "power3.inOut",
         "stagger": 0.35,
         "order": "radial"
       },
-      "motion": "flap",
-      "motionAmount": 0.9,
       "look": {
         "colorMode": "gradient",
         "colors": [

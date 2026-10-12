@@ -23,7 +23,7 @@ import { SHOW_VOLUME } from '../formations/fit';
 import { LAUNCH } from './path';
 import type { CompiledFrame } from '../timeline/compile';
 import type { PhysicsEffect } from '../types';
-import { GROUND_Y, SIM_MODE, SPRING, type Simulator, type StorageNode, createBuffers, defaultSimParams, uploadFrame } from './Simulator';
+import { FLOOR_Y, GROUND_Y, SIM_MODE, SPRING, type Simulator, type StorageNode, createBuffers, defaultSimParams, uploadFrame } from './Simulator';
 
 const CENTER = vec3(...SHOW_VOLUME.center);
 const EFFECT_ID: Record<PhysicsEffect, number> = { drop: 0, burst: 1, wind: 2 };
@@ -46,6 +46,9 @@ export class GpuSimulator implements Simulator {
     time: uniform(0),
     effect: uniform(0),
     overrideOn: uniform(0),
+    /** 1 while show time is advancing, 0 while paused. */
+    live: uniform(1),
+    rate: uniform(0),
     spinStart: uniform(0),
     spinTarget: uniform(0),
     launch: uniform(0),
@@ -85,6 +88,9 @@ export class GpuSimulator implements Simulator {
       const to = spin(b.target.element(instanceIndex), u.spinTarget);
       const P = b.position.element(instanceIndex).xyz.toVar();
       const V = b.velocity.element(instanceIndex).xyz.toVar();
+      // Acceleration rides in the spare w of position / velocity / colour (no storage buffer to spare).
+      const before = vec3(V).toVar(); // a copy: `V` is about to change
+      const A = vec3(b.position.element(instanceIndex).w, b.velocity.element(instanceIndex).w, b.color.element(instanceIndex).w).toVar();
       const local = localProgress(start);
       const eased = smoothstep(0, 1, local);
       const seed = hash(instanceIndex);
@@ -120,12 +126,29 @@ export class GpuSimulator implements Simulator {
       const over = b.override.element(instanceIndex);
       const w = over.w.mul(u.overrideOn);
       P.assign(mix(P, over.xyz, w));
+      // Whatever the mode, a drone is never under the ground.
+      P.y.assign(max(P.y, FLOOR_Y));
 
-      b.position.element(instanceIndex).assign(vec4(P, 1));
-      b.velocity.element(instanceIndex).assign(vec4(V, 0));
-      b.color
-        .element(instanceIndex)
-        .assign(mix(b.startColor.element(instanceIndex), b.targetColor.element(instanceIndex), eased));
+      // While the show is paused nothing accelerates: keep velocity and attitude exactly as they were.
+      If(u.live.greaterThan(0.5), () => {
+        If(u.mode.equal(SIM_MODE.ease), () => {
+          // On a planned route acceleration is known exactly: the second derivative of the eased
+          // path. No frame-to-frame differencing, so the airframe's lean is perfectly steady.
+          const inFlight = step(0.0001, local).mul(step(local, 0.9999));
+          const localRate = u.rate.mul(u.stagger.add(1));
+          A.assign(clamp(to.sub(from).mul(float(6).sub(local.mul(12))).mul(localRate).mul(localRate).mul(inFlight), vec3(-12), vec3(12)));
+        }).Else(() => {
+          // Integrated flight (spring, physics): estimate it from the change in velocity, heavily smoothed.
+          A.assign(mix(A, clamp(V.sub(before).div(dt), vec3(-12), vec3(12)), 0.06));
+        });
+      }).Else(() => {
+        V.assign(before);
+      });
+
+      const rgb = mix(b.startColor.element(instanceIndex), b.targetColor.element(instanceIndex), eased).xyz;
+      b.position.element(instanceIndex).assign(vec4(P, A.x));
+      b.velocity.element(instanceIndex).assign(vec4(V, A.y));
+      b.color.element(instanceIndex).assign(vec4(rgb, A.z));
     })().compute(count);
 
     this.snapNode = Fn(() => {
@@ -135,11 +158,9 @@ export class GpuSimulator implements Simulator {
       const pose = flightPath(spin(start, u.spinStart), spin(b.target.element(instanceIndex), u.spinTarget), local).add(
         b.override.element(instanceIndex).xyz.mul(sin(local.mul(Math.PI))),
       );
-      b.position.element(instanceIndex).assign(vec4(pose, 1));
+      b.position.element(instanceIndex).assign(vec4(pose, 0));
       b.velocity.element(instanceIndex).assign(vec4(0));
-      b.color
-        .element(instanceIndex)
-        .assign(mix(b.startColor.element(instanceIndex), b.targetColor.element(instanceIndex), eased));
+      b.color.element(instanceIndex).assign(vec4(mix(b.startColor.element(instanceIndex), b.targetColor.element(instanceIndex), eased).xyz, 0));
     })().compute(count);
 
     this.kickNode = Fn(() => {
@@ -181,6 +202,7 @@ export class GpuSimulator implements Simulator {
   step(renderer: Renderer, dt: number, time: number) {
     const { u, params } = this;
     u.progress.value = params.progress;
+    u.rate.value = params.rate;
     u.mode.value = params.mode;
     u.stagger.value = params.stagger;
     u.swarm.value = params.swarm;
@@ -190,6 +212,7 @@ export class GpuSimulator implements Simulator {
     u.spinStart.value = params.spinStart;
     u.spinTarget.value = params.spinTarget;
     u.launch.value = params.launch;
+    u.live.value = dt > 0 ? 1 : 0;
     u.dt.value = Math.min(Math.max(dt, 1e-4), 1 / 20);
     u.time.value = time;
     if (this.pendingSnap) {

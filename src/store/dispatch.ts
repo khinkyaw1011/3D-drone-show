@@ -2,7 +2,8 @@ import { nanoid } from 'nanoid';
 import { type CommandHandlers, createDispatcher } from '@/engine/commands/commands';
 import { getSource } from '@/engine/formations/registry';
 import { BUILTIN_SHOWS } from '@/engine/presets/builtin';
-import { flightSchema, showSchema, droneLookSchema, keyframeSchema, sceneSettingsSchema } from '@/engine/presets/schema';
+import { resetScope } from '@/engine/presets/reset';
+import { flightSchema, droneLookSchema, keyframeSchema, sceneSettingsSchema } from '@/engine/presets/schema';
 import type { Keyframe, SceneSettings } from '@/engine/types';
 import { currentFleetLimits, history, mutate, useStudio } from './index';
 import { initialPlaybackSlice } from './slices/playback';
@@ -109,18 +110,10 @@ const handlers: CommandHandlers = {
     }),
   'settings.reset': ({ scope }) =>
     mutate((s) => {
-      // Defaults come straight from the schemas, so there is one source of truth for them.
-      const all = scope === 'all';
-      if (all || scope === 'look') {
-        s.show.look = droneLookSchema.parse({});
-        // Fleet size is part of "the drones" for anyone using the panel, so it resets with them.
-        s.show.droneCount = currentFleetLimits().clamp(showSchema.shape.droneCount.parse(undefined));
-        for (const kf of s.show.keyframes) delete kf.look;
-      }
-      if (all || scope === 'flight') s.show.flight = flightSchema.parse({});
-      if (all || scope === 'scene') s.show.scene = sceneSettingsSchema.parse({ fireworks: all ? undefined : s.show.scene.fireworks });
-      if (scope === 'fireworks') s.show.scene.fireworks = sceneSettingsSchema.parse({}).fireworks;
-      if (all) s.playback.speed = initialPlaybackSlice().playback.speed;
+      resetScope(s.show, scope);
+      // The default fleet may be more than this device can fly.
+      s.show.droneCount = currentFleetLimits().clamp(s.show.droneCount);
+      if (scope === 'all') s.playback.speed = initialPlaybackSlice().playback.speed;
     }),
   'scene.set': ({ patch }) =>
     mutate((s) => {

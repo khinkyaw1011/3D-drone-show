@@ -1,6 +1,7 @@
 import {
   abs,
   cos,
+  sign,
   cameraProjectionMatrix,
   cameraViewMatrix,
   clamp,
@@ -23,7 +24,7 @@ import {
 } from 'three/tsl';
 import { AdditiveBlending, DoubleSide, MeshBasicNodeMaterial, Vector3 } from 'three/webgpu';
 import { SHOW_VOLUME } from '../formations/fit';
-import type { SimBuffers } from '../sim/Simulator';
+import { FLOOR_Y, type SimBuffers } from '../sim/Simulator';
 
 export function createDroneUniforms() {
   return {
@@ -39,6 +40,9 @@ export function createDroneUniforms() {
     /** Formation movement: 0 none, 1 flap, 2 wave, 3 pulse, 4 sway; and its 0..1 strength. */
     motion: uniform(0),
     motionAmount: uniform(0),
+    /** The formation's current heading (its spin angle) and half wing-span, for motion in its own frame. */
+    motionYaw: uniform(0),
+    motionSpan: uniform(10),
     /** 0..1 LED brightness (dimmed during a "power off" drop). */
     power: uniform(1),
     /** World-space point drones shy away from (studio cursor toy) and how hard. */
@@ -64,9 +68,23 @@ export function droneWorldPosition(buffers: SimBuffers, u: DroneUniforms) {
   const rel = position.xyz.sub(CENTER);
   const is = (id: number) => float(1).sub(clamp(abs(u.motion.sub(id)), 0, 1));
 
-  // Flap: the farther from the vertical axis, the bigger the stroke (wing tips beat, the body barely moves).
-  const span = length(rel.xz);
-  const flap = vec3(0, sin(u.clock.mul(3.4).sub(span.mul(0.1))).mul(span).mul(0.3), 0);
+  // Flap: each wing rotates rigidly about a shoulder hinge that runs along the body, as a bird's
+  // does. Rigid rotation keeps every drone's distance to its neighbours. Worked out in the
+  // formation's own frame (span = x, body = z), so it stays correct while the formation spins.
+  const cy = cos(u.motionYaw);
+  const sy = sin(u.motionYaw);
+  const lx = rel.x.mul(cy).sub(rel.z.mul(sy));
+  const lz = rel.z.mul(cy).add(rel.x.mul(sy));
+  const hinge = u.motionSpan.mul(0.1);
+  const reach = max(abs(lx).sub(hinge), 0); // distance out along the wing
+  const beat = u.clock.mul(Math.PI * 2 * 0.7); // 0.7 wingbeats per second
+  // Downstroke quicker than upstroke (second harmonic), and the tips trail the shoulders a little.
+  const stroke = (phase: typeof beat) => sin(phase).add(sin(phase.mul(2)).mul(0.22)).mul(0.62);
+  const theta = stroke(beat.sub(reach.div(u.motionSpan).mul(0.9)));
+  const wingX = lx.sub(sign(lx).mul(reach).mul(float(1).sub(cos(theta))));
+  // The body reacts: it rises as the wings push down.
+  const wingY = reach.mul(sin(theta)).sub(stroke(beat).mul(u.motionSpan).mul(0.07));
+  const flap = vec3(wingX.mul(cy).add(lz.mul(sy)).sub(rel.x), wingY, lz.mul(cy).sub(wingX.mul(sy)).sub(rel.z));
   // Wave: a ripple travelling along the formation. Pulse: breathing. Sway: leaning like a tree in wind.
   const ripple = u.clock.mul(2.1).add(rel.x.mul(0.32));
   const wave = vec3(0, sin(ripple).mul(1.3), cos(ripple).mul(0.7));
@@ -80,7 +98,10 @@ export function droneWorldPosition(buffers: SimBuffers, u: DroneUniforms) {
   // Cursor push: displace radially from the pointer, falling off with distance.
   const away = position.xyz.sub(u.pushPoint);
   const push = normalize(away.add(vec3(0.0001))).mul(smoothstep(4.5, 0, length(away))).mul(u.pushStrength);
-  return position.xyz.add(movement).add(bob).add(push);
+  // Formation movement and the cursor push are drawn on top of the simulation, so the ground
+  // limit is applied once more here: nothing is ever drawn below it.
+  const drawn = position.xyz.add(movement).add(bob).add(push);
+  return vec3(drawn.x, max(drawn.y, FLOOR_Y), drawn.z);
 }
 
 /**

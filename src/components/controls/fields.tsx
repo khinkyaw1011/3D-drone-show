@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronRight, RotateCcw } from 'lucide-react';
+import { ChevronRight, type LucideIcon, RotateCcw } from 'lucide-react';
 import { type ReactNode, useId } from 'react';
 import { HexColorInput, HexColorPicker } from 'react-colorful';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -200,18 +200,22 @@ interface FieldGroupProps {
   action?: ReactNode;
   /** One line saying what the group controls. */
   description?: string;
+  icon?: LucideIcon;
   /** Render as a foldable section (long panels); `defaultOpen` picks the starting state. */
   fold?: boolean;
   defaultOpen?: boolean;
 }
 
 /** A titled stack of fields. With `fold` it becomes a native disclosure, so long panels stay scannable. */
-export function FieldGroup({ title, children, action, description, fold = false, defaultOpen = false }: FieldGroupProps) {
+export function FieldGroup({ title, children, action, description, icon: Icon, fold = false, defaultOpen = false }: FieldGroupProps) {
   if (!fold)
     return (
       <section className="space-y-3.5">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="eyebrow">{title}</h3>
+          <h3 className="eyebrow flex items-center gap-1.5">
+            {Icon && <Icon className="size-3.5 text-glow" aria-hidden="true" />}
+            {title}
+          </h3>
           {action}
         </div>
         {description && <p className="!mt-1 text-xs leading-snug text-muted-foreground">{description}</p>}
@@ -222,6 +226,7 @@ export function FieldGroup({ title, children, action, description, fold = false,
     <details open={defaultOpen} className="group rounded-lg border border-line bg-white/[0.02] open:bg-transparent">
       <summary className="flex cursor-pointer list-none items-start gap-2 rounded-lg px-3 py-2.5 hover:bg-white/[0.04] [&::-webkit-details-marker]:hidden">
         <ChevronRight className="mt-0.5 size-4 shrink-0 text-muted-foreground transition-transform duration-150 group-open:rotate-90" aria-hidden="true" />
+        {Icon && <Icon className="mt-0.5 size-4 shrink-0 text-glow" aria-hidden="true" />}
         <span className="min-w-0 flex-1">
           <h3 className="text-sm font-medium leading-tight text-paper">{title}</h3>
           {description && <span className="mt-0.5 block text-xs leading-snug text-muted-foreground">{description}</span>}

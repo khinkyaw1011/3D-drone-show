@@ -9,6 +9,8 @@ export type SimMode = (typeof SIM_MODE)[keyof typeof SIM_MODE];
 /** Live knobs the player sets every frame. Plain numbers; each simulator maps them to its own uniforms. */
 export interface SimParams {
   progress: number; // eased 0..1 transition progress
+  /** How fast `progress` is advancing, per second of show time. Lets acceleration be derived exactly. */
+  rate: number;
   mode: SimMode;
   stagger: number;
   swarm: number;
@@ -24,6 +26,7 @@ export interface SimParams {
 
 export const defaultSimParams = (): SimParams => ({
   progress: 1,
+  rate: 0,
   mode: SIM_MODE.ease,
   stagger: 0.3,
   swarm: 0.25,
@@ -110,6 +113,8 @@ export interface Simulator {
 }
 
 /** Ground height drones bounce on during physics moments. */
-export const GROUND_Y = 0.15;
+export const GROUND_Y = 0.34;
+/** Lowest a drone may ever be: resting on the pad. Enforced in every flight mode and again when drawing. */
+export const FLOOR_Y = 0.3;
 /** Shared spring constants so GPU and CPU paths feel the same. */
 export const SPRING = { stiffness: 14, damping: 5.5 } as const;

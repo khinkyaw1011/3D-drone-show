@@ -1,10 +1,10 @@
 'use client';
 
-import { ChevronDown, Clapperboard, ImageUp, Palette, Pause, Play, Repeat, Rocket, SkipBack, SkipForward, Sparkles, Wand2, Wind } from 'lucide-react';
+import { ChevronDown, Clapperboard, ImageUp, Palette, Pause, Play, Repeat, Rocket, SkipBack, SkipForward, Sparkles, Wand2, Wind, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type FormEvent, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { ColorSwatch, ResetButton, SelectField, SliderField } from '@/components/controls/fields';
+import { ColorSwatch, SelectField, SliderField } from '@/components/controls/fields';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SHAPES } from '@/engine/formations/sources/shape';
@@ -16,7 +16,8 @@ import { IMAGE_ACCEPT } from '@/lib/image';
 import { cn } from '@/lib/utils';
 import { useStudio } from '@/store';
 import { FleetStats } from './FleetStats';
-import { ColorSection, DroneSection, EnvironmentPicker, FireworksSection, FlightSection, SkySection, VenueSection } from './settings';
+import { VIEW_ICONS } from './icons';
+import { ColorSection, DroneSection, EnvironmentPicker, ScopeReset, FireworksSection, FlightSection, SkySection, VenueSection } from './settings';
 import { useShowActions } from './useShowActions';
 
 export const FLEET_COLORS = ['#ff5ca8', '#ff4d4d', '#ff9f43', '#ffd27a', '#5dff9b', '#7cf7e4', '#4d8dff', '#a46bff', '#ffffff'] as const;
@@ -168,21 +169,53 @@ export function QuickControls({ className }: { className?: string }) {
 
           <div className="scrollbar-thin max-h-[38svh] overflow-y-auto px-3.5 pb-4 pt-3.5 sm:px-4 lg:max-h-[calc(100svh-19rem)]">
             <TabsContent value="show" className="space-y-4">
-              <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin" role="group" aria-label={t('formations')}>
+              <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('formations')}>
                 {show.keyframes.map((kf, i) => (
-                  <Chip key={kf.id} active={i === playback.index} onClick={() => run({ type: 'playback.goTo', id: kf.id })}>
-                    {i + 1}. {kf.name}
-                  </Chip>
+                  <span
+                    key={kf.id}
+                    className={cn(
+                      'flex shrink-0 items-center rounded-full border border-line bg-white/[0.04] text-[0.8125rem] transition-colors duration-150',
+                      i === playback.index && 'border-glow/70 bg-glow/15',
+                    )}
+                  >
+                    <button
+                      type="button"
+                      aria-pressed={i === playback.index}
+                      className="rounded-l-full py-1.5 pl-3 pr-1.5 text-paper/80 hover:text-paper"
+                      onClick={() => run({ type: 'playback.goTo', id: kf.id })}
+                    >
+                      {i + 1}. {kf.name}
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={t('deleteFormation', { name: kf.name })}
+                      title={t('deleteFormation', { name: kf.name })}
+                      className="rounded-r-full py-1.5 pl-1 pr-2 text-muted-foreground hover:text-destructive"
+                      onClick={() => run({ type: 'keyframe.remove', id: kf.id })}
+                    >
+                      <X className="size-3.5" aria-hidden="true" />
+                    </button>
+                  </span>
                 ))}
               </div>
               <div role="group" aria-label={t('view')}>
                 <p className="mb-1.5 text-[0.8125rem] text-foreground/85">{t('view')}</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {CAMERA_PRESETS.map((preset) => (
-                    <Chip key={preset} active={show.scene.cameraPreset === preset} onClick={() => run({ type: 'scene.set', patch: { cameraPreset: preset } })}>
-                      {tOptions(`cameraShort.${preset}`)}
-                    </Chip>
-                  ))}
+                  {CAMERA_PRESETS.map((preset) => {
+                    const Icon = VIEW_ICONS[preset];
+                    return (
+                      <Chip
+                        key={preset}
+                        active={show.scene.cameraPreset === preset}
+                        title={tOptions(`camera.${preset}`)}
+                        className="flex items-center gap-1.5"
+                        onClick={() => run({ type: 'scene.set', patch: { cameraPreset: preset } })}
+                      >
+                        <Icon className="size-3.5" aria-hidden="true" />
+                        {tOptions(`cameraShort.${preset}`)}
+                      </Chip>
+                    );
+                  })}
                 </div>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
@@ -219,6 +252,8 @@ export function QuickControls({ className }: { className?: string }) {
                     value={prompt}
                     maxLength={40}
                     onChange={(e) => setPrompt(e.target.value)}
+                    // Enter also confirms a Japanese (IME) conversion: do not submit mid-composition.
+                    onKeyDown={(e) => e.key === 'Enter' && e.nativeEvent.isComposing && e.preventDefault()}
                     placeholder={t('promptPlaceholder')}
                     autoComplete="off"
                     className="h-10 min-w-0 flex-1 rounded-lg border border-input bg-black/30 px-3.5 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-cyan"
@@ -310,7 +345,7 @@ export function QuickControls({ className }: { className?: string }) {
 
             <div className="mt-4 flex items-center justify-between gap-2 border-t border-line pt-3">
               <span className="text-xs text-muted-foreground">{t('autosaved')}</span>
-              <ResetButton label={t('resetAll')} onClick={() => run({ type: 'settings.reset', scope: 'all' })} />
+              <ScopeReset scope="all" label={t('resetAll')} />
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
               {t('studioPitch')}{' '}

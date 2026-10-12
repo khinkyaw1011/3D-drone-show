@@ -103,7 +103,7 @@ export function CameraRig({ preset, autoOrbit, interactive, reducedMotion }: Cam
       ref={controls}
       makeDefault
       enabled={interactive}
-      minDistance={3}
+      minDistance={4}
       maxDistance={MAX_DISTANCE}
       smoothTime={reducedMotion ? 0.6 : 0.35}
       onStart={() => (lastInput.current = performance.now())}

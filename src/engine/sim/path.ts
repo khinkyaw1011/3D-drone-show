@@ -51,6 +51,19 @@ export function peakSpeed(distance: number, duration: number, stagger: number, l
   return (1.5 * (1 + stagger) * shaping * distance) / Math.max(duration, 1e-6);
 }
 
+/** Hardest a show drone accelerates in formation flight, in m/s^2 (a comfortable ~30 degree tilt). */
+export const MAX_ACCELERATION = 6;
+
+/** Peak acceleration (units/s^2) of the eased path: smoothstep peaks at 6 d / T^2, squeezed by stagger like the speed. */
+export function peakAcceleration(distance: number, duration: number, stagger: number, launch: boolean) {
+  const shaping = launch ? 1 / Math.min(LAUNCH.riseEnd, 1 - LAUNCH.slideStart) : 1;
+  return (6 * distance * ((1 + stagger) * shaping) ** 2) / Math.max(duration, 1e-6) ** 2;
+}
+
+/** Shortest duration that keeps the peak acceleration at or under `maxAcceleration` (units/s^2). */
+export const durationForAcceleration = (distance: number, maxAcceleration: number, stagger: number, launch: boolean) =>
+  Math.sqrt(peakAcceleration(distance, 1, stagger, launch) / Math.max(maxAcceleration, 1e-6));
+
 /** Shortest duration that keeps the peak speed at or under `maxSpeed` (units/s). */
 export const durationForSpeed = (distance: number, maxSpeed: number, stagger: number, launch: boolean) =>
   peakSpeed(distance, 1, stagger, launch) / Math.max(maxSpeed, 1e-6);

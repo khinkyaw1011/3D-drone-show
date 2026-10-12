@@ -53,7 +53,7 @@
         "sourceId": "model",
         "input": {
           "model": "flamingo",
-          "rotation": -55,
+          "rotation": 35,
           "useColors": true,
           "fill": 0.85
         }
@@ -74,7 +74,7 @@
         "gradientAxis": "y"
       },
       "spin": 12,
-      "motion": "flap",
+      "motion": "none",
       "motionAmount": 0.7
     },
     {

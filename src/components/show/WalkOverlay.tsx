@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { useImmersive } from '@/hooks/useImmersive';
 import { walkInput } from '@/lib/walkInput';
 import { dispatch } from '@/store/dispatch';
 import { useStudio } from '@/store';
@@ -64,18 +65,7 @@ export function WalkOverlay() {
   const t = useTranslations('Walk');
   const walking = useWalking();
 
-  useEffect(() => {
-    if (!walking) return;
-    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && exitWalk();
-    const { overflow } = document.documentElement.style;
-    document.documentElement.style.overflow = 'hidden';
-    window.scrollTo({ top: 0 });
-    window.addEventListener('keydown', onKey);
-    return () => {
-      document.documentElement.style.overflow = overflow;
-      window.removeEventListener('keydown', onKey);
-    };
-  }, [walking]);
+  useImmersive(walking, exitWalk);
 
   if (!walking) return null;
   return (

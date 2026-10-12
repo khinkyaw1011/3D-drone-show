@@ -32,12 +32,19 @@ Where the build departs from, or sharpens, the original spec, and why.
 - **Seeded sampling** so a show regenerates identically on every device.
 
 - **Every drone is a 3D airframe; the LED is a lamp on it.** There is no light-only mode. That makes drawing, not simulation, the limit, so fleet size is capped per device tier in one config (`FLEET` / `TIERS` in `engine/renderer/capabilities.ts`: 600 / 1,500 / 3,000) with a minimum of 100. A frame-rate watchdog lowers the ceiling at runtime (to 60 % of the current fleet) if the device averages under 24 fps. The schema still accepts up to 20,000 so older saved shows load; the count is clamped when flown.
+- **Attitude from physics.** A quadcopter can only accelerate by tilting its thrust, so each airframe leans by atan(a / g) in the direction it is accelerating. On planned routes acceleration is the exact second derivative of the eased path (no frame differencing, so the lean is steady); in spring / physics modes it is estimated from velocity and smoothed. It is stored in the spare `w` of the position, velocity and colour buffers. Transitions are also stretched so peak acceleration stays under `MAX_ACCELERATION` (6 m/s²), alongside the top-speed limit.
+- **Flap is a hinge, not a bend.** Each wing rotates rigidly about a shoulder axis along the body, in the formation's own frame (so it survives spin), with a quicker downstroke, trailing tips and a reacting body. Rigid rotation preserves neighbour spacing.
+- **Drones never go below the ground.** The simulators clamp height in every mode and the draw position is clamped again after formation movement.
+- **Ground lighting.** Grass and trees are lit by a shared scene light: the fleet's average colour (falling off with distance from the show, on faces turned towards it) and firework flashes. Burst timing comes from a CPU-side schedule shared with the firework shader, so the flashes are in step; their colour and position are approximated (one light for the whole field). There are no cast shadows.
+- **Wind** (direction, strength) bends the grass as a cantilever and sways the trees in the vertex shader, and is the same setting that pushes drones in wind moments.
 - **Paused means still.** The simulator and the shaders run on the player's show clock, which only advances while playing, and planned routes carry no noise. A paused fleet holds position exactly; only propellers and LED twinkle keep going.
 - **Formation movement** (flap, wave, pulse, sway) is a smooth displacement field applied in the vertex shader while a formation holds. Neighbours move together, but it is not part of route planning, so the separation figure does not cover it.
 
 ## Product
 
-- `/` is the live show with a control deck (requested), not the scroll-driven hero in the spec. `/studio` is the full editor on the same persisted show.
+- `/` is the live show with a control deck (requested), not the scroll-driven hero in the spec. It scrolls like a normal page: the canvas takes no pointer or wheel input until the visitor chooses "Explore in 3D" (or the Walk view), which pins the stage, locks page scroll and offers Exit / Esc.
+- Reset is declarative (`engine/presets/reset.ts`): a table of which show paths each feature owns drives both the reset and the "has this changed?" test that decides whether a reset button is shown.
+- Environments are plain `scene.set` patches (`engine/presets/environments.ts`); fireworks are off unless a show or the Festival environment turns them on. `/studio` is the full editor on the same persisted show.
 - Extra routes: `/gallery`, `/guide`, `/about`. Camera views added: spectator, first-person walk, close-up.
 - Default playback is 2× because real-speed lift-off takes 20–30 s; "Real time" is one notch away.
 - `react-hooks/immutability` is disabled for `src/components/canvas/**`: R3F mutates three.js objects every frame by design.
@@ -45,6 +52,7 @@ Where the build departs from, or sharpens, the original spec, and why.
 ## Not done / known gaps
 
 - Formation and preset *names* inside shows are data, not translated.
+- Measured in headless Chrome on the development Mac (frame limit off): 290–320 fps on every page with 800–1,400 drones, the 70k-blade field and fireworks; no horizontal overflow at 390 px or 1440 px; no console errors. That says nothing about phones or integrated GPUs, which were not tested.
 - Checked in headless Chrome during the build: every route in all three locales, WebGPU rendering, live fly-to, fireworks, and that the WebGL2 fallback (`?webgl`) loads without errors. **Not** exercised end to end: video export, Rapier physics moments in motion, the touch joystick, and frame rate on real phones or with 10k+ drones.
 - Path planning runs on the main thread (about 0.2–0.4 s for a 1,200-drone show).
 - State: every user action goes through `dispatch`, including interface state (`ui.set`). The one exception is `LiveShow`, which mirrors what the player reports (time, capabilities, device ceiling) into the store with `mutate`. Large fleets get fewer planner iterations.

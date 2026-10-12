@@ -5,7 +5,7 @@ import { fleetSpacing, relax } from './relax';
 /** The slice of sky a formation is fitted into (world units, y up, ground at 0). */
 export const SHOW_VOLUME = {
   center: [0, 17, 0] as Vec3,
-  size: [44, 24, 16] as Vec3,
+  size: [44, 24, 26] as Vec3,
 };
 
 export function computeBounds(positions: Float32Array): { min: Vec3; max: Vec3 } {

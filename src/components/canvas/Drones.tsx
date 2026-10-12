@@ -75,6 +75,8 @@ export function Drones({ player, look, power, spacing, pushToy = false }: Drones
     const motion = player.motion;
     uniforms.clock.value = player.motionTime;
     if (motion.kind !== 'none') uniforms.motion.value = MOTION_ID[motion.kind];
+    uniforms.motionYaw.value = motion.yaw;
+    uniforms.motionSpan.value = motion.span;
     uniforms.motionAmount.value += ((motion.kind === 'none' ? 0 : motion.amount) - uniforms.motionAmount.value) * Math.min(1, dt * 2.5);
 
     // Cursor push: intersect the pointer ray with a camera-facing plane through the show.

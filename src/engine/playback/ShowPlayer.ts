@@ -58,6 +58,8 @@ export class ShowPlayer {
   private timeScale = 1;
   /** Frame-by-frame export keeps the simulation integrating while the GSAP clock is paused. */
   private stepping = false;
+  private lastProgress = 0;
+  private spans = new WeakMap<CompiledFrame, number>();
   /** Seconds of show time: advances only while playing. Drives noise, hover drift and formation movement. */
   motionTime = 0;
   duration = 0;
@@ -85,7 +87,20 @@ export class ShowPlayer {
   get motion() {
     const kf = this.show?.keyframes[this.live?.index ?? Math.max(this.index, 0)];
     const formed = Math.min(1, Math.max(0, (this.sim.params.progress - 0.85) / 0.15));
-    return { kind: kf?.motion ?? 'none', amount: (kf?.motionAmount ?? 0) * formed };
+    const index = this.live?.index ?? Math.max(this.index, 0);
+    return { kind: kf?.motion ?? 'none', amount: (kf?.motionAmount ?? 0) * formed, yaw: this.sim.params.spinTarget, span: this.halfSpan(index) };
+  }
+  /** Half the formation's width across its own x axis (wing tip to centre line), cached per keyframe. */
+  private halfSpan(index: number): number {
+    const frame = this.compiled?.frames[index];
+    if (!frame) return 10;
+    let span = this.spans.get(frame);
+    if (span === undefined) {
+      span = 1;
+      for (let i = 0; i < frame.positions.length; i += 3) span = Math.max(span, Math.abs(frame.positions[i] - SHOW_VOLUME.center[0]));
+      this.spans.set(frame, span);
+    }
+    return span;
   }
   get segmentTimes() {
     return this.segments.map(({ start, transitionEnd, end }) => ({ start, transitionEnd, end }));
@@ -288,6 +303,16 @@ export class ShowPlayer {
     this.physicsActive = effect;
   }
 
+  /** How fast transition progress is advancing per second of show time, smoothed; the simulator derives acceleration from it. */
+  private trackRate(dt: number) {
+    const p = this.sim.params;
+    if (dt > 0) {
+      const instant = Math.max(0, p.progress - this.lastProgress) / dt;
+      p.rate += (Math.min(instant, 4) - p.rate) * 0.35;
+    }
+    this.lastProgress = p.progress;
+  }
+
   /** Advance the simulation one frame. Call from the render loop (or a fixed-step exporter). */
   update(renderer: Renderer, frameDt: number) {
     const { sim, show, compiled } = this;
@@ -307,6 +332,7 @@ export class ShowPlayer {
       p.spinStart = 0;
       p.spinTarget = this.live.spin;
       p.launch = 0;
+      this.trackRate(dt);
       sim.step(renderer, dt, elapsed);
       this.events.onTime?.(this.time, this.live.index);
       return;
@@ -358,6 +384,7 @@ export class ShowPlayer {
         }
       }
     }
+    this.trackRate(dt);
     sim.step(renderer, dt, elapsed);
     this.events.onTime?.(this.time, Math.max(this.index, 0));
   }

@@ -65,6 +65,7 @@ export function FormationPanel() {
             value={word}
             maxLength={40}
             onChange={(e) => setWord(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && e.nativeEvent.isComposing && e.preventDefault()}
             placeholder={t('wordPlaceholder')}
             autoComplete="off"
             className="min-w-0 flex-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-cyan"

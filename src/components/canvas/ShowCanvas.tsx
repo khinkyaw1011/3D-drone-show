@@ -35,11 +35,13 @@ export default function ShowCanvas({ className, paused = false, children, ...sta
   }, []);
 
   return (
-    <div className={cn('absolute inset-0 touch-none', className)}>
+    // Not interactive = the page scrolls straight through the show.
+    <div className={cn('absolute inset-0', stage.interactive === false ? 'pointer-events-none' : 'touch-none', className)}>
       <Canvas
         gl={(props) => createRenderer({ canvas: props.canvas as HTMLCanvasElement, forceWebGL })}
         dpr={mobile ? [1, 1.5] : [1, 2]}
-        camera={{ fov: 50, near: 0.3, far: 1200, position: [0, 1.7, 40] }}
+        // A tight depth range: thousands of small airframes need all the depth precision they can get.
+        camera={{ fov: 50, near: 1, far: 700, position: [0, 1.7, 40] }}
         frameloop={paused || !visible ? 'never' : 'always'}
         // R3F asks for PCFSoftShadowMap, which the WebGPU renderer no longer has; nothing here casts shadows.
         onCreated={({ gl }) => {

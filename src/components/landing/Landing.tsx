@@ -1,8 +1,8 @@
 'use client';
 
-import { ArrowDown, Rocket } from 'lucide-react';
+import { ArrowDown, Move3d, Rocket, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { FleetStats } from '@/components/show/FleetStats';
 import { LiveShow } from '@/components/show/LiveShow';
 import { QuickControls } from '@/components/show/QuickControls';
@@ -12,6 +12,7 @@ import { SiteFooter } from '@/components/site/SiteFooter';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { Button } from '@/components/ui/button';
 import { useHydrated } from '@/hooks/useHydrated';
+import { useImmersive } from '@/hooks/useImmersive';
 import { useInView } from '@/hooks/useInView';
 import { useIsDesktop } from '@/hooks/useMediaQuery';
 import { Link } from '@/i18n/navigation';
@@ -39,57 +40,78 @@ export function Landing() {
   const inView = useInView(stage);
   const walking = useWalking();
   const isDesktop = useIsDesktop();
-  const [started, setStarted] = useState(false);
-  // The headline steps aside once the fleet is up, so it never sits on top of the formation.
-  useEffect(() => {
-    const timer = setTimeout(() => setStarted(true), 9000);
-    return () => clearTimeout(timer);
-  }, []);
-
+  // The page scrolls like any page until the visitor chooses to step into the show.
+  const [exploring, setExploring] = useState(false);
+  const immersive = exploring || walking;
+  useImmersive(exploring && !walking, () => setExploring(false));
   const start = () => {
-    setStarted(true);
     void dispatch({ type: 'playback.seek', t: 0 }).then(() => dispatch({ type: 'playback.play' }));
   };
 
   return (
     <>
-      {!walking && <SiteHeader overlay />}
+      {!immersive && <SiteHeader overlay />}
       <main>
-        {/* Walking takes over the whole screen: the stage is pinned and the page behind cannot scroll. */}
+        {/* Exploring or walking takes over the whole screen; otherwise the stage is one section of a scrolling page. */}
         <section
           ref={stage}
           id="show"
           aria-label={t('stageLabel')}
-          className={cn('flex flex-col overflow-hidden', walking ? 'fixed inset-0 z-50' : 'relative h-svh min-h-[620px]')}
+          className={cn('flex flex-col overflow-hidden', immersive ? 'fixed inset-0 z-50' : 'relative h-svh min-h-[620px]')}
         >
           {/* On wide screens the deck sits on the right, so the show is centred in the space left of it. */}
-          {hydrated && <LiveShow paused={!inView && !walking} offsetX={isDesktop && !walking ? 210 : 0} />}
+          {hydrated && <LiveShow interactive={immersive} paused={!inView && !immersive} offsetX={isDesktop && !walking ? 150 : 0} />}
           {hydrated && <WalkOverlay />}
           <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-ink/80 to-transparent" />
 
           <div
             className={cn(
-              'pointer-events-none relative z-10 mx-auto mt-[clamp(72px,13vh,140px)] max-w-3xl px-5 text-center transition-all duration-700 ease-out lg:mr-[460px] xl:mx-auto',
-              (started || walking) && '-translate-y-3 opacity-0',
+              // The headline stays with the show; it only steps aside when the visitor enters the 3D view.
+              'pointer-events-none relative z-10 mx-auto mt-[clamp(72px,12vh,128px)] max-w-3xl px-5 text-center transition-all duration-500 ease-out',
+              'lg:mx-0 lg:ml-[max(1.5rem,calc((100vw-72rem)/2+1.5rem))] lg:max-w-[26rem] lg:px-0 lg:text-left',
+              "before:absolute before:-inset-x-10 before:-inset-y-8 before:-z-10 before:rounded-[3rem] before:bg-[radial-gradient(closest-side,rgb(7_8_13/0.78),transparent)] before:content-['']",
+              immersive && '-translate-y-3 opacity-0',
             )}
-            aria-hidden={started}
+            aria-hidden={immersive}
           >
             <p className="eyebrow text-glow">{t('eyebrow')}</p>
-            <h1 className="display mt-3 text-[clamp(2.6rem,9vw,6rem)] text-paper">{t('title')}</h1>
-            <p className="mx-auto mt-4 max-w-md text-base text-paper/75 sm:text-lg">{t('tagline')}</p>
-            <div className={cn('mt-7 flex flex-wrap items-center justify-center gap-3', !started && 'pointer-events-auto')}>
-              <Button size="lg" className="h-11 rounded-full px-6 text-sm" onClick={start} tabIndex={started ? -1 : 0}>
+            <h1 className="display mt-3 text-[clamp(2.6rem,9vw,5rem)] text-paper [text-shadow:0_2px_24px_rgb(7_8_13/0.9)] lg:text-6xl">{t('title')}</h1>
+            <p className="mx-auto mt-4 max-w-md text-base text-paper/80 [text-shadow:0_1px_12px_rgb(7_8_13/0.9)] sm:text-lg lg:mx-0">{t('tagline')}</p>
+            <div className={cn('mt-7 flex flex-wrap items-center justify-center gap-3 lg:justify-start', !immersive && 'pointer-events-auto')}>
+              <Button size="lg" className="h-11 rounded-full px-6 text-sm" onClick={start} tabIndex={immersive ? -1 : 0}>
                 <Rocket />
                 {t('start')}
               </Button>
-              <Button asChild variant="outline" size="lg" className="h-11 rounded-full bg-ink/40 px-6 text-sm backdrop-blur">
-                <Link href="/studio" tabIndex={started ? -1 : 0}>
-                  {t('openStudio')}
-                </Link>
+              <Button variant="outline" size="lg" className="h-11 rounded-full bg-ink/40 px-6 text-sm backdrop-blur" onClick={() => setExploring(true)} tabIndex={immersive ? -1 : 0}>
+                <Move3d />
+                {t('explore')}
               </Button>
             </div>
-            <p className="mt-4 text-xs text-paper/50">{t('hint')}</p>
+            <p className="mt-4 max-w-sm text-xs leading-relaxed text-paper/55 max-lg:mx-auto">{t('hint')}</p>
           </div>
+
+          {/* Always-available way in and out of the 3D view, and a cue that the page continues below. */}
+          {hydrated && !walking && (
+            <div className="absolute left-3 top-[4.25rem] z-20 sm:left-4">
+              <Button
+                size="sm"
+                variant="outline"
+                className="glass rounded-full px-3.5"
+                onClick={() => setExploring(!exploring)}
+                title={exploring ? undefined : t('exploreHint')}
+              >
+                {exploring ? <X /> : <Move3d />}
+                {exploring ? t('exitExplore') : t('explore')}
+              </Button>
+              {exploring && <p className="mt-2 max-w-[15rem] text-xs leading-snug text-paper/60">{t('exploreHint')}</p>}
+            </div>
+          )}
+          {!immersive && (
+            <a href="#gallery" className="absolute bottom-3 left-1/2 z-10 hidden -translate-x-1/2 items-center gap-1.5 text-xs text-paper/55 transition-colors hover:text-paper lg:flex">
+              <ArrowDown className="size-3.5" />
+              {t('scrollCue')}
+            </a>
+          )}
 
           {/* Bottom sheet on phones, side panel on wide screens: the sky stays clear either way. */}
           <div className={cn('relative z-20 mt-auto w-full px-3 pb-3 sm:px-4 sm:pb-4 lg:absolute lg:bottom-auto lg:right-4 lg:top-[4.5rem] lg:mt-0 lg:w-[420px] lg:p-0', walking && 'hidden')}>
@@ -102,7 +124,6 @@ export function Landing() {
           <div className="mt-10">
             <ShowGallery
               onFly={(show) => {
-                setStarted(true);
                 void dispatch({ type: 'preset.apply', presetId: show.id });
                 stage.current?.scrollIntoView({ behavior: 'smooth' });
               }}

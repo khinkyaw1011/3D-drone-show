@@ -7,10 +7,12 @@ import { floor, mx_cell_noise_float, normalLocal, positionWorld, smoothstep, ste
 import { padLayout } from '@/engine/formations/fit';
 import { seededRng } from '@/engine/formations/sample';
 import { FIREWORK_COUNT, FIREWORK_SHELLS, FIREWORK_STYLE, createFireworksMaterial } from '@/engine/materials/fireworks';
+import type { SceneLight } from '@/engine/materials/lighting';
 import { createSkyMaterial, horizonColor } from '@/engine/materials/sky';
 import { createBeamMaterial, createGroundGlowMaterial } from '@/engine/materials/venue';
 import { createWaterMaterial } from '@/engine/materials/water';
 import type { QualityTier, SceneSettings } from '@/engine/types';
+import { Field } from './Field';
 
 /** Gradient sky dome with TSL stars and aurora. */
 export function Sky({ scene }: { scene: SceneSettings }) {
@@ -202,9 +204,10 @@ export function LaunchPad({ count }: { count: number }) {
   );
 }
 
-/** Ground: reflective water, a city skyline over dark ground, or nothing. */
-export function Ground({ scene, tier }: { scene: SceneSettings; tier: QualityTier }) {
+/** Ground: a meadow, reflective water, a city skyline over water, or nothing. */
+export function Ground({ scene, tier, count, light }: { scene: SceneSettings; tier: QualityTier; count: number; light: SceneLight }) {
   if (scene.ground === 'none') return null;
+  if (scene.ground === 'field') return <Field scene={scene} tier={tier} count={count} light={light} />;
   return (
     <>
       <Water scene={scene} tier={tier} />

@@ -5,6 +5,7 @@ import { SHOW_VOLUME, fitToVolume, groundGrid } from '../formations/fit';
 import { launchDelays } from '../formations/order';
 import { generateFormation, listSources } from '../formations/registry';
 import { bake } from '../formations/sources/baked';
+import { FIREWORK_RISE, FIREWORK_SCHEDULE, averageColor, burstLight } from '../materials/lighting';
 import { ShowPlayer } from '../playback/ShowPlayer';
 import { BUILTIN_SHOWS } from '../presets/builtin';
 import { ENVIRONMENTS, matchEnvironment } from '../presets/environments';
@@ -74,8 +75,8 @@ describe('formation sources', () => {
 });
 
 describe('show schema', () => {
-  it('ships eight valid built-in shows at the current version', () => {
-    expect(BUILTIN_SHOWS).toHaveLength(8);
+  it('ships nine valid built-in shows at the current version', () => {
+    expect(BUILTIN_SHOWS).toHaveLength(9);
     for (const show of BUILTIN_SHOWS) {
       expect(showSchema.safeParse(show).success, show.name).toBe(true);
       expect(show.version).toBe(SHOW_VERSION);
@@ -188,7 +189,7 @@ describe('player', () => {
     const { player } = stubPlayer();
     player.load(show, compileShow(show, [await generateFormation('shape', { shape: 'sphere' }, { count: 200 })]));
     player.update(null as never, 0);
-    expect(player.motion).toEqual({ kind: 'flap', amount: 0 });
+    expect(player.motion).toMatchObject({ kind: 'flap', amount: 0 });
     player.seek(player.duration - 0.01);
     player.update(null as never, 0);
     expect(player.motion.amount).toBeCloseTo(0.8);
@@ -223,5 +224,21 @@ describe('environment presets', () => {
       expect(matchEnvironment(scene), id).toBe(id);
     }
     expect(matchEnvironment({ ...base, ambient: 0.777 })).toBeNull();
+  });
+});
+
+describe('scene lighting', () => {
+  it('flashes only around a burst, and only for shells that are firing', () => {
+    expect(burstLight(12.3, 0)).toBe(0);
+    const { period, offset } = FIREWORK_SCHEDULE[0];
+    const at = (phase: number) => (phase - offset + 1) * period; // time at which shell 0 is at `phase`
+    expect(burstLight(at(FIREWORK_RISE * 0.5), 1)).toBe(0); // still climbing
+    expect(burstLight(at(FIREWORK_RISE + 0.001), 1)).toBeGreaterThan(0.9); // just broke
+    expect(burstLight(at(0.95), 1)).toBe(0); // long faded
+  });
+
+  it('averages a formation to its colour', () => {
+    const red = averageColor(Float32Array.from({ length: 300 }, (_, i) => (i % 3 === 0 ? 1 : 0)));
+    expect([red.r, red.g, red.b]).toEqual([1, 0, 0]);
   });
 });
