@@ -39,6 +39,7 @@ const handlers: CommandHandlers = {
       id: nanoid(8),
       name: name ?? source.describe(parsed),
       formation: { sourceId, input: parsed },
+      custom: true,
       // Solid formations turn slowly by default so their depth reads, as on a real show.
       spin: VOLUMETRIC.has(sourceId) ? 8 : 0,
     });

@@ -137,24 +137,25 @@ describe('commands', () => {
   });
 });
 
-describe('player', () => {
-  /** A simulator that only records what it was asked to do. */
-  function stubPlayer() {
-    const steps: { dt: number; time: number }[] = [];
-    const sim = {
-      kind: 'cpu' as const,
-      count: 200,
-      buffers: {} as never,
-      params: defaultSimParams(),
-      setFrame: () => {},
-      kick: () => {},
-      setOverride: () => {},
-      step: (_renderer: unknown, dt: number, time: number) => void steps.push({ dt, time }),
-      dispose: () => {},
-    };
-    return { player: new ShowPlayer(sim), steps };
-  }
+/** A simulator that only records what it was asked to do. */
+function stubPlayer() {
+  const steps: { dt: number; time: number }[] = [];
+  const frames: boolean[] = []; // one entry per setFrame call: was it a snap?
+  const sim = {
+    kind: 'cpu' as const,
+    count: 200,
+    buffers: {} as never,
+    params: defaultSimParams(),
+    setFrame: (_from: unknown, _to: unknown, snap: boolean) => void frames.push(snap),
+    kick: () => {},
+    setOverride: () => {},
+    step: (_renderer: unknown, dt: number, time: number) => void steps.push({ dt, time }),
+    dispose: () => {},
+  };
+  return { player: new ShowPlayer(sim), steps, frames };
+}
 
+describe('player', () => {
   it('holds the fleet dead still while paused, and resumes where it left off', async () => {
     const show = parseShow({
       id: 'p',
@@ -240,5 +241,65 @@ describe('scene lighting', () => {
   it('averages a formation to its colour', () => {
     const red = averageColor(Float32Array.from({ length: 300 }, (_, i) => (i % 3 === 0 ? 1 : 0)));
     expect([red.r, red.g, red.b]).toEqual([1, 0, 0]);
+  });
+});
+
+describe('re-forming a fleet that is already flying', () => {
+  const twoShapes = (extra: object = {}) =>
+    parseShow({
+      id: 'r',
+      name: 'R',
+      droneCount: 200,
+      keyframes: [
+        { id: 'a', spin: 20, hold: 20, formation: { sourceId: 'shape', input: { shape: 'sphere' } } },
+        { id: 'b', formation: { sourceId: 'shape', input: { shape: 'cube' } } },
+      ],
+      ...extra,
+    });
+  const compileFor = async (show: ReturnType<typeof twoShapes>) =>
+    compileShow(show, await Promise.all(show.keyframes.map((k) => generateFormation(k.formation.sourceId, k.formation.input, { count: 200 }))));
+
+  /** A player holding the first formation, a few seconds into its hold. */
+  async function holding() {
+    const stub = stubPlayer();
+    const show = twoShapes();
+    stub.player.load(show, await compileFor(show));
+    stub.player.seek(stub.player.segmentTimes[0].transitionEnd + 3);
+    stub.player.update(null as never, 0);
+    return { ...stub, show };
+  }
+
+  it('does not start a flight when only colours changed', async () => {
+    const { player, frames, show } = await holding();
+    const [time, yaw, calls] = [player.time, player.motion.yaw, frames.length];
+    const recoloured = twoShapes({ look: { ...show.look, colorMode: 'solid', colors: ['#ff0000'] } });
+    player.load(recoloured, await compileFor(recoloured));
+    player.update(null as never, 0);
+    expect(player.flying).toBe(false);
+    expect(player.time).toBeCloseTo(time);
+    expect(player.motion.yaw).toBeCloseTo(yaw);
+    expect(frames.slice(calls)).toEqual([false]); // data swapped under the drones, nobody teleported
+    player.dispose();
+  });
+
+  it('starts exactly one flight when a new formation is added and flown to', async () => {
+    const { player, frames, show } = await holding();
+    const calls = frames.length;
+    const longer = { ...show, keyframes: [...show.keyframes, { ...show.keyframes[1], id: 'c', formation: { sourceId: 'shape', input: { shape: 'star' } } }] };
+    player.load(longer, await compileFor(longer), 2);
+    expect(player.flying).toBe(true);
+    expect(frames.slice(calls)).toEqual([false]);
+    player.dispose();
+  });
+
+  it('keeps a spinning formation at the same angle when it re-forms in place', async () => {
+    const { player } = await holding();
+    const yaw = player.motion.yaw;
+    expect(yaw).toBeGreaterThan(0.5);
+    player.flyTo(0);
+    player.update(null as never, 0);
+    expect(player.flying).toBe(true);
+    expect(player.motion.yaw).toBeCloseTo(yaw, 3);
+    player.dispose();
   });
 });

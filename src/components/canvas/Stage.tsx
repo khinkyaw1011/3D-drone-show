@@ -119,8 +119,23 @@ export function Stage({
 
   const loaded = !!player && !!compiled && !!compiledShow && compiled.count === player.sim.count;
 
+  // Only act on fly-to / seek requests made while this stage is mounted (the store may hold an older one).
+  const handledSeek = useRef(seek?.nonce ?? 0);
+  /** A not-yet-handled request to fly to a formation that this compile contains. */
+  const pendingFlight = () => {
+    if (!seek || seek.nonce === handledSeek.current || seek.keyframe === undefined) return undefined;
+    const wanted = show.keyframes[seek.keyframe];
+    return wanted && compiledShow?.keyframes[seek.keyframe]?.id === wanted.id ? seek.keyframe : undefined;
+  };
+
+  // A new compile and the flight it was made for are handed to the player together, so adding a
+  // formation starts exactly one flight (never "re-form the old one, then fly to the new one").
   useEffect(() => {
-    if (loaded) player.load(compiledShow, compiled);
+    if (!loaded) return;
+    const flyTo = pendingFlight();
+    if (flyTo !== undefined) handledSeek.current = seek!.nonce;
+    player.load(compiledShow, compiled, flyTo);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runs per compile; the seek is read, not tracked
   }, [loaded, player, compiled, compiledShow]);
 
   useEffect(() => {
@@ -133,19 +148,17 @@ export function Stage({
 
   useEffect(() => player?.refresh(show), [player, show]);
 
-  // Only act on seek requests made while this stage is mounted (the store may hold an older one).
-  const handledSeek = useRef(seek?.nonce ?? 0);
+  // Requests that need no new compile: clicking an existing formation, or scrubbing the timeline.
   useEffect(() => {
     if (!player || !loaded || !seek || seek.nonce === handledSeek.current) return;
     if (seek.keyframe !== undefined) {
-      // A freshly added formation is still being generated: wait for the compile that contains it,
-      // then fly there live from the fleet's current positions.
-      const target = show.keyframes[seek.keyframe];
-      if (!target || compiledShow?.keyframes[seek.keyframe]?.id !== target.id) return;
-      player.flyTo(seek.keyframe);
+      const flyTo = pendingFlight();
+      if (flyTo === undefined) return; // its formation is still being generated; the compile will bring it
+      player.flyTo(flyTo);
     } else if (seek.t !== undefined) player.seek(seek.t); // a time is scrubbed to, like film
     handledSeek.current = seek.nonce;
-  }, [player, loaded, seek, show.keyframes, compiledShow]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- acts on new requests only
+  }, [player, loaded, seek]);
 
   // Light the show throws on the ground: the fleet's average colour, and firework flashes in step with the bursts.
   const light = useMemo(() => createSceneLight(), []);

@@ -181,20 +181,23 @@ export function QuickControls({ className }: { className?: string }) {
                     <button
                       type="button"
                       aria-pressed={i === playback.index}
-                      className="rounded-l-full py-1.5 pl-3 pr-1.5 text-paper/80 hover:text-paper"
+                      className={cn('rounded-l-full py-1.5 pl-3 text-paper/80 hover:text-paper', kf.custom ? 'pr-1.5' : 'rounded-r-full pr-3')}
                       onClick={() => run({ type: 'playback.goTo', id: kf.id })}
                     >
                       {i + 1}. {kf.name}
                     </button>
-                    <button
-                      type="button"
-                      aria-label={t('deleteFormation', { name: kf.name })}
-                      title={t('deleteFormation', { name: kf.name })}
-                      className="rounded-r-full py-1.5 pl-1 pr-2 text-muted-foreground hover:text-destructive"
-                      onClick={() => run({ type: 'keyframe.remove', id: kf.id })}
-                    >
-                      <X className="size-3.5" aria-hidden="true" />
-                    </button>
+                    {/* Only formations the visitor added can be removed here; the show's own stay. */}
+                    {kf.custom && (
+                      <button
+                        type="button"
+                        aria-label={t('deleteFormation', { name: kf.name })}
+                        title={t('deleteFormation', { name: kf.name })}
+                        className="rounded-r-full py-1.5 pl-1 pr-2 text-muted-foreground hover:text-destructive"
+                        onClick={() => run({ type: 'keyframe.remove', id: kf.id })}
+                      >
+                        <X className="size-3.5" aria-hidden="true" />
+                      </button>
+                    )}
                   </span>
                 ))}
               </div>

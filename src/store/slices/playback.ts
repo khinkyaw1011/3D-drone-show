@@ -21,5 +21,5 @@ export interface PlaybackSlice {
 }
 
 export const initialPlaybackSlice = (): PlaybackSlice => ({
-  playback: { playing: true, loop: true, speed: 2, time: 0, duration: 0, index: 0, seek: null, stats: null },
+  playback: { playing: true, loop: true, speed: 1, time: 0, duration: 0, index: 0, seek: null, stats: null },
 });

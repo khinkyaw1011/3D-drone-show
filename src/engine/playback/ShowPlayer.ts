@@ -14,6 +14,13 @@ const DEG = Math.PI / 180;
 const MIN_FLY_SECONDS = 1.2;
 const FLY_STAGGER = 0.25;
 
+/** Two typed arrays hold the same numbers. */
+function sameValues(a: Float32Array, b: Float32Array): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
+}
+
 export interface PhysicsMoment {
   effect: PhysicsEffect;
   active: boolean;
@@ -76,6 +83,10 @@ export class ShowPlayer {
   get playing() {
     return this.live ? !this.live.tween.paused() : !!this.clock && !this.clock.paused();
   }
+  /** True while a live re-form (`flyTo`, or a changed formation) is in the air. */
+  get flying() {
+    return !!this.live;
+  }
   get cursor(): TimelineCursor | null {
     return locate(this.segments, this.time);
   }
@@ -107,15 +118,26 @@ export class ShowPlayer {
   }
 
   /**
-   * Swap in a (re)compiled show. If a fleet is already in the air it flies from where it is
-   * into the new show (same show: the formation it was on; another show: its first formation).
+   * Swap in a (re)compiled show without disturbing a fleet that is already in the air:
+   *  - nothing on stage moved (a colour, a later formation, a setting changed): the new data
+   *    is swapped in under the drones; no flight is started and the playhead stays put;
+   *  - the formation on stage changed shape, or `flyTo` names another one: exactly one
+   *    flight, planned from where every drone is right now;
+   *  - a different show: one flight into its first formation.
    */
-  load(show: Show, compiled: CompiledShow) {
-    const pose = this.compiled && this.compiled.count === compiled.count ? this.capturePose() : null;
+  load(show: Show, compiled: CompiledShow, flyTo?: number) {
     const sameShow = this.show?.id === show.id;
     const time = this.time;
     const wasPlaying = this.playing || this.wantsPlay;
     const previousIndex = this.live?.index ?? this.index;
+    const previousStart = this.segments[previousIndex]?.start ?? 0;
+    const airborne = !!this.loaded && this.compiled?.count === compiled.count && previousIndex >= 0;
+    const target = flyTo ?? (sameShow ? Math.min(Math.max(previousIndex, 0), compiled.frames.length - 1) : 0);
+    const frame: CompiledFrame | undefined = compiled.frames[target];
+    const staying = airborne && sameShow && target === previousIndex;
+    // Same formation, every drone already assigned the same place: there is nothing to fly.
+    const settled = staying && !this.live && !!frame && sameValues(frame.positions, this.loaded!.to.positions);
+    const pose = airborne && !settled ? this.capturePose() : null;
     this.endLiveFlight();
     this.clock?.kill();
 
@@ -136,11 +158,21 @@ export class ShowPlayer {
       } else this.events.onEnd?.();
     });
     this.wantsPlay = wasPlaying;
-    this.index = -1;
+    // Keep the playhead at the same moment of the formation on stage, even if earlier ones changed length.
+    const segment = this.segments[target];
+    const resumeAt = segment ? Math.min(segment.start + (time - previousStart), segment.end - 1e-3) : 0;
 
-    const target = sameShow ? Math.min(Math.max(previousIndex, 0), compiled.frames.length - 1) : 0;
-    if (pose && compiled.frames[target] && previousIndex >= 0) {
-      this.startLiveFlight(pose, target);
+    if (settled && frame) {
+      // Same start, same targets, new data (colours, timing): continue exactly where we were.
+      this.setFrame(this.loaded!.from, frame, false);
+      this.index = previousIndex;
+      this.clock.time(Math.max(resumeAt, 0));
+      if (wasPlaying) this.clock.play();
+      return;
+    }
+    this.index = -1;
+    if (pose && frame) {
+      this.startLiveFlight(pose, target, staying ? resumeAt : undefined);
       return;
     }
     this.forceSnap = true;
@@ -192,7 +224,9 @@ export class ShowPlayer {
   /** Re-form into keyframe `index` from the fleet's current positions, then carry on with the show from there. */
   flyTo(index: number) {
     if (!this.compiled?.frames[index]) return;
-    this.startLiveFlight(this.capturePose(), index);
+    // Re-forming the formation already on stage picks up at the same moment, so its rotation does not jump.
+    const staying = index === (this.live?.index ?? this.index);
+    this.startLiveFlight(this.capturePose(), index, staying ? this.time : undefined);
   }
 
   /** Where every drone is right now (and its colour), rebuilt on the CPU from the loaded transition. */
@@ -236,7 +270,13 @@ export class ShowPlayer {
     return { positions, colors, ...blank };
   }
 
-  private startLiveFlight(pose: CompiledFrame, index: number) {
+  /**
+   * Fly from `pose` into keyframe `index`. The playhead is parked where the show should carry on
+   * afterwards: the moment the formation is fully formed, or `resumeAt` when re-forming the
+   * formation already on stage. The formation's rotation is taken at that same moment, so a
+   * spinning formation never snaps back to an earlier angle.
+   */
+  private startLiveFlight(pose: CompiledFrame, index: number, resumeAt?: number) {
     const { show, compiled, clock } = this;
     const segment = this.segments[index];
     if (!show || !compiled || !clock || !segment) return;
@@ -258,7 +298,8 @@ export class ShowPlayer {
 
     // Park the playhead where this formation is fully formed; the show resumes from there.
     clock.pause();
-    clock.time(segment.transitionEnd);
+    const arriveAt = resumeAt === undefined ? segment.transitionEnd : Math.min(Math.max(resumeAt, segment.transitionEnd), segment.end - 1e-3);
+    clock.time(arriveAt);
     const state = { progress: 0 };
     const tween = gsap.to(state, {
       progress: 1,
@@ -275,7 +316,7 @@ export class ShowPlayer {
       index,
       state,
       tween,
-      spin: show.keyframes[index].spin * DEG * (segment.transitionEnd - segment.start),
+      spin: show.keyframes[index].spin * DEG * (arriveAt - segment.start),
       stats: plan.stats,
     };
   }

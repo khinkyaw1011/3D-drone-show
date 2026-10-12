@@ -114,6 +114,8 @@ export const keyframeSchema = z.object({
   name: z.string().default('Formation'),
   formation: z.object({ sourceId: z.string(), input: z.unknown() }),
   hold: z.number().min(0).max(30).default(2.5),
+  /** Added by the visitor (typed, picked or uploaded), as opposed to part of the show it came with. */
+  custom: z.boolean().default(false),
   motion: z.enum(MOTIONS).default('none'),
   motionAmount: z.number().min(0).max(1).default(0.5),
   /** Degrees per second the formation turns about the vertical axis, like a hologram on a turntable. */
