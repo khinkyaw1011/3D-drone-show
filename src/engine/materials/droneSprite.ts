@@ -23,8 +23,8 @@ import {
   vec4,
 } from 'three/tsl';
 import { AdditiveBlending, DoubleSide, MeshBasicNodeMaterial, Vector3 } from 'three/webgpu';
-import { SHOW_VOLUME } from '../formations/fit';
-import { FLOOR_Y, type SimBuffers } from '../sim/Simulator';
+import { PAD_SURFACE, SHOW_VOLUME } from '../formations/fit';
+import type { SimBuffers } from '../sim/Simulator';
 
 export function createDroneUniforms() {
   return {
@@ -43,6 +43,10 @@ export function createDroneUniforms() {
     /** The formation's current heading (its spin angle) and half wing-span, for motion in its own frame. */
     motionYaw: uniform(0),
     motionSpan: uniform(10),
+    /** How much night-sky light falls on the airframes (they emit none of their own). */
+    ambient: uniform(0.3),
+    /** 0 = realistic lamp lighting, 1 = the whole airframe glows in its LED colour. */
+    bodyGlow: uniform(0.3),
     /** 0..1 LED brightness (dimmed during a "power off" drop). */
     power: uniform(1),
     /** World-space point drones shy away from (studio cursor toy) and how hard. */
@@ -55,6 +59,9 @@ export function createDroneUniforms() {
 export type DroneUniforms = ReturnType<typeof createDroneUniforms>;
 
 const CENTER = vec3(...SHOW_VOLUME.center);
+/** Where the LED hangs under the hub, and how far the skids reach below it, in airframe units. */
+export const LED_DROP = 0.13;
+export const SKID_DROP = 0.21;
 export const MOTION_ID = { none: 0, flap: 1, wave: 2, pulse: 3, sway: 4 } as const;
 
 /**
@@ -99,9 +106,10 @@ export function droneWorldPosition(buffers: SimBuffers, u: DroneUniforms) {
   const away = position.xyz.sub(u.pushPoint);
   const push = normalize(away.add(vec3(0.0001))).mul(smoothstep(4.5, 0, length(away))).mul(u.pushStrength);
   // Formation movement and the cursor push are drawn on top of the simulation, so the ground
-  // limit is applied once more here: nothing is ever drawn below it.
+  // limit is applied once more here. A landed drone stands on its skids: its centre rests one
+  // skid height above the deck, whatever size the airframes are drawn at.
   const drawn = position.xyz.add(movement).add(bob).add(push);
-  return vec3(drawn.x, max(drawn.y, FLOOR_Y), drawn.z);
+  return vec3(drawn.x, max(drawn.y, u.body.mul(SKID_DROP).add(PAD_SURFACE)), drawn.z);
 }
 
 /**
@@ -113,7 +121,8 @@ export function createDroneMaterial(buffers: SimBuffers, u: DroneUniforms = crea
   const color = buffers.color.toAttribute();
   const seed = hash(instanceIndex);
   const world = droneWorldPosition(buffers, u);
-  const viewCenter = cameraViewMatrix.mul(vec4(world, 1));
+  // The glow belongs to the lamp, which hangs under the hub, not to the middle of the airframe.
+  const viewCenter = cameraViewMatrix.mul(vec4(world.sub(vec3(0, u.body.mul(LED_DROP), 0)), 1));
   const viewVelocity = cameraViewMatrix.mul(vec4(velocity.xyz, 0)).xy;
   const speed = length(viewVelocity);
   const dir = viewVelocity.div(max(speed, 0.0001)).mul(smoothstep(0.02, 0.4, speed)).add(vec2(0.0001, 0));

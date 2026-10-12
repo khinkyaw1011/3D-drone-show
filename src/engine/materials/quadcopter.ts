@@ -1,29 +1,32 @@
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { attribute, cameraPosition, cos, float, hash, instanceIndex, length, mix, normalLocal, positionLocal, sin, smoothstep, time, vec3 } from 'three/tsl';
+import { abs, attribute, cameraPosition, cos, float, hash, instanceIndex, length, max, mix, normalLocal, normalize, positionLocal, sin, smoothstep, step, time, vec3 } from 'three/tsl';
 import { BoxGeometry, BufferAttribute, type BufferGeometry, CircleGeometry, CylinderGeometry, DoubleSide, MeshBasicNodeMaterial, SphereGeometry } from 'three/webgpu';
 import { UNIT_METERS } from '../sim/path';
 import type { SimBuffers } from '../sim/Simulator';
-import { type DroneUniforms, droneWorldPosition } from './droneSprite';
+import { type DroneUniforms, LED_DROP, droneWorldPosition } from './droneSprite';
 
 /** Airframes fade out between these camera distances (world units); beyond that only the LEDs remain. */
 export const AIRFRAME_FADE = { near: 170, far: 230 };
 
 const ARM = 0.42; // motor distance from the hub, in model units (the model is ~1 unit across)
 const PART = { frame: 0, led: 1, motor: 2 } as const;
+/** `color.z`: how a part takes light. Solid parts are lit on the side facing the lamp; thin ones from either side. */
+const SURFACE = { solid: 0, blade: 0.5, disc: 1 } as const;
 
 /**
  * Tag a part's vertices:
  *  - `color.x`  1 on the LED, 0 elsewhere (drives emissive colour)
  *  - `color.y`  shade tint for the part (0 dark carbon .. 1 pale)
+ *  - `color.z`  SURFACE: solid, propeller blade, or the translucent blur of a spinning propeller
  *  - `rotor`    xz of the motor a propeller turns about + spin direction (0 = does not spin)
  */
-function part(geometry: BufferGeometry, kind: number, tint = 0, rotor: [number, number, number] = [0, 0, 0]): BufferGeometry {
+function part(geometry: BufferGeometry, kind: number, tint = 0, rotor: [number, number, number] = [0, 0, 0], surface: number = SURFACE.solid): BufferGeometry {
   const g = geometry.index ? geometry.toNonIndexed() : geometry;
   const count = g.attributes.position.count;
   const color = new Float32Array(count * 3);
   const spin = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
-    color.set([kind === PART.led ? 1 : 0, tint, 0], i * 3);
+    color.set([kind === PART.led ? 1 : 0, tint, surface], i * 3);
     spin.set(rotor, i * 3);
   }
   g.setAttribute('color', new BufferAttribute(color, 3));
@@ -42,7 +45,7 @@ export function createQuadcopterGeometry(): BufferGeometry {
   const parts: BufferGeometry[] = [
     part(new SphereGeometry(0.17, 8, 5).scale(1, 0.55, 1.25).translate(0, 0.03, 0), PART.frame, 0.25), // canopy
     part(new BoxGeometry(0.2, 0.06, 0.3).translate(0, -0.075, 0), PART.frame, 0.1), // battery tray
-    part(new SphereGeometry(0.075, 6, 4).translate(0, -0.13, 0), PART.led),
+    part(new SphereGeometry(0.075, 6, 4).translate(0, -LED_DROP, 0), PART.led),
   ];
   for (const side of [-1, 1]) {
     parts.push(part(new BoxGeometry(0.02, 0.02, 0.46).translate(side * 0.13, -0.2, 0), PART.frame, 0.05)); // skid
@@ -54,9 +57,9 @@ export function createQuadcopterGeometry(): BufferGeometry {
     parts.push(part(new BoxGeometry(ARM, 0.03, 0.045).rotateY(-a).translate(x / 2, 0.012, z / 2), PART.frame, 0.12)); // arm
     parts.push(part(new CylinderGeometry(0.045, 0.05, 0.07, 6, 1, true).translate(x, 0.03, z), PART.motor, 0.4)); // motor
     // Two-blade propeller: a thin, slightly pitched bar centred on the motor.
-    parts.push(part(new BoxGeometry(0.36, 0.01, 0.045).rotateX(0.12).translate(x, 0.1, z), PART.frame, 1, [x, z, direction]));
+    parts.push(part(new BoxGeometry(0.36, 0.01, 0.045).rotateX(0.12).translate(x, 0.1, z), PART.frame, 1, [x, z, direction], SURFACE.blade));
     // The blur a fast propeller leaves: a thin disc just under the blades, so the "fan" reads even when small.
-    parts.push(part(new CircleGeometry(0.185, 12).rotateX(-Math.PI / 2).translate(x, 0.072, z), PART.frame, 0.45));
+    parts.push(part(new CircleGeometry(0.185, 12).rotateX(-Math.PI / 2).translate(x, 0.072, z), PART.frame, 0.45, [0, 0, 0], SURFACE.disc));
   }
   const merged = mergeGeometries(parts);
   parts.forEach((p) => p.dispose());
@@ -65,8 +68,13 @@ export function createQuadcopterGeometry(): BufferGeometry {
 
 /**
  * Instanced airframes riding the same simulation buffers as the LED sprites. Propellers
- * spin, the frame leans with its acceleration, and the body catches a little of its own LED
- * so it reads against the night sky. Everything shrinks to nothing past the fade distance.
+ * spin and the frame leans with its acceleration.
+ *
+ * Lighting is what a real show drone has at night: the airframe is dark carbon and plastic and
+ * emits nothing. It is lit by the one lamp it carries (the LED under the hub, a point light
+ * with inverse-square falloff, so the skids and the underside of the arms catch it and the
+ * canopy on top stays dark) and by a little cool light from the sky. Propellers are thin and
+ * glossy: they pass the lamp's light through and glint when they line up with the viewer.
  */
 export function createQuadcopterMaterial(buffers: SimBuffers, u: DroneUniforms) {
   const world = droneWorldPosition(buffers, u);
@@ -97,11 +105,37 @@ export function createQuadcopterMaterial(buffers: SimBuffers, u: DroneUniforms) 
   material.positionNode = tilted.mul(u.body).mul(visible).add(world);
 
   const led = buffers.color.toAttribute().xyz.pow(vec3(2.2)).mul(u.power);
+  const thin = step(0.25, tag.z);
+  const disc = step(0.75, tag.z);
+
+  // The lamp: a point light at the LED. (Lighting is worked out in the drone's own frame; its lean is small.)
+  const toLamp = vec3(0, -LED_DROP, 0).sub(model);
+  const reach = toLamp.dot(toLamp);
+  const lampDir = normalize(toLamp);
+  const facing = lampDir.dot(normalLocal);
+  // Solid parts are lit only where they face the lamp; thin propellers let the light through.
+  const diffuse = mix(max(facing, 0), abs(facing).mul(0.6).add(0.2), thin);
+  const falloff = float(1).div(reach.mul(9).add(1));
+  // Gloss: the blades and the plastic canopy throw a small highlight towards the viewer.
+  const viewDir = normalize(cameraPosition.sub(world));
+  const glint = abs(normalize(lampDir.add(viewDir)).dot(normalLocal)).pow(24).mul(mix(float(0.25), float(1.6), thin));
+  const lamp = led.mul(falloff).mul(diffuse.add(glint)).mul(9);
+  // Night sky: faint, cool, from above.
+  const sky = vec3(0.5, 0.62, 0.9).mul(normalLocal.y.mul(0.5).add(0.5).mul(0.85).add(0.15)).mul(u.ambient);
+
+  const albedo = mix(vec3(0.08, 0.083, 0.095), vec3(0.55, 0.57, 0.62), tag.y);
+  const lit = albedo.mul(sky.add(lamp));
+  // The stylised look: the whole airframe takes its LED's colour, so the formation reads as solid
+  // coloured drones. `bodyGlow` blends between the two.
   const shade = normalLocal.y.mul(0.35).add(0.65);
   const underglow = float(1).sub(normalLocal.y).mul(0.5).add(0.2);
-  // Dark carbon to pale plastic by part, strongly tinted by the drone's own LED: the body takes the
-  // formation's colour, so a pink heart is made of pink drones.
-  const frame = mix(mix(vec3(0.16, 0.17, 0.2), vec3(0.62, 0.64, 0.7), tag.y), led.mul(1.5), 0.55).mul(shade).add(led.mul(0.3).mul(underglow));
-  material.colorNode = mix(frame, led.mul(2.6), tag.x);
+  const glowing = mix(mix(vec3(0.16, 0.17, 0.2), vec3(0.62, 0.64, 0.7), tag.y), led.mul(1.5), 0.55).mul(shade).add(led.mul(0.3).mul(underglow));
+  const frame = mix(lit, glowing, u.bodyGlow);
+  // The lens itself is the only thing that emits; switched off it is a dull grey dome.
+  const lens = led.mul(2.6).add(vec3(0.03));
+  material.colorNode = mix(frame, lens, tag.x);
+  // A spinning propeller is a see-through blur, not a plate.
+  material.alphaHash = true;
+  material.opacityNode = mix(float(1), float(0.4), disc);
   return material;
 }

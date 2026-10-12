@@ -106,11 +106,10 @@
       },
       "hold": 1.5,
       "transition": {
-        "duration": 4.5,
-        "curve": "physics",
+        "duration": 3.6,
+        "curve": "expo.inOut",
         "stagger": 0.35,
-        "order": "random",
-        "effect": "burst"
+        "order": "radial"
       },
       "look": {
         "colorMode": "palette",

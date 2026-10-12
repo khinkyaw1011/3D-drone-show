@@ -6,7 +6,7 @@ import { showSchema } from './schema';
  * "restore defaults" and "has this feature been changed?", so the two cannot disagree.
  */
 const OWNED = {
-  look: [['droneCount'], ['look', 'body'], ['look', 'size'], ['look', 'glow'], ['look', 'twinkle'], ['look', 'trails'], ['look', 'swarm'], ['look', 'hoverBob']],
+  look: [['droneCount'], ['look', 'body'], ['look', 'size'], ['look', 'glow'], ['look', 'bodyGlow'], ['look', 'twinkle'], ['look', 'trails'], ['look', 'swarm'], ['look', 'hoverBob']],
   color: [['look', 'colorMode'], ['look', 'colors'], ['look', 'gradientAxis']],
   flight: [['flight']],
   sky: [

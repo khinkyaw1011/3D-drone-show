@@ -616,6 +616,8 @@
     "droneSize": "Drone size",
     "ledSize": "LED size",
     "glow": "Glow",
+    "bodyGlow": "Airframe glow",
+    "bodyGlowHint": "0% is realistic: the drone is lit only by its own lamp. 100% makes the whole drone glow in its colour.",
     "twinkle": "Twinkle",
     "trails": "Light trails",
     "color": "Colour",

@@ -4,7 +4,7 @@ import { SHOW_VOLUME } from '../formations/fit';
 import { hash01 } from '../formations/order';
 import type { CompiledFrame } from '../timeline/compile';
 import type { PhysicsEffect } from '../types';
-import { FLOOR_Y, GROUND_Y, SIM_MODE, attitudeBlend, SPRING, type Simulator, createBuffers, defaultSimParams, uploadFrame } from './Simulator';
+import { FLOOR_Y, GROUND_Y, SIM_MODE, attitudeBlend, recolorGate, recolorShare, SPRING, type Simulator, createBuffers, defaultSimParams, uploadFrame } from './Simulator';
 
 const { clamp, interpolate: lerp } = gsap.utils;
 
@@ -18,6 +18,7 @@ export class CpuSimulator implements Simulator {
   readonly params = defaultSimParams();
   private override: Float32Array | null = null;
   private pendingSnap = true;
+  private lastRecolor = 1;
 
   constructor(readonly count: number) {
     this.buffers = createBuffers(count);
@@ -70,7 +71,9 @@ export class CpuSimulator implements Simulator {
 
   step(_renderer: unknown, rawDt: number, time: number) {
     const { P, V, C, S, T, SC, TC, D } = this.arrays;
-    const { progress, rate, mode, stagger, swarm, gravity, restitution, wind, spinStart, spinTarget, launch } = this.params;
+    const { progress, rate, mode, stagger, swarm, gravity, restitution, wind, spinStart, spinTarget, launch, recolor } = this.params;
+    const recolorWas = this.lastRecolor;
+    this.lastRecolor = recolor;
     const [cx, , cz] = SHOW_VOLUME.center;
     const rot = [Math.cos(spinStart), Math.sin(spinStart), Math.cos(spinTarget), Math.sin(spinTarget)];
     const from = [0, 0, 0];
@@ -106,6 +109,10 @@ export class CpuSimulator implements Simulator {
       const carry = [T[o + 3], SC[o + 3], TC[o + 3]];
       for (let k = 0; k < 3; k++) pose[k] += D[o + k] * bulge + carry[k] * coasting;
 
+      // Colour sweep across the formation (see GpuSimulator): 1 when none is under way.
+      const order = clamp(0, 1, (P[o] - cx) / SHOW_VOLUME.size[0] + 0.5) * 0.82 + hash01(i + 71) * 0.18;
+      const share = snap ? 1 : recolorShare(recolorGate(recolor, order), recolorGate(recolorWas, order));
+
       // Acceleration rides in the spare w of position / velocity / colour, as on the GPU.
       const accel = [P[o + 3], V[o + 3], C[o + 3]];
       for (let k = 0; k < 3; k++) {
@@ -127,7 +134,7 @@ export class CpuSimulator implements Simulator {
           V[a] *= 1 - dt * 0.25;
           P[a] += V[a] * dt;
         }
-        C[a] = lerp(SC[a], TC[a], eased);
+        C[a] += (lerp(SC[a], TC[a], eased) - C[a]) * share;
         if (snap) accel[k] = 0;
         else if (!live) V[a] = before; // paused: nothing accelerates
         else if (mode === SIM_MODE.ease) {

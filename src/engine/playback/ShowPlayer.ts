@@ -1,7 +1,7 @@
 import gsap from 'gsap';
 import type { Renderer } from 'three/webgpu';
 import { SHOW_VOLUME } from '../formations/fit';
-import { SIM_MODE, type Simulator } from '../sim/Simulator';
+import { RECOLOR_SECONDS, SIM_MODE, type Simulator } from '../sim/Simulator';
 import { carryWeight, detourWeight, flightPose, localProgress, smooth, spinXZ } from '../sim/path';
 import { type Segment, type TimelineCursor, buildTimeline, locate } from '../timeline/buildTimeline';
 import { type CompiledFrame, type CompiledShow, planTransition } from '../timeline/compile';
@@ -70,6 +70,8 @@ export class ShowPlayer {
   private lastPlayhead = 0;
   private lastSource: object | null = null;
   private spans = new WeakMap<CompiledFrame, number>();
+  /** 0..1 progress of a colour sweep over a fleet that is holding position (1 = none). */
+  private recolor = 1;
   /** Seconds of show time: advances only while playing. Drives noise, hover drift and formation movement. */
   motionTime = 0;
   duration = 0;
@@ -167,6 +169,8 @@ export class ShowPlayer {
 
     if (settled && frame) {
       // Same start, same targets, new data (colours, timing): continue exactly where we were.
+      // New colours are not switched on at once: they sweep across the fleet, drone by drone.
+      if (!sameValues(frame.colors, this.loaded!.to.colors)) this.recolor = 0;
       this.setFrame(this.loaded!.from, frame, false);
       this.index = previousIndex;
       this.clock.time(Math.max(resumeAt, 0));
@@ -402,6 +406,9 @@ export class ShowPlayer {
     this.motionTime += dt;
     const elapsed = this.motionTime;
     const p = sim.params;
+    // A colour change is the operator's doing, not part of the show: it plays out in real time, paused or not.
+    this.recolor = Math.min(1, this.recolor + frameDt / RECOLOR_SECONDS);
+    p.recolor = this.recolor;
     p.swarm = show.look.swarm;
     p.wind = [0, 0, 0];
 

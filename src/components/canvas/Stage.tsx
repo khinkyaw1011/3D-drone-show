@@ -203,6 +203,7 @@ export function Stage({
         <Drones
           player={player}
           look={look}
+          ambient={scene.ambient}
           spacing={compiled?.spacing ?? 0.5}
           power={physics?.effect === 'drop' ? 0.3 : 1}
           pushToy={pushToy}

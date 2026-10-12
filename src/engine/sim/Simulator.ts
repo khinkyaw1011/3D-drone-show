@@ -1,5 +1,6 @@
 import { instancedArray } from 'three/tsl';
 import type { Renderer, StorageBufferNode } from 'three/webgpu';
+import { PAD_Y } from '../formations/fit';
 import type { CompiledFrame } from '../timeline/compile';
 import type { PhysicsEffect } from '../types';
 
@@ -22,6 +23,11 @@ export interface SimParams {
   spinTarget: number;
   /** 1 while lifting off the launch pad: climb first, then slide into place. */
   launch: number;
+  /**
+   * 0..1 progress of a colour change on a fleet that is holding position; 1 = none under way.
+   * The new colours sweep across the formation drone by drone (see `recolorGate`).
+   */
+  recolor: number;
 }
 
 export const defaultSimParams = (): SimParams => ({
@@ -36,6 +42,7 @@ export const defaultSimParams = (): SimParams => ({
   spinStart: 0,
   spinTarget: 0,
   launch: 0,
+  recolor: 1,
 });
 
 export type StorageNode = StorageBufferNode<'vec4'>;
@@ -115,9 +122,9 @@ export interface Simulator {
 }
 
 /** Ground height drones bounce on during physics moments. */
-export const GROUND_Y = 0.34;
+export const GROUND_Y = PAD_Y + 0.04;
 /** Lowest a drone may ever be: resting on the pad. Enforced in every flight mode and again when drawing. */
-export const FLOOR_Y = 0.3;
+export const FLOOR_Y = PAD_Y;
 /** Shared spring constants so GPU and CPU paths feel the same. */
 export const SPRING = { stiffness: 14, damping: 5.5 } as const;
 /**
@@ -128,3 +135,26 @@ export const SPRING = { stiffness: 14, damping: 5.5 } as const;
 export const ATTITUDE_RESPONSE = 0.28;
 /** Fraction of the way attitude moves towards its target in a step of `dt` seconds. */
 export const attitudeBlend = (dt: number) => 1 - Math.exp(-dt / ATTITUDE_RESPONSE);
+
+/** Share of a colour sweep each drone spends fading; the rest is the wave travelling across the fleet. */
+export const RECOLOR_FADE = 0.3;
+/** Seconds a colour sweep takes to cross the whole formation. */
+export const RECOLOR_SECONDS = 1.6;
+/**
+ * How far a drone is through its own colour change when the sweep is at `wave` (both 0..1).
+ * `order` is the drone's place in the sweep (0 = first). Implemented again in TSL in GpuSimulator.
+ */
+export function recolorGate(wave: number, order: number): number {
+  const from = order * (1 - RECOLOR_FADE);
+  const t = Math.min(1, Math.max(0, (wave - from) / RECOLOR_FADE));
+  return t * t * (3 - 2 * t);
+}
+/**
+ * Blend to apply to a drone's current colour this step so that, over the whole sweep, it goes
+ * exactly from the colour it had to the new one. Works from the colour buffer alone: there is
+ * no storage buffer left to keep the old colours in.
+ */
+export function recolorShare(now: number, was: number): number {
+  if (now >= 1) return 1;
+  return Math.min(1, Math.max(0, (now - was) / Math.max(1 - was, 1e-4)));
+}

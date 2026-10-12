@@ -81,3 +81,26 @@ describe('momentum between flights', () => {
     expect(plan.conflicts).toBe(0);
   });
 });
+
+describe('colour sweep', () => {
+  it('takes every drone exactly from its old colour to the new one, whatever the frame rate', async () => {
+    const { recolorGate, recolorShare } = await import('../sim/Simulator');
+    for (const steps of [7, 60, 240]) {
+      for (const order of [0, 0.4, 1]) {
+        let colour = 0; // old colour 0, new colour 1
+        let was = recolorGate(0, order);
+        let earliest = 1;
+        for (let i = 1; i <= steps; i++) {
+          const now = recolorGate(i / steps, order);
+          if (now > 0) earliest = Math.min(earliest, i / steps);
+          colour += (1 - colour) * recolorShare(now, was);
+          expect(colour).toBeCloseTo(now, 5);
+          was = now;
+        }
+        expect(colour).toBe(1);
+        // Later in the sweep means later to change: drone by drone, not all at once.
+        if (order === 1) expect(earliest).toBeGreaterThan(0.6);
+      }
+    }
+  });
+});

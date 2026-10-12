@@ -616,6 +616,8 @@
     "droneSize": "機体サイズ",
     "ledSize": "LED サイズ",
     "glow": "輝き",
+    "bodyGlow": "機体の発光",
+    "bodyGlowHint": "0% はリアル：機体は自分のランプだけで照らされます。100% で機体全体が色で光ります。",
     "twinkle": "きらめき",
     "trails": "光の軌跡",
     "color": "色",

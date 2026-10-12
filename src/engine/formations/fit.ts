@@ -4,7 +4,7 @@ import { fleetSpacing, relax } from './relax';
 
 /** The slice of sky a formation is fitted into (world units, y up, ground at 0). */
 export const SHOW_VOLUME = {
-  center: [0, 17, 0] as Vec3,
+  center: [0, 20, 0] as Vec3,
   size: [44, 24, 26] as Vec3,
 };
 
@@ -53,7 +53,11 @@ export function toFormation(
 }
 
 /** Launch pad sits under the show volume so the fleet climbs almost straight up, as real fleets do. */
-const PAD = { spacing: 0.7, z: 3, y: 0.32 };
+/** Height of the launch deck's top face. */
+export const PAD_SURFACE = 0.23;
+/** `y` is the lowest a drone's centre can be; a landed drone is drawn standing on its skids just above it. */
+const PAD = { spacing: 0.7, z: 3, y: PAD_SURFACE + 0.02 };
+export const PAD_Y = PAD.y;
 
 /** Columns / rows / footprint of the launch pad for a fleet size. */
 export function padLayout(count: number) {

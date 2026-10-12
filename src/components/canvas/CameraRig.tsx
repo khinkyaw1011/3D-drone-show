@@ -4,19 +4,23 @@ import { CameraControls } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import { Box3, type PerspectiveCamera, Vector3 } from 'three';
+import { SHOW_VOLUME } from '@/engine/formations/fit';
 import type { SceneSettings, Vec3 } from '@/engine/types';
+
+/** Height of the middle of the show. */
+const SKY = SHOW_VOLUME.center[1];
 
 type Preset = Exclude<SceneSettings['cameraPreset'], 'walk'>;
 
 export const CAMERA_SHOTS: Record<Preset, { position: Vec3; target: Vec3; orbit: number }> = {
   // Standing in the crowd, looking up at the show.
-  spectator: { position: [0, 1.7, 40], target: [0, 17, 0], orbit: 0.6 },
+  spectator: { position: [0, 1.7, 40], target: [0, SKY, 0], orbit: 0.6 },
   // In among the fleet: close enough to see airframes, skids and spinning propellers.
-  'close-up': { position: [5, 18.5, 13], target: [0, 17, 0], orbit: 1 },
-  front: { position: [0, 14, 36], target: [0, 17, 0], orbit: 1 },
-  'low-hero': { position: [-20, 2, 34], target: [0, 17, 0], orbit: 1 },
-  'top-down': { position: [0, 70, 20], target: [0, 12, 0], orbit: 0.5 },
-  'fly-around': { position: [34, 20, 34], target: [0, 16, 0], orbit: 5 },
+  'close-up': { position: [5, SKY + 1.5, 13], target: [0, SKY, 0], orbit: 1 },
+  front: { position: [0, SKY - 3, 36], target: [0, SKY, 0], orbit: 1 },
+  'low-hero': { position: [-20, 2, 34], target: [0, SKY, 0], orbit: 1 },
+  'top-down': { position: [0, 70, 20], target: [0, SKY - 5, 0], orbit: 0.5 },
+  'fly-around': { position: [34, SKY + 3, 34], target: [0, SKY - 1, 0], orbit: 5 },
 };
 
 /** Farthest the viewer may pull back: the whole show still fills a good part of the frame. */

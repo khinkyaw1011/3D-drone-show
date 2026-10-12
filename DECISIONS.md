@@ -63,3 +63,11 @@ Where the build departs from, or sharpens, the original spec, and why.
 - Checked in headless Chrome during the build: every route in all three locales, WebGPU rendering, live fly-to, fireworks, and that the WebGL2 fallback (`?webgl`) loads without errors. **Not** exercised end to end: video export, Rapier physics moments in motion, the touch joystick, and frame rate on real phones or with 10k+ drones.
 - Path planning runs on the main thread (about 0.2–0.4 s for a 1,200-drone show).
 - State: every user action goes through `dispatch`, including interface state (`ui.set`). The one exception is `LiveShow`, which mirrors what the player reports (time, capabilities, device ceiling) into the store with `mutate`. Large fleets get fewer planner iterations.
+
+## Lighting, colour sweeps and landing
+
+- **Airframes emit nothing.** They used to be tinted 55% with their LED colour, which read as glowing toys. Now the only emitter is the LED lens; the frame is lit by that lamp as a point light (inverse-square falloff, lit only where a surface faces it), plus a little cool sky light scaled by the scene's ambient. Propellers are thin: they pass the lamp's light through and carry a view-dependent glint. Rotor blur is dithered transparency (`alphaHash`), which needs no sorting across thousands of instances.
+- **Colour changes sweep across the fleet.** Changing colours on a formation that is holding position used to switch every LED on the same frame. `SimParams.recolor` now drives a left-to-right sweep; each drone fades in its own slot (`recolorGate`). There is no storage buffer left for the old colours, so each step blends the colour buffer towards the new colour by exactly the share that reproduces a clean old-to-new fade (`recolorShare`, unit-tested at several frame rates). It runs on real time, because it is an edit, not part of the show.
+- **Show volume raised** (centre 17 m to 20 m) and **landed drones stand on their skids**: the draw-time floor is deck height plus skid length times the airframe scale, so they neither sink into the deck nor hover over it.
+- **Built-in shows no longer use the physics burst.** Drones dropping to the ground looked like a crash, which no real show does. The effect is still available in the studio.
+

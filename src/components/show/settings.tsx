@@ -154,6 +154,7 @@ export function DroneSection(group: SectionProps) {
       <SliderField label={t('droneSize')} value={look.body} min={0.35} max={1} format={percent} onChange={(body) => setLook({ body })} />
       <SliderField label={t('ledSize')} value={look.size} min={0.08} max={0.8} onChange={(size) => setLook({ size })} />
       <SliderField label={t('glow')} value={look.glow} min={0} max={3} onChange={(glow) => setLook({ glow })} />
+      <SliderField label={t('bodyGlow')} hint={t('bodyGlowHint')} value={look.bodyGlow} min={0} max={1} format={percent} onChange={(bodyGlow) => setLook({ bodyGlow })} />
       <SliderField label={t('twinkle')} value={look.twinkle} min={0} max={1} onChange={(twinkle) => setLook({ twinkle })} />
       <SwitchField label={t('trails')} value={look.trails} onChange={(trails) => setLook({ trails })} />
     </FieldGroup>

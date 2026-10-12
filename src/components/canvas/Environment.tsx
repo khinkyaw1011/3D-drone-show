@@ -4,7 +4,7 @@ import { useFrame } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import { BoxGeometry, CircleGeometry, CylinderGeometry, type Group, type InstancedMesh, MeshBasicNodeMaterial, Object3D, PlaneGeometry } from 'three/webgpu';
 import { floor, mx_cell_noise_float, normalLocal, positionWorld, smoothstep, step, uniform, uv, vec3 } from 'three/tsl';
-import { padLayout } from '@/engine/formations/fit';
+import { PAD_SURFACE, padLayout } from '@/engine/formations/fit';
 import { seededRng } from '@/engine/formations/sample';
 import { FIREWORK_COUNT, FIREWORK_SHELLS, FIREWORK_STYLE, createFireworksMaterial } from '@/engine/materials/fireworks';
 import type { SceneLight } from '@/engine/materials/lighting';
@@ -198,7 +198,7 @@ export function LaunchPad({ count }: { count: number }) {
   }, []);
   useEffect(() => () => material.dispose(), [material]);
   return (
-    <mesh material={material} position={[center[0], center[1] - 0.2, center[2]]}>
+    <mesh material={material} position={[center[0], PAD_SURFACE - 0.11, center[2]]}>
       <boxGeometry args={[width + 1.6, 0.22, depth + 1.6]} />
     </mesh>
   );

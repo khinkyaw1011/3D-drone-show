@@ -23,7 +23,7 @@ import { SHOW_VOLUME } from '../formations/fit';
 import { LAUNCH } from './path';
 import type { CompiledFrame } from '../timeline/compile';
 import type { PhysicsEffect } from '../types';
-import { FLOOR_Y, GROUND_Y, SIM_MODE, attitudeBlend, SPRING, type Simulator, type StorageNode, createBuffers, defaultSimParams, uploadFrame } from './Simulator';
+import { FLOOR_Y, GROUND_Y, RECOLOR_FADE, SIM_MODE, attitudeBlend, SPRING, type Simulator, type StorageNode, createBuffers, defaultSimParams, uploadFrame } from './Simulator';
 
 const CENTER = vec3(...SHOW_VOLUME.center);
 const EFFECT_ID: Record<PhysicsEffect, number> = { drop: 0, burst: 1, wind: 2 };
@@ -55,7 +55,11 @@ export class GpuSimulator implements Simulator {
     spinStart: uniform(0),
     spinTarget: uniform(0),
     launch: uniform(0),
+    /** Colour sweep progress this step and the step before (see `recolorGate`). */
+    recolor: uniform(1),
+    recolorWas: uniform(1),
   };
+  private lastRecolor = 1;
   private updateNode;
   private snapNode;
   private kickNode;
@@ -160,7 +164,15 @@ export class GpuSimulator implements Simulator {
         V.assign(before);
       });
 
-      const rgb = mix(b.startColor.element(instanceIndex), b.targetColor.element(instanceIndex), eased).xyz;
+      const wanted = mix(b.startColor.element(instanceIndex), b.targetColor.element(instanceIndex), eased).xyz;
+      // Colour sweep: new colours travel across the formation, left to right, a drone at a time
+      // (`recolorGate` / `recolorShare` in Simulator.ts). With no sweep under way the share is 1.
+      const order = clamp(P.x.sub(CENTER.x).div(SHOW_VOLUME.size[0]).add(0.5), 0, 1).mul(0.82).add(hash(instanceIndex.add(71)).mul(0.18));
+      const gate = (wave: typeof u.recolor) => smoothstep(0, 1, clamp(wave.sub(order.mul(1 - RECOLOR_FADE)).div(RECOLOR_FADE), 0, 1));
+      const now = gate(u.recolor);
+      const was = gate(u.recolorWas);
+      const share = max(clamp(now.sub(was).div(max(float(1).sub(was), 0.0001)), 0, 1), step(1, now));
+      const rgb = mix(b.color.element(instanceIndex).xyz, wanted, share);
       b.position.element(instanceIndex).assign(vec4(P, A.x));
       b.velocity.element(instanceIndex).assign(vec4(V, A.y));
       b.color.element(instanceIndex).assign(vec4(rgb, A.z));
@@ -227,6 +239,8 @@ export class GpuSimulator implements Simulator {
     u.spinStart.value = params.spinStart;
     u.spinTarget.value = params.spinTarget;
     u.launch.value = params.launch;
+    u.recolorWas.value = this.lastRecolor;
+    u.recolor.value = this.lastRecolor = params.recolor;
     u.live.value = dt > 0 ? 1 : 0;
     u.span.value = Math.max(dt, 1e-4);
     u.attitude.value = attitudeBlend(Math.min(dt, 1 / 20));
