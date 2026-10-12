@@ -1,7 +1,7 @@
 import { setRequestLocale } from 'next-intl/server';
-import { SmokeTest } from '@/components/SmokeTest';
+import { Landing } from '@/components/landing/Landing';
 
-export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
+export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   setRequestLocale((await params).locale);
-  return <SmokeTest />;
+  return <Landing />;
 }

@@ -1,1 +1,183 @@
-{"Meta":{"title":"Skyloom — Virtual Drone Show Studio","description":"Design a drone light show in your browser."}}
+{
+  "Meta": {
+    "title": "Skyloom — Virtual Drone Show Studio",
+    "description": "Design, fly and share a 3D drone light show in your browser. Real flight speeds, collision-free routes, thousands of drones."
+  },
+  "Site": {
+    "home": "Skyloom home",
+    "primaryNav": "Main",
+    "footerNav": "Footer",
+    "menu": "Menu",
+    "language": "Language",
+    "openStudio": "Open Studio",
+    "nav": {
+      "gallery": "Gallery",
+      "guide": "Guide",
+      "about": "About",
+      "studio": "Studio"
+    },
+    "footerNote": "A virtual drone show simulator. No real aircraft are flown."
+  },
+  "Stage": {
+    "launching": "Preparing the fleet…",
+    "errorTitle": "The show could not load",
+    "fallbackTitle": "Running in compatibility mode",
+    "fallbackBody": "This browser has no WebGPU, so the show runs on WebGL2 with up to {count, number} drones."
+  },
+  "Actions": {
+    "failed": "That did not work",
+    "fileFailed": "Could not use that file"
+  },
+  "Stats": {
+    "drones": "drones",
+    "speed": "m/s peak",
+    "gap": "m min gap"
+  },
+  "Quick": {
+    "label": "Show controls",
+    "status": {
+      "playing": "Flying",
+      "paused": "Paused",
+      "standby": "Standby"
+    },
+    "formationOf": "Formation {index}/{total} · {name}",
+    "empty": "No formations yet — create one below",
+    "collapse": "Collapse controls",
+    "expand": "Expand controls",
+    "play": "Play",
+    "pause": "Pause",
+    "previous": "Previous formation",
+    "next": "Next formation",
+    "relaunch": "Relaunch",
+    "loop": "Loop",
+    "tabs": {
+      "show": "Show",
+      "create": "Create",
+      "look": "Look",
+      "flight": "Flight"
+    },
+    "formations": "Formations",
+    "preset": "Show",
+    "speed": "Playback speed",
+    "realTime": "Real time",
+    "promptLabel": "Shape or word",
+    "promptPlaceholder": "Type a shape or a word: heart, galaxy, HELLO, 桜…",
+    "create": "Create",
+    "upload": "Upload",
+    "sampling": "Sampling…",
+    "uploadHint": "Drop a picture, SVG or .glb model anywhere on this panel. The drones take its shape and colours.",
+    "shapes": "Shapes",
+    "droneColor": "Drone colour",
+    "original": "Original",
+    "rainbow": "Rainbow",
+    "customColor": "Custom colour",
+    "ledSize": "LED size",
+    "glow": "Glow",
+    "sky": "Sky",
+    "ground": "Ground",
+    "drones": "Fleet size",
+    "realistic": "Real-world flight",
+    "realisticHint": "Limits every drone to the top speed below and plans routes that keep them apart.",
+    "maxSpeed": "Top speed",
+    "separation": "Minimum separation",
+    "spin": "Formation spin",
+    "studioPitch": "Want a timeline, per-formation timing, camera shots and export?",
+    "openStudio": "Open the full studio"
+  },
+  "Options": {
+    "shape": {
+      "sphere": "Sphere",
+      "ring": "Ring",
+      "heart": "Heart",
+      "blossom": "Blossom",
+      "galaxy": "Galaxy",
+      "grid": "Grid wall",
+      "cube": "Cube",
+      "torus": "Torus",
+      "star": "Star",
+      "helix": "DNA helix",
+      "wave": "Wave",
+      "burst": "Firework"
+    },
+    "sky": {
+      "midnight": "Midnight",
+      "aurora": "Aurora",
+      "dusk": "Dusk",
+      "deep-space": "Deep space"
+    },
+    "ground": {
+      "water": "Water",
+      "city": "City",
+      "none": "None"
+    }
+  },
+  "Gallery": {
+    "eyebrow": "Gallery",
+    "title": "Six shows, ready to fly",
+    "lead": "Every preview is drawn from the same formation data the drones fly. Watch one, or remix it in the studio.",
+    "previewOf": "Preview of {name}",
+    "meta": "{formations, plural, one {# formation} other {# formations}} · {drones, number} drones",
+    "fly": "Fly it here",
+    "watch": "Watch",
+    "remix": "Remix",
+    "shows": {
+      "sakura-night": "A cherry blossom opens over the water, becomes a heart, and bursts into petals.",
+      "neon-tokyo": "Sky-writing, a wall of light and a spiral galaxy over a city skyline.",
+      "aurora": "Slow waves and rings under northern lights.",
+      "new-year": "Three, two, one — a firework, then the new year in gold.",
+      "ocean": "Waves, a flamingo and a globe in cool blues, ending in rain.",
+      "gold-gala": "A star, a word and a ring in warm gold."
+    }
+  },
+  "Landing": {
+    "stageLabel": "Live drone show",
+    "eyebrow": "Virtual drone show studio",
+    "title": "Draw on the night sky",
+    "tagline": "Thousands of drones lift off, fly at real speeds and build 3D formations you design.",
+    "start": "Launch the show",
+    "openStudio": "Open Studio",
+    "hint": "Drag to orbit · scroll or pinch to zoom",
+    "backToShow": "Back to the show",
+    "gallery": {
+      "eyebrow": "Gallery",
+      "title": "Pick a show and fly it",
+      "lead": "Choose a show and the fleet above re-forms into it. Then change anything you like."
+    },
+    "how": {
+      "eyebrow": "How it works",
+      "title": "Planned like a real show",
+      "lead": "Real drone shows are choreographed before take-off. Skyloom does the same three jobs in your browser.",
+      "design": {
+        "title": "Design",
+        "body": "Shapes, words, 3D models and your own pictures are sampled into evenly spaced points — one per drone, coloured from the source."
+      },
+      "animate": {
+        "title": "Animate",
+        "body": "Each drone is assigned the nearest free point, routes are checked for conflicts, and timing is stretched until nobody exceeds the fleet's top speed."
+      },
+      "share": {
+        "title": "Share",
+        "body": "The whole show fits in a link. Send it, export a video, or save it as a preset and keep editing."
+      }
+    },
+    "facts": {
+      "drawCall": {
+        "value": "1",
+        "label": "Draw call for the fleet"
+      },
+      "speed": {
+        "value": "10 m/s",
+        "label": "Default top speed"
+      },
+      "gap": {
+        "value": "1.5 m",
+        "label": "Planned separation"
+      },
+      "aircraft": {
+        "value": "0",
+        "label": "Real aircraft"
+      }
+    }
+  },
+  "Fields": {}
+}

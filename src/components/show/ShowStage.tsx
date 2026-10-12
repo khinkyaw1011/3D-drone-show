@@ -17,6 +17,8 @@ interface ShowStageProps extends StageProps {
   className?: string;
   /** Hide the "launching" overlay (e.g. when the page has its own). */
   quiet?: boolean;
+  /** Stop rendering entirely. */
+  paused?: boolean;
 }
 
 /** Drifting dots that read as drones waiting on the ground. */
@@ -48,7 +50,7 @@ function LaunchLoader({ label, hidden }: { label: string; hidden: boolean }) {
  * The live show plus its loading / error / fallback states. Every page that shows drones
  * (landing, studio, viewer) renders this, so those states look and behave the same everywhere.
  */
-export function ShowStage({ className, quiet = false, onStatus, onReady, ...stage }: ShowStageProps) {
+export function ShowStage({ className, quiet = false, paused = false, onStatus, onReady, ...stage }: ShowStageProps) {
   const t = useTranslations('Stage');
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [error, setError] = useState<string | null>(null);
@@ -82,7 +84,7 @@ export function ShowStage({ className, quiet = false, onStatus, onReady, ...stag
 
   return (
     <div className={cn('absolute inset-0 overflow-hidden bg-ink', className)}>
-      <ShowCanvas {...stage} onStatus={handleStatus} onReady={handleReady} />
+      <ShowCanvas {...stage} paused={paused} onStatus={handleStatus} onReady={handleReady} />
       {!quiet && <LaunchLoader label={t('launching')} hidden={everReady} />}
       {status === 'error' && (
         <div role="alert" className="glass absolute inset-x-4 top-20 z-20 mx-auto max-w-md p-4 text-sm">

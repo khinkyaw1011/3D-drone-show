@@ -39,7 +39,7 @@ export type StorageNode = StorageBufferNode<'vec4'>;
 
 /**
  * Every buffer is vec4 so GPU storage alignment and CPU uploads agree:
- *   position xyz_, velocity xyz_, color rgb_, start xyz+delay, target xyz_, startColor rgb_, targetColor rgb_, override xyz+weight
+ *   position xyz_, velocity xyz_, color rgb_, start xyz+delay, target xyz_, startColor rgb_, targetColor rgb_, override (detour xyz_ | physics xyz+weight)
  */
 export interface SimBuffers {
   position: StorageNode;
@@ -49,6 +49,11 @@ export interface SimBuffers {
   target: StorageNode;
   startColor: StorageNode;
   targetColor: StorageNode;
+  /**
+   * One buffer, two jobs (WebGPU allows only 8 storage buffers per shader stage):
+   * the planned detour (xyz, w = 0) during planned flight, or an external physics pose
+   * (xyz, w = blend weight) during a physics moment. The two never overlap in time.
+   */
   override: StorageNode;
 }
 
@@ -78,6 +83,15 @@ export function upload(node: StorageNode, src: Float32Array, w?: Float32Array | 
     dst[i * 4 + 3] = typeof w === 'number' ? w : w ? w[i] : 0;
   }
   attribute.needsUpdate = true;
+}
+
+/** Load a transition into the buffers shared by both simulators. */
+export function uploadFrame(b: SimBuffers, from: CompiledFrame, to: CompiledFrame) {
+  upload(b.start, from.positions, to.delays);
+  upload(b.target, to.positions);
+  upload(b.startColor, from.colors, 1);
+  upload(b.targetColor, to.colors, 1);
+  upload(b.override, to.detours, 0);
 }
 
 export interface Simulator {

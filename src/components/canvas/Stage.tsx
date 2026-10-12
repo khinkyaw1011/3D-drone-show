@@ -31,7 +31,7 @@ export interface StageProps {
   /** Playback rate multiplier. */
   speed?: number;
   /** Seek request; a new `nonce` re-applies the same time. */
-  seek?: { t: number; nonce: number } | null;
+  seek?: { t?: number; keyframe?: number; nonce: number } | null;
   interactive?: boolean;
   pushToy?: boolean;
   /** Cap below the device tier (thumbnails, hero on phones). */
@@ -124,7 +124,9 @@ export function Stage({
   }, [player, loaded, playing, loop, speed, compiled]);
 
   useEffect(() => {
-    if (player && loaded && seek) player.seek(seek.t);
+    if (!player || !loaded || !seek) return;
+    if (seek.keyframe !== undefined) player.seekToKeyframe(seek.keyframe);
+    else if (seek.t !== undefined) player.seek(seek.t);
   }, [player, loaded, seek]);
 
   useFrame((state, dt) => player?.update(gl, dt, state.clock.elapsedTime));

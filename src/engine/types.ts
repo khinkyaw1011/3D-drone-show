@@ -2,6 +2,7 @@ import type { z } from 'zod';
 import type {
   cameraShotSchema,
   droneLookSchema,
+  flightSchema,
   keyframeSchema,
   physicsSettingsSchema,
   sceneSettingsSchema,
@@ -14,6 +15,7 @@ export type Vec3 = [number, number, number];
 export type DroneLook = z.infer<typeof droneLookSchema>;
 export type SceneSettings = z.infer<typeof sceneSettingsSchema>;
 export type PhysicsSettings = z.infer<typeof physicsSettingsSchema>;
+export type FlightSettings = z.infer<typeof flightSchema>;
 export type CameraShot = z.infer<typeof cameraShotSchema>;
 export type Transition = z.infer<typeof transitionSchema>;
 export type Keyframe = z.infer<typeof keyframeSchema>;

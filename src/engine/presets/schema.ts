@@ -57,6 +57,14 @@ export const sceneSettingsSchema = z.object({
   physics: physicsSettingsSchema.prefault({}),
 });
 
+/** How faithfully the fleet obeys real-world limits. Speeds and distances are in metres. */
+export const flightSchema = z.object({
+  /** Stretch transitions so no drone exceeds `maxSpeed`, and plan routes that keep `separation`. */
+  realistic: z.boolean().default(true),
+  maxSpeed: z.number().min(3).max(25).default(10),
+  separation: z.number().min(0.5).max(4).default(1.5),
+});
+
 export const cameraShotSchema = z.object({ preset: z.enum(CAMERA_PRESETS) });
 
 export const transitionSchema = z.object({
@@ -87,6 +95,7 @@ export const showSchema = z.object({
   keyframes: z.array(keyframeSchema).max(40),
   look: droneLookSchema.prefault({}),
   scene: sceneSettingsSchema.prefault({}),
+  flight: flightSchema.prefault({}),
 });
 
 /** Upgrade older show payloads (persisted, imported or shared) to the current version. */

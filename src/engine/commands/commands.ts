@@ -29,11 +29,14 @@ export const COMMANDS = {
   },
   'keyframe.select': { description: 'Select a keyframe for editing.', schema: z.object({ id: id.nullable() }) },
   'look.set': { description: 'Change how drones look and move (size, glow, colours, swarm...).', schema: z.object({ patch }) },
+  'look.clearOverrides': { description: 'Remove per-keyframe look overrides so the show look applies everywhere.', schema: z.object({}) },
+  'flight.set': { description: 'Change real-world flight limits: realistic mode, top speed (m/s), minimum separation (m).', schema: z.object({ patch }) },
   'scene.set': { description: 'Change sky, ground, camera, post-FX or physics settings.', schema: z.object({ patch }) },
   'playback.play': { description: 'Play the show.', schema: z.object({}) },
   'playback.pause': { description: 'Pause the show.', schema: z.object({}) },
   'playback.toggle': { description: 'Toggle play / pause.', schema: z.object({}) },
   'playback.seek': { description: 'Move the playhead to a time in seconds.', schema: z.object({ t: z.number().min(0) }) },
+  'playback.goTo': { description: 'Fly to a formation by keyframe id.', schema: z.object({ id }) },
   'playback.setSpeed': { description: 'Set the playback speed multiplier.', schema: z.object({ speed: z.number().min(0.25).max(3) }) },
   'playback.step': { description: 'Jump to the next or previous formation.', schema: z.object({ direction: z.union([z.literal(1), z.literal(-1)]) }) },
   'playback.setLoop': { description: 'Turn looping on or off.', schema: z.object({ loop: z.boolean() }) },
@@ -51,7 +54,10 @@ export const COMMANDS = {
 
 export type CommandType = keyof typeof COMMANDS;
 export type CommandPayload<T extends CommandType> = z.infer<(typeof COMMANDS)[T]['schema']>;
-export type Command = { [T in CommandType]: { type: T } & CommandPayload<T> }[CommandType];
+/** A command is its `type` plus that command's payload (nothing extra for payload-less commands). */
+export type Command = {
+  [T in CommandType]: Record<string, never> extends CommandPayload<T> ? { type: T } : { type: T } & CommandPayload<T>;
+}[CommandType];
 export type CommandHandlers = { [T in CommandType]: (payload: CommandPayload<T>) => void | Promise<void> };
 
 /** Build `dispatch`: validate against the command's schema, then run its handler. */

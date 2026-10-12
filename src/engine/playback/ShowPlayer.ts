@@ -53,7 +53,10 @@ export class ShowPlayer {
     this.clock?.kill();
     this.show = show;
     this.compiled = compiled;
-    const built = buildTimeline(show.keyframes);
+    const built = buildTimeline(
+      show.keyframes,
+      compiled.frames.map((f) => f.duration),
+    );
     this.clock = built.timeline;
     this.segments = built.segments;
     this.duration = built.duration;
@@ -80,15 +83,25 @@ export class ShowPlayer {
   seek(t: number) {
     this.clock?.time(Math.min(Math.max(t, 0), this.duration));
     this.forceSnap = true;
+    // Rewinding to the very start replays the lift-off from the launch pad.
+    if (t <= 0) this.laps = 0;
   }
   /** Move the playhead without teleporting drones: for frame-by-frame export, where the simulation must keep integrating. */
   scrubTo(t: number) {
     this.clock?.pause();
     this.clock?.time(Math.min(Math.max(t, 0), this.duration));
   }
-  seekToKeyframe(index: number, settle = true) {
+  /** Jump to a keyframe: the start of its transition, or (settled) the moment it is fully formed. */
+  seekToKeyframe(index: number, settle = false) {
     const s = this.segments[index];
-    if (s) this.seek(settle ? s.transitionEnd : s.start);
+    if (s) this.seek(settle ? s.transitionEnd : Math.max(s.start, index === 0 ? 0 : s.start + 1e-3));
+  }
+  /** Flight statistics of the transition on stage (peak speed in m/s, closest approach in m). */
+  get stats() {
+    return this.compiled?.frames[Math.max(this.index, 0)]?.stats ?? null;
+  }
+  get segmentTimes() {
+    return this.segments.map(({ start, transitionEnd, end }) => ({ start, transitionEnd, end }));
   }
   setTimeScale(scale: number) {
     this.clock?.timeScale(scale);

@@ -2,8 +2,7 @@ import { nanoid } from 'nanoid';
 import { type CommandHandlers, createDispatcher } from '@/engine/commands/commands';
 import { getSource } from '@/engine/formations/registry';
 import { BUILTIN_SHOWS } from '@/engine/presets/builtin';
-import { planSegments } from '@/engine/timeline/buildTimeline';
-import { droneLookSchema, keyframeSchema, sceneSettingsSchema } from '@/engine/presets/schema';
+import { flightSchema, droneLookSchema, keyframeSchema, sceneSettingsSchema } from '@/engine/presets/schema';
 import type { Keyframe, SceneSettings } from '@/engine/types';
 import { history, mutate, useStudio } from './index';
 import { cloneShow, emptyShow } from './slices/show';
@@ -14,10 +13,10 @@ const findKeyframe = (keyframes: Keyframe[], id: string) => {
   return index;
 };
 
-const seek = (t: number) =>
+const seek = (target: { t: number } | { keyframe: number }) =>
   mutate((s) => {
-    s.playback.seek = { t, nonce: (s.playback.seek?.nonce ?? 0) + 1 };
-    s.playback.time = t;
+    s.playback.seek = { ...target, nonce: (s.playback.seek?.nonce ?? 0) + 1 };
+    if ('t' in target) s.playback.time = target.t;
   });
 
 const loadShow = (show: ReturnType<typeof cloneShow>) => {
@@ -26,7 +25,7 @@ const loadShow = (show: ReturnType<typeof cloneShow>) => {
     s.selectedKeyframeId = show.keyframes[0]?.id ?? null;
     s.playback.playing = true;
   });
-  seek(0);
+  seek({ t: 0 });
 };
 
 const handlers: CommandHandlers = {
@@ -95,6 +94,14 @@ const handlers: CommandHandlers = {
     mutate((s) => {
       s.show.look = droneLookSchema.parse({ ...s.show.look, ...patch });
     }),
+  'look.clearOverrides': () =>
+    mutate((s) => {
+      for (const kf of s.show.keyframes) delete kf.look;
+    }),
+  'flight.set': ({ patch }) =>
+    mutate((s) => {
+      s.show.flight = flightSchema.parse({ ...s.show.flight, ...patch });
+    }),
   'scene.set': ({ patch }) =>
     mutate((s) => {
       const p = patch as Partial<SceneSettings>;
@@ -108,15 +115,26 @@ const handlers: CommandHandlers = {
   'playback.play': () => mutate((s) => void (s.playback.playing = true)),
   'playback.pause': () => mutate((s) => void (s.playback.playing = false)),
   'playback.toggle': () => mutate((s) => void (s.playback.playing = !s.playback.playing)),
-  'playback.seek': ({ t }) => seek(t),
+  'playback.seek': ({ t }) => seek({ t }),
+  'playback.goTo': ({ id }) => {
+    const keyframe = findKeyframe(useStudio.getState().show.keyframes, id);
+    mutate((s) => {
+      s.selectedKeyframeId = id;
+      s.playback.playing = true;
+    });
+    seek({ keyframe });
+  },
   'playback.setSpeed': ({ speed }) => mutate((s) => void (s.playback.speed = speed)),
   'playback.step': ({ direction }) => {
     const { show, playback } = useStudio.getState();
-    const segments = planSegments(show.keyframes);
-    if (segments.length === 0) return;
-    const next = segments[(playback.index + direction + segments.length) % segments.length];
-    mutate((s) => void (s.selectedKeyframeId = show.keyframes[next.index].id));
-    seek(next.start);
+    const total = show.keyframes.length;
+    if (total === 0) return;
+    const keyframe = (playback.index + direction + total) % total;
+    mutate((s) => {
+      s.selectedKeyframeId = show.keyframes[keyframe].id;
+      s.playback.playing = true;
+    });
+    seek({ keyframe });
   },
   'playback.setLoop': ({ loop }) => mutate((s) => void (s.playback.loop = loop)),
   'preset.apply': ({ presetId }) => {

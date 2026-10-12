@@ -1,12 +1,12 @@
 import gsap from 'gsap';
+import { detourWeight, flightPose, localProgress, smooth } from './path';
 import { SHOW_VOLUME } from '../formations/fit';
 import { hash01 } from '../formations/order';
 import type { CompiledFrame } from '../timeline/compile';
 import type { PhysicsEffect } from '../types';
-import { GROUND_Y, SIM_MODE, SPRING, type Simulator, createBuffers, defaultSimParams, upload } from './Simulator';
+import { GROUND_Y, SIM_MODE, SPRING, type Simulator, createBuffers, defaultSimParams, uploadFrame } from './Simulator';
 
 const { clamp, interpolate: lerp } = gsap.utils;
-const smooth = gsap.parseEase('sine.inOut');
 
 /**
  * WebGL2 fallback: the same motion model as GpuSimulator, integrated in JS and
@@ -34,15 +34,12 @@ export class CpuSimulator implements Simulator {
       T: f(b.target),
       SC: f(b.startColor),
       TC: f(b.targetColor),
+      D: f(b.override),
     };
   }
 
   setFrame(from: CompiledFrame, to: CompiledFrame, snap: boolean) {
-    const b = this.buffers;
-    upload(b.start, from.positions, to.delays);
-    upload(b.target, to.positions);
-    upload(b.startColor, from.colors, 1);
-    upload(b.targetColor, to.colors, 1);
+    uploadFrame(this.buffers, from, to);
     if (snap) this.pendingSnap = true;
   }
 
@@ -72,19 +69,20 @@ export class CpuSimulator implements Simulator {
   }
 
   step(_renderer: unknown, rawDt: number, time: number) {
-    const { P, V, C, S, T, SC, TC } = this.arrays;
+    const { P, V, C, S, T, SC, TC, D } = this.arrays;
     const { progress, mode, stagger, swarm, gravity, restitution, wind, spinStart, spinTarget, launch } = this.params;
     const [cx, , cz] = SHOW_VOLUME.center;
     const rot = [Math.cos(spinStart), Math.sin(spinStart), Math.cos(spinTarget), Math.sin(spinTarget)];
     const from = [0, 0, 0];
     const to = [0, 0, 0];
+    const pose = [0, 0, 0];
     const dt = Math.min(Math.max(rawDt, 1e-4), 1 / 20);
     const snap = this.pendingSnap;
     this.pendingSnap = false;
 
     for (let i = 0; i < this.count; i++) {
       const o = i * 4;
-      const local = clamp(0, 1, progress * (1 + stagger) - S[o + 3] * stagger);
+      const local = localProgress(progress, stagger, S[o + 3]);
       const eased = smooth(local);
       // Cheap per-drone wobble standing in for the GPU noise field.
       const ph = hash01(i) * 6.283 + time * 0.9;
@@ -98,18 +96,18 @@ export class CpuSimulator implements Simulator {
       to[0] = tx * rot[2] + tz * rot[3] + cx;
       to[1] = T[o + 1];
       to[2] = tz * rot[2] - tx * rot[3] + cz;
-      // Launch: climb first, slide into place after.
-      const rise = lerp(eased, smooth(clamp(0, 1, local / 0.72)), launch);
-      const slide = lerp(eased, smooth(clamp(0, 1, (local - 0.34) / 0.66)), launch);
+      // Same path function as the GPU and the planner, then the planned detour for this drone.
+      flightPose(pose, from, to, null, 0, local, launch);
+      const bulge = detourWeight(local);
+      for (let k = 0; k < 3; k++) pose[k] += D[o + k] * bulge;
 
       for (let k = 0; k < 3; k++) {
         const a = o + k;
-        const pose = lerp(from[k], to[k], k === 1 ? rise : slide);
         if (snap) {
-          P[a] = pose;
+          P[a] = pose[k];
           V[a] = 0;
         } else if (mode === SIM_MODE.ease) {
-          const next = pose + noise[k] * Math.sin(local * Math.PI) * swarm * 1.6;
+          const next = pose[k] + noise[k] * bulge * swarm * 0.12;
           V[a] = clamp(-60, 60, (next - P[a]) / dt);
           P[a] = next;
         } else if (mode === SIM_MODE.spring) {

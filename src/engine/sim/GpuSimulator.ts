@@ -20,9 +20,10 @@ import {
 } from 'three/tsl';
 import { type Renderer, Vector3 } from 'three/webgpu';
 import { SHOW_VOLUME } from '../formations/fit';
+import { LAUNCH } from './path';
 import type { CompiledFrame } from '../timeline/compile';
 import type { PhysicsEffect } from '../types';
-import { GROUND_Y, SIM_MODE, SPRING, type Simulator, type StorageNode, createBuffers, defaultSimParams, upload } from './Simulator';
+import { GROUND_Y, SIM_MODE, SPRING, type Simulator, type StorageNode, createBuffers, defaultSimParams, uploadFrame } from './Simulator';
 
 const CENTER = vec3(...SHOW_VOLUME.center);
 const EFFECT_ID: Record<PhysicsEffect, number> = { drop: 0, burst: 1, wind: 2 };
@@ -73,8 +74,8 @@ export class GpuSimulator implements Simulator {
     /** start -> target for a drone; on launch the climb leads and the sideways slide follows. */
     const flightPath = (from: ReturnType<typeof spin>, to: ReturnType<typeof spin>, local: ReturnType<typeof localProgress>) => {
       const eased = smoothstep(0, 1, local);
-      const rise = mix(eased, smoothstep(0, 0.72, local), u.launch);
-      const slide = mix(eased, smoothstep(0.34, 1, local), u.launch);
+      const rise = mix(eased, smoothstep(0, LAUNCH.riseEnd, local), u.launch);
+      const slide = mix(eased, smoothstep(LAUNCH.slideStart, 1, local), u.launch);
       return vec3(mix(from.x, to.x, slide), mix(from.y, to.y, rise), mix(from.z, to.z, slide));
     };
 
@@ -92,8 +93,12 @@ export class GpuSimulator implements Simulator {
 
       If(u.mode.equal(SIM_MODE.ease), () => {
         // Scrubbable: pose is a pure function of progress, with a noise arc mid-flight.
-        const arc = sin(local.mul(Math.PI)).mul(u.swarm).mul(3.2);
-        const next = flightPath(from, to, local).add(noise.mul(arc));
+        // Planned route: eased path + the de-conflicting detour, with only a breath of noise
+        // so the separation worked out before take-off still holds.
+        const bulge = sin(local.mul(Math.PI));
+        const next = flightPath(from, to, local)
+          .add(b.override.element(instanceIndex).xyz.mul(bulge))
+          .add(noise.mul(bulge).mul(u.swarm).mul(0.12));
         V.assign(clamp(next.sub(P).div(dt), vec3(-60), vec3(60)));
         P.assign(next);
       })
@@ -130,7 +135,9 @@ export class GpuSimulator implements Simulator {
       const start = b.start.element(instanceIndex);
       const local = localProgress(start);
       const eased = smoothstep(0, 1, local);
-      const pose = flightPath(spin(start, u.spinStart), spin(b.target.element(instanceIndex), u.spinTarget), local);
+      const pose = flightPath(spin(start, u.spinStart), spin(b.target.element(instanceIndex), u.spinTarget), local).add(
+        b.override.element(instanceIndex).xyz.mul(sin(local.mul(Math.PI))),
+      );
       b.position.element(instanceIndex).assign(vec4(pose, 1));
       b.velocity.element(instanceIndex).assign(vec4(0));
       b.color
@@ -157,11 +164,7 @@ export class GpuSimulator implements Simulator {
   }
 
   setFrame(from: CompiledFrame, to: CompiledFrame, snap: boolean) {
-    const b = this.buffers;
-    upload(b.start, from.positions, to.delays);
-    upload(b.target, to.positions);
-    upload(b.startColor, from.colors, 1);
-    upload(b.targetColor, to.colors, 1);
+    uploadFrame(this.buffers, from, to);
     if (snap) this.pendingSnap = true;
   }
 

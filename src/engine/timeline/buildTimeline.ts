@@ -28,12 +28,14 @@ export function curveKind(curve: string): CurveKind {
 }
 
 /** Lay keyframes out on the clock. Easing always comes from GSAP's ease parser. */
-export function planSegments(keyframes: Keyframe[]): Segment[] {
+export function planSegments(keyframes: Keyframe[], durations?: number[]): Segment[] {
   let t = 0;
   return keyframes.map((kf, index) => {
     const kind = curveKind(kf.transition.curve);
     const ease = gsap.parseEase(kind === 'ease' ? kf.transition.curve : 'none') ?? gsap.parseEase('none');
-    const segment = { index, start: t, transitionEnd: t + kf.transition.duration, end: t + kf.transition.duration + kf.hold, kind, ease };
+    // `durations` carries the speed-limited transition lengths worked out when the show was compiled.
+    const duration = durations?.[index] ?? kf.transition.duration;
+    const segment = { index, start: t, transitionEnd: t + duration, end: t + duration + kf.hold, kind, ease };
     t = segment.end;
     return segment;
   });
@@ -56,8 +58,8 @@ export function locate(segments: Segment[], t: number): TimelineCursor | null {
  * The show clock: a paused GSAP timeline with one label per keyframe.
  * GSAP owns play / pause / seek / loop / timeScale; `onTick` reads the playhead.
  */
-export function buildTimeline(keyframes: Keyframe[], onTick?: (time: number) => void) {
-  const segments = planSegments(keyframes);
+export function buildTimeline(keyframes: Keyframe[], durations?: number[], onTick?: (time: number) => void) {
+  const segments = planSegments(keyframes, durations);
   const duration = totalDuration(segments);
   const playhead = { t: 0 };
   const timeline = gsap.timeline({ paused: true, onUpdate: () => onTick?.(timeline.time()) });
