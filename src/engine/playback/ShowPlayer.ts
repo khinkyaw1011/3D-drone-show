@@ -157,10 +157,8 @@ export class ShowPlayer {
     this.duration = built.duration;
     this.clock.timeScale(this.timeScale);
     this.clock.eventCallback('onComplete', () => {
-      if (this.loop && this.duration > 0) {
-        this.laps++;
-        this.clock?.restart();
-      } else this.events.onEnd?.();
+      if (this.loop && this.duration > 0) this.loopAround();
+      else this.events.onEnd?.();
     });
     this.wantsPlay = wasPlaying;
     // Keep the playhead at the same moment of the formation on stage, even if earlier ones changed length.
@@ -341,6 +339,28 @@ export class ShowPlayer {
       spin: show.keyframes[index].spin * DEG * (arriveAt - segment.start),
       stats: plan.stats,
     };
+  }
+
+  /**
+   * The show has reached its end and loops. The fleet does not jump back to the start of the
+   * timeline: the first formation's own transition was planned for lifting off the launch deck,
+   * not for arriving from the last formation, so replaying it sent drones on unplanned,
+   * unlimited-speed routes (a visible lurch). Instead the fleet re-forms into the first
+   * formation with a freshly planned flight from where every drone is now (speed-limited and
+   * de-conflicted, like any change of cue), and the show carries on from there.
+   */
+  private loopAround() {
+    const { clock, compiled } = this;
+    const first = this.segments[0];
+    if (!clock || !compiled || !first) return;
+    this.laps++;
+    if (compiled.frames.length < 2) {
+      // One formation: it is already formed; just hold it again.
+      clock.time(first.transitionEnd);
+      clock.play();
+      return;
+    }
+    this.startLiveFlight(this.capturePose(), 0);
   }
 
   private endLiveFlight() {
