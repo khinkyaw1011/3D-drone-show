@@ -14,9 +14,15 @@
       "gallery": "Gallery",
       "guide": "Guide",
       "about": "About",
-      "studio": "Studio"
+      "studio": "Studio",
+      "project": "Project"
     },
-    "footerNote": "A virtual drone show simulator. No real aircraft are flown."
+    "footerNote": "A virtual drone show simulator. No real aircraft are flown.",
+    "fonts": {
+      "label": "Fonts",
+      "sans": "Body text",
+      "serif": "Headings"
+    }
   },
   "Stage": {
     "launching": "Preparing the fleet…",
@@ -302,7 +308,78 @@
     "explore": "Explore in 3D",
     "exitExplore": "Exit 3D view",
     "exploreHint": "Drag to look around · scroll or pinch to zoom · Esc to exit",
-    "scrollCue": "Scroll for the gallery"
+    "scrollCue": "Scroll for the gallery",
+    "features": {
+      "eyebrow": "What you can fly",
+      "title": "Anything you can draw, the fleet can build",
+      "lead": "Every formation is made the same way: your idea becomes evenly spaced points, one per drone, and the fleet flies to them.",
+      "text": {
+        "title": "Words in any script",
+        "body": "Type English, 日本語, 中文 or မြန်မာ and press Enter. Latin letters get depth; dense scripts fly as a flat, readable sign."
+      },
+      "shapes": {
+        "title": "Eighteen ready shapes",
+        "body": "Heart, galaxy, DNA helix, Saturn, butterfly and more. Solid shapes turn slowly so you can see their depth."
+      },
+      "artwork": {
+        "title": "Your pictures and SVG",
+        "body": "Drop a photo, logo or line icon. Drones take its outline and its colours."
+      },
+      "models": {
+        "title": "3D models that move",
+        "body": "Link a .glb from your device. If it has animation, play it as a run of formations the fleet flies through."
+      },
+      "physics": {
+        "title": "Real flight limits",
+        "body": "Top speed, acceleration and a safety gap are enforced. Routes are planned before take-off so no two drones meet."
+      },
+      "share": {
+        "title": "Share and export",
+        "body": "A whole show fits in a link. Save presets, export stills and video, and keep editing."
+      }
+    },
+    "guide": {
+      "eyebrow": "Quick start",
+      "title": "Your first show in a minute",
+      "lead": "Everything happens in the panel beside the show. No account, nothing to install.",
+      "pick": {
+        "title": "Pick a show",
+        "body": "Open the Show tab and choose one. The drones already in the air re-form into it."
+      },
+      "create": {
+        "title": "Add your own formation",
+        "body": "In Create, type a word, pick a shape or drop a file. It joins the show and the fleet flies straight to it."
+      },
+      "look": {
+        "title": "Set the look",
+        "body": "Look changes drone size, lighting and colours; Flight sets speed and spacing. Every group has its own reset."
+      },
+      "explore": {
+        "title": "Step inside",
+        "body": "Explore in 3D lets you orbit and zoom, or walk under the show. Open the Studio for a timeline and export."
+      },
+      "more": "Read the full guide"
+    },
+    "faq": {
+      "eyebrow": "Questions",
+      "title": "Good to know",
+      "files": {
+        "q": "Where do my files go?",
+        "a": "Nowhere. Pictures, SVG and models are read in your browser and never uploaded. Large files stay on your device and are only linked; if one is moved, you are asked to locate it."
+      },
+      "saved": {
+        "q": "Is my work saved?",
+        "a": "Yes, automatically on this device. Reset any group of settings, or everything, whenever you like."
+      },
+      "devices": {
+        "q": "Which devices work?",
+        "a": "Any recent browser. WebGPU is used where available, with a WebGL fallback. The fleet size adapts to what your device can fly smoothly."
+      },
+      "real": {
+        "q": "Could a real fleet fly this?",
+        "a": "The planning follows the same rules: speed and acceleration limits, a minimum gap and conflict-free routes. It is a design tool, not flight software."
+      }
+    }
   },
   "Fields": {
     "shape": "Shape",
@@ -686,5 +763,14 @@
     "play": "Play as formations",
     "playHint": "Adds {count} poses of this animation as formations; the fleet flies through them in a loop.",
     "linkedNote": "Linked from your device. The file is read where it is, not copied into the show."
+  },
+  "Project": {
+    "meta": {
+      "title": "Project",
+      "description": "What Skyloom does, how it is built and the technology it uses."
+    },
+    "eyebrow": "About this project",
+    "title": "Skyloom, explained",
+    "lead": "What is in the project, how the drones and the planning work, and the technology underneath."
   }
 }

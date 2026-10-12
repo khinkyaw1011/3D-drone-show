@@ -1,3 +1,4 @@
+import { DEFAULT_FONTS, FONT_CHOICES } from '@/lib/fonts';
 import { temporal } from 'zundo';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
@@ -27,6 +28,8 @@ const safeShow = (raw: unknown): Show | null => {
 function sanitizeUi(raw: unknown): StudioState['ui'] {
   const ui = { ...initialUiSlice().ui, ...((raw as object | undefined) ?? {}), mobilePanel: null } as StudioState['ui'];
   if (!(INSPECTOR_TABS as readonly string[]).includes(ui.inspectorTab)) ui.inspectorTab = 'formation';
+  if (!(ui.fontBody in FONT_CHOICES.body)) ui.fontBody = DEFAULT_FONTS.fontBody;
+  if (!(ui.fontHeading in FONT_CHOICES.heading)) ui.fontHeading = DEFAULT_FONTS.fontHeading;
   return ui;
 }
 

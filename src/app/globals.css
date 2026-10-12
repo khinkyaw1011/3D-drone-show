@@ -7,10 +7,12 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans), var(--font-noto-jp), var(--font-noto-myanmar), ui-sans-serif, system-ui, sans-serif;
+  /* Two semantic slots: `font-body` (also `font-sans`) and `font-heading`. Geist by default; the
+     font picker re-points `--font-body-face` / `--font-heading-face` (src/lib/fonts.ts). */
+  --font-sans: var(--font-body-face, var(--font-geist-sans)), var(--font-noto-jp), var(--font-noto-myanmar), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-sans);
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-  --font-serif: var(--font-instrument-serif), var(--font-noto-jp), var(--font-noto-myanmar), ui-serif, Georgia, serif;
-  --font-heading: var(--font-serif);
+  --font-heading: var(--font-heading-face, var(--font-geist-sans)), var(--font-noto-jp), var(--font-noto-myanmar), ui-sans-serif, system-ui, sans-serif;
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-line: var(--line);
@@ -153,7 +155,7 @@
     font-size: 0.75rem;
   }
   .display {
-    font-family: var(--font-serif);
+    font-family: var(--font-heading);
     font-weight: 400;
     letter-spacing: -0.02em;
     line-height: 0.98;

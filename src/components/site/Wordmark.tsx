@@ -16,7 +16,7 @@ export function Wordmark({ className, compact = false }: { className?: string; c
           <circle key={i} cx={cx} cy={cy} r={i === 5 ? 2 : 1.4} fill="currentColor" />
         ))}
       </svg>
-      {!compact && <span className="font-serif text-xl leading-none tracking-tight text-paper">Skyloom</span>}
+      {!compact && <span className="font-heading text-xl leading-none tracking-tight text-paper">Skyloom</span>}
     </span>
   );
 }

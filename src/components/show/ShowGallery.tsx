@@ -46,7 +46,7 @@ function ShowCard({ show, onFly }: { show: Show; onFly?: (show: Show) => void })
       </div>
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div>
-          <h3 className="font-serif text-2xl leading-tight text-paper">{show.name}</h3>
+          <h3 className="font-heading text-2xl leading-tight text-paper">{show.name}</h3>
           <p className="mt-1.5 text-sm text-muted-foreground">{t.has(`shows.${show.id}`) ? t(`shows.${show.id}`) : null}</p>
         </div>
         <p className="eyebrow mt-auto">{t('summary', { formations: show.keyframes.length, drones: formatNumber(show.droneCount) })}</p>

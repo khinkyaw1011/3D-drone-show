@@ -5,15 +5,20 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Link, usePathname } from '@/i18n/navigation';
+import { SHOW_PROJECT_PAGE } from '@/lib/site';
 import { cn } from '@/lib/utils';
+import { FontPicker } from './FontPicker';
 import { LocaleSwitcher } from './LocaleSwitcher';
 import { Wordmark } from './Wordmark';
 
-export const NAV = [
+const PAGES = [
   { href: '/gallery', key: 'gallery' },
   { href: '/guide', key: 'guide' },
   { href: '/about', key: 'about' },
+  { href: '/project', key: 'project' },
 ] as const;
+/** The project page and its links can be switched off from the environment (see `lib/site.ts`). */
+export const NAV = PAGES.filter((page) => page.key !== 'project' || SHOW_PROJECT_PAGE);
 
 /** Top navigation for the marketing pages. Floats over the show on the landing page. */
 export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
@@ -38,6 +43,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
           ))}
         </nav>
         <div className="flex items-center gap-2">
+          <FontPicker />
           <LocaleSwitcher compact className="md:hidden" />
           <LocaleSwitcher className="hidden md:flex" />
           <Button asChild size="sm" className="hidden rounded-full sm:inline-flex">

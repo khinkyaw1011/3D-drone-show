@@ -20,7 +20,7 @@ export default async function AboutPage(props: LocaleParams) {
       <div className="grid gap-x-10 gap-y-8 md:grid-cols-2">
         {TOPICS.map((topic) => (
           <section key={topic}>
-            <h2 className="font-serif text-2xl text-paper">{t(`topics.${topic}.title`)}</h2>
+            <h2 className="font-heading text-2xl text-paper">{t(`topics.${topic}.title`)}</h2>
             <p className="mt-2 text-sm leading-relaxed text-paper/70">{t(`topics.${topic}.body`)}</p>
           </section>
         ))}

@@ -28,7 +28,7 @@ export function StudioTour({ step, onStep }: StudioTourProps) {
       className="glass absolute inset-x-3 top-1/2 z-40 mx-auto max-w-sm -translate-y-1/2 border-cyan/40 p-5 shadow-2xl sm:inset-x-auto sm:left-1/2 sm:w-[24rem] sm:-translate-x-1/2"
     >
       <p className="eyebrow !text-cyan">{t('progress', { step: step + 1, total: TOUR_STEPS.length })}</p>
-      <h2 className="mt-2 font-serif text-2xl leading-tight text-paper">{t(`${id}.title`)}</h2>
+      <h2 className="mt-2 font-heading text-2xl leading-tight text-paper">{t(`${id}.title`)}</h2>
       <p className="mt-2 text-sm text-paper/75">{t(`${id}.body`)}</p>
       <div className="mt-5 flex items-center gap-2">
         <Button variant="ghost" size="sm" className="mr-auto text-muted-foreground" onClick={() => onStep(null)}>

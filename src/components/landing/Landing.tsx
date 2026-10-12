@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowDown, Move3d, Rocket, X } from 'lucide-react';
+import { ArrowDown, ArrowRight, Box, Gauge, ImageUp, Move3d, Rocket, Share2, Shapes, Type, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
 import { FleetStats } from '@/components/show/FleetStats';
@@ -20,6 +20,16 @@ import { cn } from '@/lib/utils';
 import { dispatch } from '@/store/dispatch';
 
 const STEPS = ['design', 'animate', 'share'] as const;
+const FEATURES = [
+  ['text', Type],
+  ['shapes', Shapes],
+  ['artwork', ImageUp],
+  ['models', Box],
+  ['physics', Gauge],
+  ['share', Share2],
+] as const;
+const GUIDE = ['pick', 'create', 'look', 'explore'] as const;
+const FAQ = ['files', 'saved', 'devices', 'real'] as const;
 const FACTS = ['drawCall', 'speed', 'gap', 'aircraft'] as const;
 
 function SectionHeading({ eyebrow, title, lead }: { eyebrow: string; title: string; lead: string }) {
@@ -27,7 +37,7 @@ function SectionHeading({ eyebrow, title, lead }: { eyebrow: string; title: stri
     <header className="max-w-2xl">
       <p className="eyebrow text-cyan">{eyebrow}</p>
       <h2 className="display mt-3 text-4xl text-paper sm:text-5xl">{title}</h2>
-      <p className="mt-4 text-base text-paper/70">{lead}</p>
+      {lead && <p className="mt-4 text-base text-paper/70">{lead}</p>}
     </header>
   );
 }
@@ -131,6 +141,46 @@ export function Landing() {
           </div>
         </section>
 
+        <section id="features" className="border-t border-line">
+          <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
+            <SectionHeading eyebrow={t('features.eyebrow')} title={t('features.title')} lead={t('features.lead')} />
+            <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {FEATURES.map(([key, Icon]) => (
+                <li key={key} className="rounded-[14px] border border-line bg-ink-2/40 p-6">
+                  <Icon className="size-5 text-glow" aria-hidden="true" />
+                  <h3 className="mt-4 font-heading text-2xl text-paper">{t(`features.${key}.title`)}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-paper/65">{t(`features.${key}.body`)}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <section id="quick-start" className="border-t border-line bg-ink-2/40">
+          <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
+            <SectionHeading eyebrow={t('guide.eyebrow')} title={t('guide.title')} lead={t('guide.lead')} />
+            <ol className="mt-10 grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+              {GUIDE.map((step, i) => (
+                <li key={step} className="border-t border-line pt-5">
+                  <span className="font-mono text-xs text-glow">0{i + 1}</span>
+                  <h3 className="mt-2 text-base font-medium text-paper">{t(`guide.${step}.title`)}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-paper/65">{t(`guide.${step}.body`)}</p>
+                </li>
+              ))}
+            </ol>
+            <div className="mt-10 flex flex-wrap items-center gap-4">
+              <Button size="lg" className="h-11 rounded-full px-6 text-sm" onClick={() => stage.current?.scrollIntoView({ behavior: 'smooth' })}>
+                <Rocket aria-hidden="true" />
+                {t('start')}
+              </Button>
+              <Link href="/guide" className="inline-flex items-center gap-2 text-sm text-paper/70 hover:text-paper">
+                {t('guide.more')}
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+            </div>
+          </div>
+        </section>
+
         <section id="how" className="border-t border-line bg-ink-2/40">
           <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
             <SectionHeading eyebrow={t('how.eyebrow')} title={t('how.title')} lead={t('how.lead')} />
@@ -138,7 +188,7 @@ export function Landing() {
               {STEPS.map((step, i) => (
                 <li key={step} className="rounded-[14px] border border-line bg-ink p-6">
                   <span className="font-mono text-xs text-glow">0{i + 1}</span>
-                  <h3 className="mt-3 font-serif text-2xl text-paper">{t(`how.${step}.title`)}</h3>
+                  <h3 className="mt-3 font-heading text-2xl text-paper">{t(`how.${step}.title`)}</h3>
                   <p className="mt-2 text-sm text-paper/65">{t(`how.${step}.body`)}</p>
                 </li>
               ))}
@@ -146,7 +196,7 @@ export function Landing() {
             <dl className="mt-12 grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-4">
               {FACTS.map((fact) => (
                 <div key={fact}>
-                  <dd className="font-serif text-4xl text-paper sm:text-5xl">{t(`facts.${fact}.value`)}</dd>
+                  <dd className="font-heading text-4xl text-paper sm:text-5xl">{t(`facts.${fact}.value`)}</dd>
                   <dt className="eyebrow mt-2">{t(`facts.${fact}.label`)}</dt>
                 </div>
               ))}
@@ -161,6 +211,19 @@ export function Landing() {
               </a>
               {hydrated && <FleetStats className="ml-auto hidden sm:flex" />}
             </div>
+          </div>
+        </section>
+        <section id="faq" className="border-t border-line">
+          <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
+            <SectionHeading eyebrow={t('faq.eyebrow')} title={t('faq.title')} lead="" />
+            <dl className="mt-8 grid gap-x-10 gap-y-8 md:grid-cols-2">
+              {FAQ.map((item) => (
+                <div key={item}>
+                  <dt className="text-base font-medium text-paper">{t(`faq.${item}.q`)}</dt>
+                  <dd className="mt-2 text-sm leading-relaxed text-paper/65">{t(`faq.${item}.a`)}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
         </section>
       </main>

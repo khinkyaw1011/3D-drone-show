@@ -1,4 +1,5 @@
 import type { Capabilities } from '@/engine/types';
+import { DEFAULT_FONTS, type BodyFont, type HeadingFont } from '@/lib/fonts';
 
 export const INSPECTOR_TABS = ['formation', 'drones', 'flight', 'scene', 'camera', 'fx'] as const;
 export type InspectorTab = (typeof INSPECTOR_TABS)[number];
@@ -15,6 +16,9 @@ export interface UiSlice {
     fallbackNoticeSeen: boolean;
     /** The studio walkthrough has been finished or skipped. */
     tourSeen: boolean;
+    /** Typefaces for body text and headings (see `lib/fonts.ts`). */
+    fontBody: BodyFont;
+    fontHeading: HeadingFont;
   };
   /** Runtime-only facts about this device. */
   runtime: {
@@ -28,6 +32,6 @@ export interface UiSlice {
 }
 
 export const initialUiSlice = (): UiSlice => ({
-  ui: { leftOpen: true, rightOpen: true, inspectorTab: 'formation', mobilePanel: null, pushToy: false, fallbackNoticeSeen: false, tourSeen: false },
+  ui: { leftOpen: true, rightOpen: true, inspectorTab: 'formation', mobilePanel: null, pushToy: false, fallbackNoticeSeen: false, tourSeen: false, ...DEFAULT_FONTS },
   runtime: { capabilities: null, status: 'idle', error: null, fps: 0, deviceMax: null },
 });

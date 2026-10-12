@@ -39,7 +39,7 @@ export function Viewer() {
         <Link href="/" aria-label={t('home')} className="rounded-md">
           <Wordmark />
         </Link>
-        <h1 className="min-w-0 truncate font-serif text-lg text-paper/90 sm:text-xl">{show.name}</h1>
+        <h1 className="min-w-0 truncate font-heading text-lg text-paper/90 sm:text-xl">{show.name}</h1>
       </div>
       <div className="glass absolute inset-x-3 bottom-3 mx-auto flex max-w-md items-center justify-center gap-2 p-2 sm:bottom-4">
         <Button size="sm" className="rounded-full px-4" onClick={() => setPlaying((p) => !p)}>

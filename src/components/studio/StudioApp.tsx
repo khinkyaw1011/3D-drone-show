@@ -158,7 +158,7 @@ export function StudioApp() {
       <Dialog open={helpOpen} onOpenChange={setHelpOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-serif text-2xl font-normal">{t('shortcuts.title')}</DialogTitle>
+            <DialogTitle className="font-heading text-2xl font-normal">{t('shortcuts.title')}</DialogTitle>
             <DialogDescription>{t('shortcuts.description')}</DialogDescription>
           </DialogHeader>
           <dl className="divide-y divide-line">

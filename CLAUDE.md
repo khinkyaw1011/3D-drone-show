@@ -41,4 +41,4 @@ Skyloom is a virtual drone-show studio (Next.js App Router, three.js WebGPU/TSL,
 
 ## Design
 
-Tokens live in `src/app/globals.css` (`--ink`, `--paper`, `--glow`, `--cyan`). Dark only. Panels use `.glass`, labels `.eyebrow`, headlines `.display`. Shared controls are in `src/components/controls/fields.tsx`; reuse them rather than styling new inputs.
+Tokens live in `src/app/globals.css` (`--ink`, `--paper`, `--glow`, `--cyan`). Fonts: use only `font-body` / `font-heading` / `font-mono`; never name a typeface in a component (choices live in `src/lib/fonts.ts`). Dark only. Panels use `.glass`, labels `.eyebrow`, headlines `.display`. Shared controls are in `src/components/controls/fields.tsx`; reuse them rather than styling new inputs.

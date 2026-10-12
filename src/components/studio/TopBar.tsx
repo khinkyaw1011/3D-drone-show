@@ -95,7 +95,7 @@ export function TopBar({ onExport, onHelp, onTour }: TopBarProps) {
         value={show.name}
         maxLength={60}
         onChange={(e) => e.target.value && run({ type: 'show.rename', name: e.target.value })}
-        className="min-w-0 flex-1 truncate rounded-md bg-transparent px-2 py-1 font-serif text-lg text-paper outline-none hover:bg-white/5 focus-visible:bg-white/5 sm:max-w-64 sm:flex-none"
+        className="min-w-0 flex-1 truncate rounded-md bg-transparent px-2 py-1 font-heading text-lg text-paper outline-none hover:bg-white/5 focus-visible:bg-white/5 sm:max-w-64 sm:flex-none"
       />
 
       <DropdownMenu>

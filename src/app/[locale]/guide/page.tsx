@@ -24,13 +24,13 @@ export default async function GuidePage(props: LocaleParams) {
         {STEPS.map((step, i) => (
           <li key={step} className="rounded-[14px] border border-line bg-ink-2 p-6">
             <span className="font-mono text-xs text-glow">{String(i + 1).padStart(2, '0')}</span>
-            <h2 className="mt-3 font-serif text-2xl text-paper">{t(`steps.${step}.title`)}</h2>
+            <h2 className="mt-3 font-heading text-2xl text-paper">{t(`steps.${step}.title`)}</h2>
             <p className="mt-2 text-sm text-paper/70">{t(`steps.${step}.body`)}</p>
           </li>
         ))}
       </ol>
       <section className="mt-14 max-w-xl">
-        <h2 className="font-serif text-3xl text-paper">{t('keys.title')}</h2>
+        <h2 className="font-heading text-3xl text-paper">{t('keys.title')}</h2>
         <dl className="mt-5 divide-y divide-line border-y border-line">
           {KEYS.map((row) => (
             <div key={row.id} className="flex items-center justify-between gap-4 py-3">
