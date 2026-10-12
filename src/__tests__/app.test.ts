@@ -143,3 +143,24 @@ describe('remembered settings', () => {
   });
 });
 
+describe('switching show keeps the visitor\'s tweaks', () => {
+  it('carries changed settings into the next show and lets untouched ones follow it', async () => {
+    const { carryTweaks } = await import('@/engine/presets/reset');
+    const { BUILTIN_SHOWS } = await import('@/engine/presets/builtin');
+    const [base, other] = [BUILTIN_SHOWS[0], BUILTIN_SHOWS.find((s) => s.scene.sky !== BUILTIN_SHOWS[0].scene.sky) ?? BUILTIN_SHOWS[1]];
+    const current = structuredClone(base);
+    current.look.glow = 2.7;
+    current.scene.cameraPreset = 'top-down';
+    current.look.colorMode = 'rainbow';
+    const next = structuredClone(other);
+    carryTweaks(current, base, next);
+    expect(next.look.glow).toBe(2.7);
+    expect(next.scene.cameraPreset).toBe('top-down');
+    expect(next.look.colorMode).toBe('rainbow');
+    expect(next.keyframes.every((keyframe) => !keyframe.look)).toBe(true);
+    // Untouched: the new show's own sky and formations.
+    expect(next.scene.sky).toBe(other.scene.sky);
+    expect(next.keyframes.map((k) => k.id)).toEqual(other.keyframes.map((k) => k.id));
+  });
+});
+

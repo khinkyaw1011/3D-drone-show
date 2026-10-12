@@ -2,7 +2,7 @@
 
 import { ArrowDown, ArrowRight, Box, Gauge, ImageUp, Move3d, Share2, Shapes, Type, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FleetStats } from '@/components/show/FleetStats';
 import { LiveShow } from '@/components/show/LiveShow';
 import { QuickControls } from '@/components/show/QuickControls';
@@ -16,6 +16,8 @@ import { useImmersive } from '@/hooks/useImmersive';
 import { useInView } from '@/hooks/useInView';
 import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
+import { BUILTIN_SHOWS } from '@/engine/presets/builtin';
+import { useStudio } from '@/store';
 import { dispatch } from '@/store/dispatch';
 
 const STEPS = ['design', 'animate', 'share'] as const;
@@ -51,6 +53,17 @@ export function Landing() {
   // The page scrolls like any page until the visitor chooses to step into the show.
   const [exploring, setExploring] = useState(false);
   const immersive = exploring || walking;
+  // Every visit opens on a different show, lifting off by itself. Only the formations and the
+  // settings the visitor never touched change: everything they tweaked is carried into it.
+  const picked = useRef(false);
+  useEffect(() => {
+    if (!hydrated || picked.current) return;
+    picked.current = true;
+    const { basedOn, name } = useStudio.getState().show;
+    const others = BUILTIN_SHOWS.filter((show) => show.id !== basedOn && show.name !== name);
+    const next = others[Math.floor(Math.random() * others.length)];
+    if (next) void dispatch({ type: 'preset.apply', presetId: next.id, keepTweaks: true });
+  }, [hydrated]);
   useImmersive(exploring && !walking, () => setExploring(false));
 
   return (

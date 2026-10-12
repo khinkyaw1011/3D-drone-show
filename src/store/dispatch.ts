@@ -2,7 +2,7 @@ import { nanoid } from 'nanoid';
 import { type CommandHandlers, createDispatcher } from '@/engine/commands/commands';
 import { getSource } from '@/engine/formations/registry';
 import { BUILTIN_SHOWS } from '@/engine/presets/builtin';
-import { resetScope } from '@/engine/presets/reset';
+import { carryTweaks, resetScope } from '@/engine/presets/reset';
 import { flightSchema, droneLookSchema, keyframeSchema, sceneSettingsSchema } from '@/engine/presets/schema';
 import type { Keyframe, SceneSettings } from '@/engine/types';
 import { currentFleetLimits, history, mutate, useStudio } from './index';
@@ -160,13 +160,20 @@ const handlers: CommandHandlers = {
     seek({ keyframe });
   },
   'playback.setLoop': ({ loop }) => mutate((s) => void (s.playback.loop = loop)),
-  'preset.apply': ({ presetId }) => {
-    const preset = [...BUILTIN_SHOWS, ...useStudio.getState().userPresets].find((p) => p.id === presetId);
+  'preset.apply': ({ presetId, keepTweaks }) => {
+    const presets = [...BUILTIN_SHOWS, ...useStudio.getState().userPresets];
+    const preset = presets.find((p) => p.id === presetId);
     if (!preset) throw new Error(`Preset "${presetId}" not found`);
-    // Keep the visitor's fleet size, so the drones already in the air simply re-form into the new show.
-    // The lighting style is the visitor's preference too, not part of a show: it carries over.
-    const { droneCount, flight, look } = useStudio.getState().show;
-    const show = cloneShow(preset);
+    const current = useStudio.getState().show;
+    const show = { ...cloneShow(preset), basedOn: preset.id };
+    if (keepTweaks) {
+      // (Shows saved before `basedOn` existed are matched by the name they kept from their preset.)
+      const base = presets.find((p) => p.id === current.basedOn) ?? presets.find((p) => p.name === current.name);
+      if (base) carryTweaks(current, base, show);
+    }
+    // Fleet size, flight limits and the lighting style are the visitor's preferences, not part of a
+    // show: they always carry over, so the drones already in the air simply re-form into the new show.
+    const { droneCount, flight, look } = current;
     loadShow({ ...show, droneCount, flight, look: { ...show.look, bodyGlow: look.bodyGlow } });
   },
   'preset.save': ({ name }) =>

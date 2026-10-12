@@ -54,3 +54,17 @@ export function isScopeChanged(show: Show, scope: ResetScope): boolean {
   if (ownsOverrides(scope) && show.keyframes.some((keyframe) => keyframe.look)) return true;
   return paths(scope).some((path) => JSON.stringify(read(show, path)) !== JSON.stringify(read(DEFAULTS, path)));
 }
+
+/**
+ * Carry the visitor's own tweaks from one show into another, in place. A setting counts as a
+ * tweak when it differs from `base`, the preset `current` was loaded from; everything the
+ * visitor left alone follows the new show. Uses the same table as reset, so every resettable
+ * setting is covered.
+ */
+export function carryTweaks(current: Show, base: Show, into: Show): void {
+  const changed = (path: string[]) => JSON.stringify(read(current, path)) !== JSON.stringify(read(base, path));
+  for (const path of Object.values(OWNED).flat()) if (changed(path)) write(into, path, read(current, path));
+  // A colour scheme the visitor chose applies to the whole show, as it did when they chose it.
+  if (OWNED.color.some(changed)) for (const keyframe of into.keyframes) delete keyframe.look;
+}
+

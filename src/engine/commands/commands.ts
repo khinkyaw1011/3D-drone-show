@@ -47,7 +47,10 @@ export const COMMANDS = {
   'playback.setSpeed': { description: 'Set the playback speed multiplier.', schema: z.object({ speed: z.number().min(0.25).max(8) }) },
   'playback.step': { description: 'Jump to the next or previous formation.', schema: z.object({ direction: z.union([z.literal(1), z.literal(-1)]) }) },
   'playback.setLoop': { description: 'Turn looping on or off.', schema: z.object({ loop: z.boolean() }) },
-  'preset.apply': { description: 'Load a built-in or saved show.', schema: z.object({ presetId: id }) },
+  'preset.apply': {
+    description: 'Load a built-in or saved show. `keepTweaks` carries over every setting the visitor changed on the show before it.',
+    schema: z.object({ presetId: id, keepTweaks: z.boolean().optional() }),
+  },
   'preset.save': { description: 'Save the current show as a preset.', schema: z.object({ name: z.string().min(1).max(60) }) },
   'preset.rename': { description: 'Rename a saved preset.', schema: z.object({ id, name: z.string().min(1).max(60) }) },
   'preset.delete': { description: 'Delete a saved preset.', schema: z.object({ id }) },

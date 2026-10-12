@@ -134,6 +134,8 @@ export const showSchema = z.object({
   version: z.number().int().default(SHOW_VERSION),
   id: z.string(),
   name: z.string().min(1).max(60),
+  /** Id of the preset this show was loaded from, so the visitor's own changes can be told apart from the preset's. */
+  basedOn: z.string().optional(),
   droneCount: z.number().int().min(100).max(20000).default(800),
   keyframes: z.array(keyframeSchema).max(40),
   look: droneLookSchema.prefault({}),

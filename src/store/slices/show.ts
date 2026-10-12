@@ -18,6 +18,6 @@ export function emptyShow(): Show {
 }
 
 export const initialShowSlice = (): ShowSlice => {
-  const show = cloneShow(getBuiltinShow(DEFAULT_SHOW_ID)!);
+  const show = { ...cloneShow(getBuiltinShow(DEFAULT_SHOW_ID)!), basedOn: DEFAULT_SHOW_ID };
   return { show, selectedKeyframeId: show.keyframes[0]?.id ?? null };
 };
