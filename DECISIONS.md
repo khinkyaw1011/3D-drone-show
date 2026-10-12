@@ -87,4 +87,6 @@ Where the build departs from, or sharpens, the original spec, and why.
 - **CJK text is flat.** Dense characters are unreadable when split over two depth layers; they are now one layer placed by best-candidate sampling.
 - **Landing opens on a random built-in show** each visit and lifts off by itself, so the "Launch the show" button is gone; the crowd camera now aims below the middle of the show so the launch deck is in frame (higher on tall phone screens, and never below ground when pulled back).
 - **The landing header is clear over the hero and gets its backdrop once the page scrolls past it**, so text never slides under bare links.
+- **Views are travelled to, not cut to.** A change of view glides from the camera's actual pose (`SHOT_SMOOTH`), including when the walk view hands the camera back; entering the walk view descends to eye level with a GSAP tween. Only the first camera of a page load appears in place. On the landing page the show is centred in the viewport (the sideways lens shift is no longer used there).
+- **Page column is `max-w-7xl mx-auto`** for the header, hero text, every landing section, text pages and footer.
 

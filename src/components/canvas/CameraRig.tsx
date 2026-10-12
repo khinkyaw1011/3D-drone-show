@@ -29,6 +29,12 @@ const MAX_DISTANCE = 95;
 /** The point being looked at stays inside this box, so panning can never lose the show. */
 const TARGET_BOUNDS = new Box3(new Vector3(-26, 2, -16), new Vector3(26, 32, 16));
 
+/** How long a change of view takes to settle, in seconds (a `smoothTime`); manual orbiting stays snappy. */
+const SHOT_SMOOTH = 0.9;
+const DRAG_SMOOTH = 0.35;
+/** False until the first camera of this page load has been placed: that one appears in position, later ones travel. */
+let placed = false;
+
 /** Eye height the camera may not go below (it would dip under the ground). */
 const MIN_EYE = 1.2;
 
@@ -64,7 +70,7 @@ export function CameraRig({ preset, autoOrbit, interactive, reducedMotion }: Cam
   const controls = useRef<CameraControls>(null);
   const aspect = useThree((s) => s.size.width / Math.max(1, s.size.height));
   const lastInput = useRef(0);
-  const first = useRef(true);
+  const camera = useThree((s) => s.camera);
   const scratch = useMemo(() => new Vector3(), []);
 
   useEffect(() => {
@@ -81,6 +87,15 @@ export function CameraRig({ preset, autoOrbit, interactive, reducedMotion }: Cam
     // formation sits mid-screen, clear of the headline.
     const ty = baseY + (preset === 'spectator' && aspect < 1 ? 6 : 0);
     const [px, py, pz] = shot.position;
+    const travel = placed && !reducedMotion;
+    if (travel) {
+      // Start from where the camera really is (it may have just been handed over by the walk view),
+      // looking where it was looking, then glide to the new shot.
+      const eye = camera.position;
+      const ahead = camera.getWorldDirection(scratch).multiplyScalar(30).add(eye);
+      if (c.getPosition(new Vector3()).distanceTo(eye) > 0.5) void c.setLookAt(eye.x, eye.y, eye.z, ahead.x, ahead.y, ahead.z, false);
+      c.smoothTime = SHOT_SMOOTH;
+    }
     void c.setLookAt(
       tx + (px - tx) * pullBack,
       // Pulling back along the view line must never take a low camera under the ground.
@@ -89,10 +104,10 @@ export function CameraRig({ preset, autoOrbit, interactive, reducedMotion }: Cam
       tx,
       ty,
       tz,
-      !first.current && !reducedMotion,
+      travel,
     );
-    first.current = false;
-  }, [preset, aspect, reducedMotion]);
+    placed = true;
+  }, [preset, aspect, reducedMotion, camera, scratch]);
 
   useFrame((_, dt) => {
     const c = controls.current;
@@ -114,8 +129,12 @@ export function CameraRig({ preset, autoOrbit, interactive, reducedMotion }: Cam
       enabled={interactive}
       minDistance={4}
       maxDistance={MAX_DISTANCE}
-      smoothTime={reducedMotion ? 0.6 : 0.35}
-      onStart={() => (lastInput.current = performance.now())}
+      smoothTime={reducedMotion ? 0.6 : DRAG_SMOOTH}
+      onStart={() => {
+        lastInput.current = performance.now();
+        // The viewer took over: back to the quick response dragging needs.
+        if (controls.current && !reducedMotion) controls.current.smoothTime = DRAG_SMOOTH;
+      }}
       onChange={() => {
         if (controls.current?.currentAction) lastInput.current = performance.now();
       }}
