@@ -1,10 +1,11 @@
 import { Box3, Matrix4, Vector3 } from 'three/webgpu';
 import type { FormationData, Vec3 } from '../types';
+import { fleetSpacing, relax } from './relax';
 
 /** The slice of sky a formation is fitted into (world units, y up, ground at 0). */
 export const SHOW_VOLUME = {
-  center: [0, 15, 0] as Vec3,
-  size: [38, 20, 14] as Vec3,
+  center: [0, 17, 0] as Vec3,
+  size: [44, 24, 16] as Vec3,
 };
 
 export function computeBounds(positions: Float32Array): { min: Vec3; max: Vec3 } {
@@ -46,17 +47,19 @@ export function toFormation(
   fill = 1,
 ): FormationData {
   fitToVolume(positions, SHOW_VOLUME, fill);
+  // Fit first, then space: the safety gap is a real-world distance, not a fraction of the shape.
+  relax(positions, fleetSpacing(positions.length / 3));
   return { positions, colors, count: positions.length / 3, meta: { sourceId, label, bounds: computeBounds(positions) } };
 }
 
 /** Launch pad sits under the show volume so the fleet climbs almost straight up, as real fleets do. */
-const PAD = { spacing: 0.62, z: 3, y: 0.32 };
+const PAD = { spacing: 0.7, z: 3, y: 0.32 };
 
 /** Columns / rows / footprint of the launch pad for a fleet size. */
 export function padLayout(count: number) {
   const cols = Math.ceil(Math.sqrt(count * 2.4));
   const rows = Math.ceil(count / cols);
-  return { cols, rows, width: cols * PAD.spacing, depth: rows * PAD.spacing, center: [0, PAD.y, PAD.z] as Vec3 };
+  return { cols, rows, spacing: PAD.spacing, width: cols * PAD.spacing, depth: rows * PAD.spacing, center: [0, PAD.y, PAD.z] as Vec3 };
 }
 
 /** Parked take-off grid on the launch pad, like a real show before lift-off. */

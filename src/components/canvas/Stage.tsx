@@ -13,6 +13,7 @@ import { CameraRig } from './CameraRig';
 import { Drones } from './Drones';
 import { Ground, LaunchPad, Sky } from './Environment';
 import { PostFX } from './PostFX';
+import { WalkControls } from './WalkControls';
 
 // Rapier's WASM only loads for shows that actually contain a physics moment.
 const PhysicsMoments = lazy(() => import('./PhysicsMoments'));
@@ -123,17 +124,24 @@ export function Stage({
     else player.pause();
   }, [player, loaded, playing, loop, speed, compiled]);
 
+  useEffect(() => player?.refresh(show), [player, show]);
+
+  // Only act on seek requests made while this stage is mounted (the store may hold an older one).
+  const handledSeek = useRef(seek?.nonce ?? 0);
   useEffect(() => {
-    if (!player || !loaded || !seek) return;
-    if (seek.keyframe !== undefined) player.seekToKeyframe(seek.keyframe);
+    if (!player || !loaded || !seek || seek.nonce === handledSeek.current) return;
+    handledSeek.current = seek.nonce;
+    // A formation is flown to live from the fleet's current positions; a time is scrubbed to.
+    if (seek.keyframe !== undefined) player.flyTo(seek.keyframe);
     else if (seek.t !== undefined) player.seek(seek.t);
   }, [player, loaded, seek]);
 
   useFrame((state, dt) => player?.update(gl, dt, state.clock.elapsedTime));
 
-  const scene = (compiledShow ?? show).scene;
-  const keyframe = (compiledShow ?? show).keyframes[index];
-  const look = { ...(compiledShow ?? show).look, ...keyframe?.look };
+  const scene = show.scene;
+  const keyframe = show.keyframes[index];
+  const look = { ...show.look, ...keyframe?.look };
+  const cameraPreset = keyframe?.camera?.preset ?? scene.cameraPreset;
   const hasPhysics = show.keyframes.some((k) => k.transition.curve === 'physics');
 
   return (
@@ -145,6 +153,7 @@ export function Stage({
         <Drones
           sim={player.sim}
           look={look}
+          spacing={compiled?.spacing ?? 0.5}
           power={physics?.effect === 'drop' ? 0.3 : 1}
           pushToy={pushToy}
           airframes={capabilities.tier.name !== 'low' && count <= AIRFRAME_LIMIT}
@@ -160,12 +169,11 @@ export function Stage({
           />
         </Suspense>
       )}
-      <CameraRig
-        preset={keyframe?.camera?.preset ?? scene.cameraPreset}
-        autoOrbit={scene.autoOrbit}
-        interactive={interactive}
-        reducedMotion={reducedMotion}
-      />
+      {cameraPreset === 'walk' ? (
+        <WalkControls enabled={interactive} />
+      ) : (
+        <CameraRig preset={cameraPreset} autoOrbit={scene.autoOrbit} interactive={interactive} reducedMotion={reducedMotion} />
+      )}
       <PostFX scene={scene} bloomScale={capabilities.tier.bloomScale} />
     </>
   );

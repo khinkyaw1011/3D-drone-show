@@ -54,3 +54,12 @@ export function peakSpeed(distance: number, duration: number, stagger: number, l
 /** Shortest duration that keeps the peak speed at or under `maxSpeed` (units/s). */
 export const durationForSpeed = (distance: number, maxSpeed: number, stagger: number, launch: boolean) =>
   peakSpeed(distance, 1, stagger, launch) / Math.max(maxSpeed, 1e-6);
+
+/** Rotate (x, z) about the vertical axis through (cx, cz); the simulators' hologram spin. */
+export function spinXZ(x: number, z: number, cx: number, cz: number, angle: number): [number, number] {
+  const c = Math.cos(angle);
+  const s = Math.sin(angle);
+  const dx = x - cx;
+  const dz = z - cz;
+  return [dx * c + dz * s + cx, dz * c - dx * s + cz];
+}

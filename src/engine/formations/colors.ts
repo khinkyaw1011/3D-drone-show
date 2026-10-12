@@ -37,6 +37,9 @@ export function resolveColors(formation: FormationData, look: DroneLook): Float3
       case 'palette':
         write(out, i, stops[Math.floor(hash01(i + 7) * stops.length) % stops.length]);
         break;
+      case 'random':
+        write(out, i, { mode: 'oklch', l: 0.8, c: 0.2, h: hash01(i + 3) * 360 } as never);
+        break;
       case 'rainbow':
         write(out, i, { mode: 'oklch', l: 0.8, c: 0.19, h: ((positions[i * 3] - xLo) / xSpan) * 360 } as never);
         break;

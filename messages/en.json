@@ -82,7 +82,11 @@
     "separation": "Minimum separation",
     "spin": "Formation spin",
     "studioPitch": "Want a timeline, per-formation timing, camera shots and export?",
-    "openStudio": "Open the full studio"
+    "openStudio": "Open the full studio",
+    "droneSize": "Drone size",
+    "random": "Random",
+    "ambient": "Background brightness",
+    "view": "View"
   },
   "Options": {
     "shape": {
@@ -109,6 +113,14 @@
       "water": "Water",
       "city": "City",
       "none": "None"
+    },
+    "camera": {
+      "spectator": "Spectator",
+      "walk": "Walk (first person)",
+      "front": "Front",
+      "low-hero": "Low hero",
+      "top-down": "Top-down",
+      "fly-around": "Fly-around"
     }
   },
   "Gallery": {
@@ -136,7 +148,7 @@
     "tagline": "Thousands of drones lift off, fly at real speeds and build 3D formations you design.",
     "start": "Launch the show",
     "openStudio": "Open Studio",
-    "hint": "Drag to orbit · scroll or pinch to zoom",
+    "hint": "Drag to look around · scroll or pinch to zoom · choose Walk in Look to stroll under the show",
     "backToShow": "Back to the show",
     "gallery": {
       "eyebrow": "Gallery",

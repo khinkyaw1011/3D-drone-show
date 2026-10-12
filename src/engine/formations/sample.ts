@@ -1,5 +1,6 @@
 import { MeshSurfaceSampler } from 'three/addons/math/MeshSurfaceSampler.js';
 import { type BufferGeometry, Color, Mesh, Vector3 } from 'three/webgpu';
+import { SpatialGrid } from './spatialGrid';
 
 /** Small seeded PRNG so a show regenerates identically on every device (mulberry32). */
 export function seededRng(seed = 1): () => number {
@@ -23,7 +24,7 @@ export function throwIfAborted(signal?: AbortSignal) {
  * MeshSurfaceSampler alone gives white noise, which clumps and reads as a particle cloud.
  * Real fleets keep a minimum separation, so candidates are dart-thrown against a spatial
  * hash: a point is kept only if no accepted point is closer than a spacing derived from
- * the surface area. Whatever is still missing after the budget is filled without the test.
+ * the surface area (see SpatialGrid). Whatever is still missing after the budget is filled without the test.
  */
 export function sampleGeometry(
   geometry: BufferGeometry,
@@ -40,36 +41,17 @@ export function sampleGeometry(
 
   const area = sampler.distribution ? sampler.distribution[sampler.distribution.length - 1] : 0;
   const spacing = Math.sqrt(area / count) * 0.78;
-  const cell = spacing || 1;
-  const grid = new Map<string, number[]>();
-  const cellOf = (v: number) => Math.floor(v / cell);
-  const tooClose = () => {
-    const [cx, cy, cz] = [cellOf(p.x), cellOf(p.y), cellOf(p.z)];
-    for (let x = cx - 1; x <= cx + 1; x++)
-      for (let y = cy - 1; y <= cy + 1; y++)
-        for (let z = cz - 1; z <= cz + 1; z++) {
-          const bucket = grid.get(`${x},${y},${z}`);
-          if (!bucket) continue;
-          for (const i of bucket) {
-            const d = Math.hypot(positions[i * 3] - p.x, positions[i * 3 + 1] - p.y, positions[i * 3 + 2] - p.z);
-            if (d < spacing) return true;
-          }
-        }
-    return false;
-  };
+  const grid = new SpatialGrid(positions, spacing || 1);
 
   let placed = 0;
   const budget = count * 12;
   for (let attempt = 0; placed < count; attempt++) {
     if ((attempt & 2047) === 0) throwIfAborted(opts.signal);
     sampler.sample(p, n, hasColor ? c : undefined);
-    if (spacing > 0 && attempt < budget && tooClose()) continue;
+    if (spacing > 0 && attempt < budget && grid.near(p.x, p.y, p.z, spacing, () => true)) continue;
     p.toArray(positions, placed * 3);
     if (colors) c.toArray(colors, placed * 3);
-    const key = `${cellOf(p.x)},${cellOf(p.y)},${cellOf(p.z)}`;
-    const bucket = grid.get(key);
-    if (bucket) bucket.push(placed);
-    else grid.set(key, [placed]);
+    grid.insert(placed);
     placed++;
   }
   return { positions, colors };

@@ -38,7 +38,7 @@ export default function ShowCanvas({ className, paused = false, children, ...sta
       <Canvas
         gl={(props) => createRenderer({ canvas: props.canvas as HTMLCanvasElement, forceWebGL })}
         dpr={mobile ? [1, 1.5] : [1, 2]}
-        camera={{ fov: 42, near: 0.5, far: 1200, position: [0, 11, 64] }}
+        camera={{ fov: 50, near: 0.3, far: 1200, position: [0, 1.7, 46] }}
         frameloop={paused || !visible ? 'never' : 'always'}
         flat={false}
       >

@@ -1,4 +1,10 @@
+import { SpatialGrid } from '../formations/spatialGrid';
 import { detourWeight, flightPose, localProgress } from '../sim/path';
+
+/** Detour weight above which a drone counts as in transit (roughly the middle 80% of its flight). */
+const IN_TRANSIT = 0.3;
+/** Fraction of the requested clearance a pair may dip to before it is treated as a conflict. */
+const TOLERANCE = 0.85;
 
 export interface PathPlan {
   /** Per-drone xyz offset applied mid-flight (scaled by sin(pi * local progress)). */
@@ -27,17 +33,14 @@ interface PlanOptions {
  * Repeat until clean. End poses are never moved, so formations stay exact.
  */
 export function planPaths(from: Float32Array, to: Float32Array, delays: Float32Array, options: PlanOptions): PathPlan {
-  const { stagger, separation, samples = 16, iterations = 10, maxDetour = 6 } = options;
+  const { stagger, separation, samples = 14, iterations = 12, maxDetour = 8 } = options;
   const launch = options.launch ? 1 : 0;
   const count = from.length / 3;
   const detours = new Float32Array(count * 3);
   const poses = new Float32Array(count * 3);
   const weights = new Float32Array(count);
   const pose = [0, 0, 0];
-  const cell = Math.max(separation, 1e-3);
-  const grid = new Map<number, number[]>();
-  // Pack a cell coordinate into one integer key (cells within +-512 of the origin on each axis).
-  const key = (x: number, y: number, z: number) => ((x + 512) << 20) | ((y + 512) << 10) | (z + 512);
+  const grid = new SpatialGrid(poses, Math.max(separation, 1e-3));
   let minSeparation = Infinity;
   let conflicts = 0;
 
@@ -47,55 +50,45 @@ export function planPaths(from: Float32Array, to: Float32Array, delays: Float32A
     minSeparation = Infinity;
     for (let s = 1; s < samples; s++) {
       const progress = s / samples;
-      grid.clear();
       for (let i = 0; i < count; i++) {
         const local = localProgress(progress, stagger, delays[i]);
         weights[i] = detourWeight(local);
-        flightPose(pose, from, to, detours, i, local, launch);
-        poses.set(pose, i * 3);
-        const k = key(Math.floor(pose[0] / cell), Math.floor(pose[1] / cell), Math.floor(pose[2] / cell));
-        const bucket = grid.get(k);
-        if (bucket) bucket.push(i);
-        else grid.set(k, [i]);
+        poses.set(flightPose(pose, from, to, detours, i, local, launch), i * 3);
       }
+      grid.rebuild(count);
       for (let i = 0; i < count; i++) {
-        const [px, py, pz] = [poses[i * 3], poses[i * 3 + 1], poses[i * 3 + 2]];
-        const [cx, cy, cz] = [Math.floor(px / cell), Math.floor(py / cell), Math.floor(pz / cell)];
-        for (let x = cx - 1; x <= cx + 1; x++)
-          for (let y = cy - 1; y <= cy + 1; y++)
-            for (let z = cz - 1; z <= cz + 1; z++) {
-              const bucket = grid.get(key(x, y, z));
-              if (!bucket) continue;
-              for (const j of bucket) {
-                if (j <= i) continue;
-                let dx = px - poses[j * 3];
-                let dy = py - poses[j * 3 + 1];
-                let dz = pz - poses[j * 3 + 2];
-                let d = Math.hypot(dx, dy, dz);
-                // Neighbours parked or already in formation are as close as the formation puts them.
-                if (weights[i] < 0.05 && weights[j] < 0.05) continue;
-                if (d < minSeparation) minSeparation = d;
-                if (d >= separation) continue;
-                conflicts++;
-                if (measureOnly) continue;
-                if (d < 1e-4) {
-                  // Coincident: pick a stable arbitrary direction from the indices.
-                  [dx, dy, dz, d] = [Math.sin(i * 12.99 + j), Math.cos(i * 78.23 + j), Math.sin(i + j * 37.7), 1];
-                }
-                // Split the push by how much say each drone's detour has at this instant.
-                const total = weights[i] + weights[j];
-                const push = ((separation - d) * 1.15) / d / Math.max(total, 0.1);
-                for (const [index, sign] of [
-                  [i, 1],
-                  [j, -1],
-                ] as const) {
-                  const share = (weights[index] / Math.max(total, 1e-6)) * push * sign;
-                  detours[index * 3] += dx * share;
-                  detours[index * 3 + 1] += dy * share;
-                  detours[index * 3 + 2] += dz * share;
-                }
-              }
-            }
+        const o = i * 3;
+        grid.near(poses[o], poses[o + 1], poses[o + 2], separation, (j, distance) => {
+          if (j <= i) return;
+          // Two drones that are both (almost) parked or (almost) in formation are as close as the
+          // formation itself puts them; only pairs with at least one drone in transit are routed.
+          if (weights[i] < IN_TRANSIT && weights[j] < IN_TRANSIT) return;
+          if (distance < minSeparation) minSeparation = distance;
+          // Neighbours flying side by side breathe a little; only a real intrusion counts as a conflict.
+          if (distance >= separation * TOLERANCE) return;
+          conflicts++;
+          if (measureOnly) return;
+          let dx = poses[o] - poses[j * 3];
+          let dy = poses[o + 1] - poses[j * 3 + 1];
+          let dz = poses[o + 2] - poses[j * 3 + 2];
+          let d = distance;
+          if (d < 1e-4) {
+            // Coincident: pick a stable arbitrary direction from the indices.
+            [dx, dy, dz, d] = [Math.sin(i * 12.99 + j), Math.cos(i * 78.23 + j), Math.sin(i + j * 37.7), 1];
+          }
+          // Split the push by how much say each drone's detour has at this instant.
+          const total = weights[i] + weights[j];
+          const push = ((separation - d) * 1.3) / d / Math.max(total, 0.15);
+          for (const [index, sign] of [
+            [i, 1],
+            [j, -1],
+          ] as const) {
+            const share = (weights[index] / total) * push * sign;
+            detours[index * 3] += dx * share;
+            detours[index * 3 + 1] += dy * share;
+            detours[index * 3 + 2] += dz * share;
+          }
+        });
       }
     }
     if (conflicts === 0) break;
@@ -126,5 +119,5 @@ export function formationSpacing(positions: Float32Array, probes = 400): number 
   }
   // A low percentile rather than the minimum: one stray pair should not relax the whole plan.
   nearest.sort((a, b) => a - b);
-  return nearest[Math.floor(nearest.length * 0.1)];
+  return nearest[Math.floor(nearest.length * 0.02)];
 }

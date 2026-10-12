@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { type CompiledShow, compileShow } from '@/engine/timeline/compile';
 import type { Show } from '@/engine/types';
 import { isAbort, requestFormation } from '@/lib/formations';
@@ -16,8 +16,17 @@ export interface CompiledState {
 /** Generate every keyframe's formation (cached, in the worker) and chain the assignment. */
 export function useCompiledShow(show: Show | null, droneCount?: number): CompiledState {
   const [state, setState] = useState<CompiledState>({ compiled: null, show: null, status: 'loading', error: null });
+  // Recompile only for changes that move or recolour drones; glow, sky, camera or FX tweaks must not re-plan the fleet.
+  const key = show
+    ? JSON.stringify([droneCount ?? show.droneCount, show.id, show.flight, show.look.colorMode, show.look.colors, show.look.gradientAxis, show.keyframes])
+    : null;
+  const latest = useRef(show);
+  useEffect(() => {
+    latest.current = show;
+  });
 
   useEffect(() => {
+    const show = latest.current;
     if (!show) return;
     const controller = new AbortController();
     const effective = droneCount && droneCount !== show.droneCount ? { ...show, droneCount } : show;
@@ -41,7 +50,8 @@ export function useCompiledShow(show: Show | null, droneCount?: number): Compile
       clearTimeout(timer);
       controller.abort();
     };
-  }, [show, droneCount]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `key` captures every input that matters
+  }, [key]);
 
   return state;
 }

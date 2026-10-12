@@ -2,7 +2,7 @@
   "version": 1,
   "id": "aurora",
   "name": "Aurora",
-  "droneCount": 1500,
+  "droneCount": 1000,
   "look": {
     "colorMode": "gradient",
     "colors": [
@@ -15,14 +15,13 @@
     "twinkle": 0.35,
     "swarm": 0.35,
     "hoverBob": 0.35,
-    "size": 0.3
+    "size": 0.34
   },
   "scene": {
     "sky": "aurora",
     "ground": "water",
-    "stars": 0.8,
     "fog": 0.12,
-    "autoOrbit": 0.14,
+    "autoOrbit": 0,
     "bloom": {
       "strength": 0.7
     }

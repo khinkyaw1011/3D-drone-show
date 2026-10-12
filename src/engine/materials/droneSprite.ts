@@ -100,7 +100,7 @@ export function createDroneMaterial(buffers: SimBuffers, u: DroneUniforms = crea
 
   material.colorNode = color.xyz
     .pow(vec3(2.2)) // formation colours are sRGB; the working space is linear
-    .mul(u.glow.mul(0.35).add(0.55)).mul(twinkle).mul(energy).mul(u.power);
+    .mul(u.glow.mul(0.9).add(1.3)).mul(twinkle).mul(energy).mul(u.power);
   material.opacityNode = shape;
   return { material, uniforms: u };
 }

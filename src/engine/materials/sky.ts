@@ -43,6 +43,7 @@ export function createSkyMaterial() {
     aurora: uniform(0),
     stars: uniform(0.6),
     haze: uniform(0.15),
+    ambient: uniform(0.3),
   };
 
   const dir = normalize(positionLocal);
@@ -59,7 +60,7 @@ export function createSkyMaterial() {
   const rnd = mx_cell_noise_float(cell);
   const dist = length(fract(p).sub(0.5));
   const flicker = sin(time.mul(rnd.mul(3).add(0.6)).add(rnd.mul(40))).mul(0.25).add(0.75);
-  const star = smoothstep(0.32, 0.0, dist)
+  const star = smoothstep(0.16, 0.0, dist)
     .mul(step(float(1).sub(u.stars.mul(0.075)), rnd))
     .mul(flicker)
     .mul(smoothstep(0.02, 0.22, dir.y));
@@ -76,9 +77,11 @@ export function createSkyMaterial() {
   const auroraColor = mix(vec3(0.1, 0.95, 0.6), vec3(0.35, 0.3, 0.95), smoothstep(0.2, 0.6, dir.y));
 
   const material = new MeshBasicNodeMaterial({ side: BackSide, depthWrite: false, fog: false });
-  material.colorNode = base.add(starColor.mul(star)).add(auroraColor.mul(aurora).mul(0.42));
+  // `ambient` dims the backdrop (never the stars' count) so drone LEDs stay the brightest thing in frame.
+  const dim = u.ambient.mul(1.4).add(0.12);
+  material.colorNode = base.mul(dim).add(starColor.mul(star).mul(0.55)).add(auroraColor.mul(aurora).mul(0.42).mul(dim));
 
-  const apply = (scene: Pick<SceneSettings, 'sky' | 'stars' | 'fog'>) => {
+  const apply = (scene: Pick<SceneSettings, 'sky' | 'stars' | 'fog' | 'ambient'>) => {
     const preset = SKY[scene.sky];
     u.top.value.set(preset.top);
     u.horizon.value.set(preset.horizon);
@@ -86,12 +89,16 @@ export function createSkyMaterial() {
     u.aurora.value = preset.aurora;
     u.stars.value = scene.stars * preset.starBoost;
     u.haze.value = scene.fog;
+    u.ambient.value = scene.ambient;
   };
   return { material, uniforms: u, apply };
 }
 
 /** The sky's colour exactly at the horizon, so the ground can fade into it seamlessly. */
-export function horizonColor(scene: Pick<SceneSettings, 'sky' | 'fog'>, target = new Color()): Color {
+export function horizonColor(scene: Pick<SceneSettings, 'sky' | 'fog' | 'ambient'>, target = new Color()): Color {
   const preset = SKY[scene.sky];
-  return target.set(preset.horizon).add(new Color(preset.glow).multiplyScalar(scene.fog * 0.5 + 0.12));
+  return target
+    .set(preset.horizon)
+    .add(new Color(preset.glow).multiplyScalar(scene.fog * 0.5 + 0.12))
+    .multiplyScalar(scene.ambient * 1.4 + 0.12);
 }

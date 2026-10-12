@@ -2,17 +2,23 @@
 
 import { CameraControls } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+import { Vector3 } from 'three';
 import type { SceneSettings, Vec3 } from '@/engine/types';
 
-type Preset = SceneSettings['cameraPreset'];
+type Preset = Exclude<SceneSettings['cameraPreset'], 'walk'>;
 
 export const CAMERA_SHOTS: Record<Preset, { position: Vec3; target: Vec3; orbit: number }> = {
-  front: { position: [0, 9, 56], target: [0, 13.5, 0], orbit: 1 },
-  'low-hero': { position: [-22, 2.4, 44], target: [0, 16, 0], orbit: 1 },
-  'top-down': { position: [0, 78, 26], target: [0, 9, 0], orbit: 0.5 },
-  'fly-around': { position: [42, 20, 44], target: [0, 14, 0], orbit: 5 },
+  // Standing in the crowd, looking up at the show.
+  spectator: { position: [0, 1.7, 46], target: [0, 16, 0], orbit: 0.6 },
+  front: { position: [0, 12, 44], target: [0, 16, 0], orbit: 1 },
+  'low-hero': { position: [-20, 2, 34], target: [0, 17, 0], orbit: 1 },
+  'top-down': { position: [0, 70, 20], target: [0, 12, 0], orbit: 0.5 },
+  'fly-around': { position: [34, 20, 34], target: [0, 16, 0], orbit: 5 },
 };
+
+/** Eye height the camera may not go below (it would dip under the ground). */
+const MIN_EYE = 1.2;
 
 interface CameraRigProps {
   preset: Preset;
@@ -32,6 +38,7 @@ export function CameraRig({ preset, autoOrbit, interactive, reducedMotion }: Cam
   const aspect = useThree((s) => s.size.width / Math.max(1, s.size.height));
   const lastInput = useRef(0);
   const first = useRef(true);
+  const scratch = useMemo(() => new Vector3(), []);
 
   useEffect(() => {
     const c = controls.current;
@@ -54,7 +61,12 @@ export function CameraRig({ preset, autoOrbit, interactive, reducedMotion }: Cam
 
   useFrame((_, dt) => {
     const c = controls.current;
-    if (!c || reducedMotion || autoOrbit <= 0) return;
+    if (!c) return;
+    // Let the viewer swing all the way down to eye level and look up at the sky, but never below ground:
+    // the lowest allowed polar angle depends on how far the camera is from its target.
+    const drop = c.getTarget(scratch).y - MIN_EYE;
+    c.maxPolarAngle = Math.PI / 2 + Math.asin(Math.min(0.98, Math.max(0, drop / Math.max(c.distance, 1e-3))));
+    if (reducedMotion || autoOrbit <= 0) return;
     // Resume orbiting a moment after the user lets go.
     if (performance.now() - lastInput.current < 2500) return;
     void c.rotate(autoOrbit * CAMERA_SHOTS[preset].orbit * 0.22 * Math.min(dt, 0.05), 0, false);
@@ -65,9 +77,8 @@ export function CameraRig({ preset, autoOrbit, interactive, reducedMotion }: Cam
       ref={controls}
       makeDefault
       enabled={interactive}
-      minDistance={4}
+      minDistance={3}
       maxDistance={220}
-      maxPolarAngle={Math.PI * 0.497}
       smoothTime={reducedMotion ? 0.6 : 0.35}
       onStart={() => (lastInput.current = performance.now())}
       onChange={() => {

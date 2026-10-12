@@ -76,7 +76,7 @@ export function useShowActions() {
 
   /** One colour (or rainbow / the formation's own colours) for the whole show. */
   const setFleetColor = useCallback(
-    (mode: 'formation' | 'rainbow' | 'solid', color?: string) =>
+    (mode: 'formation' | 'rainbow' | 'random' | 'solid', color?: string) =>
       run({ type: 'look.clearOverrides' }, { type: 'look.set', patch: mode === 'solid' && color ? { colorMode: 'solid', colors: [color] } : { colorMode: mode } }),
     [run],
   );

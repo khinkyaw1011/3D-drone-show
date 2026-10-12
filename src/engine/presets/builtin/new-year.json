@@ -2,7 +2,7 @@
   "version": 1,
   "id": "new-year",
   "name": "New Year",
-  "droneCount": 2000,
+  "droneCount": 1200,
   "look": {
     "colorMode": "solid",
     "colors": [
@@ -13,14 +13,13 @@
     "glow": 1.4,
     "twinkle": 0.2,
     "swarm": 0.2,
-    "size": 0.3
+    "size": 0.34
   },
   "scene": {
     "sky": "deep-space",
     "ground": "city",
-    "stars": 0.7,
-    "fog": 0.2,
-    "autoOrbit": 0.08,
+    "fog": 0.15,
+    "autoOrbit": 0,
     "bloom": {
       "strength": 0.75,
       "radius": 0.7,

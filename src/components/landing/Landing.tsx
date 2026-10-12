@@ -2,7 +2,7 @@
 
 import { ArrowDown, Rocket } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FleetStats } from '@/components/show/FleetStats';
 import { LiveShow } from '@/components/show/LiveShow';
 import { QuickControls } from '@/components/show/QuickControls';
@@ -36,6 +36,11 @@ export function Landing() {
   const stage = useRef<HTMLElement>(null);
   const inView = useInView(stage);
   const [started, setStarted] = useState(false);
+  // The headline steps aside once the fleet is up, so it never sits on top of the formation.
+  useEffect(() => {
+    const timer = setTimeout(() => setStarted(true), 9000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const start = () => {
     setStarted(true);
@@ -52,7 +57,7 @@ export function Landing() {
 
           <div
             className={cn(
-              'pointer-events-none relative z-10 mx-auto mt-[clamp(72px,13vh,140px)] max-w-3xl px-5 text-center transition-all duration-700 ease-out',
+              'pointer-events-none relative z-10 mx-auto mt-[clamp(72px,13vh,140px)] max-w-3xl px-5 text-center transition-all duration-700 ease-out lg:mr-[420px] xl:mx-auto',
               started && '-translate-y-3 opacity-0',
             )}
             aria-hidden={started}
@@ -74,7 +79,8 @@ export function Landing() {
             <p className="mt-4 text-xs text-paper/50">{t('hint')}</p>
           </div>
 
-          <div className="relative z-20 mx-auto mt-auto w-full max-w-4xl px-3 pb-3 sm:px-4 sm:pb-4">
+          {/* Bottom sheet on phones, side panel on wide screens: the sky stays clear either way. */}
+          <div className="relative z-20 mt-auto w-full px-3 pb-3 sm:px-4 sm:pb-4 lg:absolute lg:bottom-auto lg:right-4 lg:top-[4.5rem] lg:mt-0 lg:w-[380px] lg:p-0">
             {hydrated && <QuickControls />}
           </div>
         </section>

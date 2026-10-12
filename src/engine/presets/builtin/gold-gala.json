@@ -2,7 +2,7 @@
   "version": 1,
   "id": "gold-gala",
   "name": "Gold Gala",
-  "droneCount": 1500,
+  "droneCount": 1000,
   "look": {
     "colorMode": "gradient",
     "colors": [
@@ -14,14 +14,13 @@
     "glow": 1.4,
     "twinkle": 0.4,
     "swarm": 0.2,
-    "size": 0.3
+    "size": 0.34
   },
   "scene": {
     "sky": "midnight",
     "ground": "water",
-    "stars": 0.5,
-    "fog": 0.18,
-    "autoOrbit": 0.1,
+    "fog": 0.15,
+    "autoOrbit": 0,
     "bloom": {
       "strength": 0.75,
       "radius": 0.65,

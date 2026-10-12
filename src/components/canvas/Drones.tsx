@@ -19,12 +19,14 @@ interface DronesProps {
   power: number;
   /** Let the pointer shove nearby drones. */
   pushToy?: boolean;
+  /** Tightest spacing between neighbouring drones; airframes and LEDs are sized to stay inside it. */
+  spacing: number;
   /** Draw the 3D quadcopter airframes (off on the low tier / very large fleets). */
   airframes?: boolean;
 }
 
 /** All drones in one draw call: an instanced quad whose material reads the simulator's buffers. */
-export function Drones({ sim, look, power, pushToy = false, airframes = true }: DronesProps) {
+export function Drones({ sim, look, power, spacing, pushToy = false, airframes = true }: DronesProps) {
   const size = useThree((s) => s.size);
   const quadRef = useRef<Mesh>(null);
   const uniforms = useMemo(() => createDroneUniforms(), []);
@@ -53,13 +55,14 @@ export function Drones({ sim, look, power, pushToy = false, airframes = true }: 
   );
 
   useEffect(() => {
-    uniforms.size.value = look.size;
-    uniforms.body.value = 0.35 + look.size * 1.2;
+    // Never draw a drone wider than the gap to its neighbour: real fleets do not touch.
+    uniforms.body.value = Math.min(0.9, Math.max(0.08, spacing * 0.8 * look.body));
+    uniforms.size.value = Math.min(look.size, Math.max(0.06, spacing * 0.75));
     uniforms.glow.value = look.glow;
     uniforms.twinkle.value = look.twinkle;
     uniforms.trail.value = look.trails ? 1 : 0;
     uniforms.bob.value = look.hoverBob;
-  }, [look, uniforms]);
+  }, [look, spacing, uniforms]);
 
   const scratch = useMemo(() => ({ plane: new Plane(), hit: new Vector3(), normal: new Vector3() }), []);
 

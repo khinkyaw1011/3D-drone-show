@@ -19,14 +19,13 @@ const seek = (target: { t: number } | { keyframe: number }) =>
     if ('t' in target) s.playback.time = target.t;
   });
 
-const loadShow = (show: ReturnType<typeof cloneShow>) => {
+/** Replace the show. The player flies the airborne fleet into it; no seek, so nothing teleports. */
+const loadShow = (show: ReturnType<typeof cloneShow>) =>
   mutate((s) => {
     s.show = show;
     s.selectedKeyframeId = show.keyframes[0]?.id ?? null;
     s.playback.playing = true;
   });
-  seek({ t: 0 });
-};
 
 const handlers: CommandHandlers = {
   'formation.add': ({ sourceId, input, at, name }) => {
@@ -64,7 +63,8 @@ const handlers: CommandHandlers = {
         id: kf.id,
         formation: kf.formation,
         transition: { ...kf.transition, ...p.transition },
-        look: p.look === undefined ? kf.look : p.look && { ...kf.look, ...p.look },
+        // `look: null` removes the override; an object merges into it.
+        look: p.look === undefined ? kf.look : p.look === null ? undefined : { ...kf.look, ...p.look },
       });
     }),
   'keyframe.remove': ({ id }) =>
@@ -140,7 +140,9 @@ const handlers: CommandHandlers = {
   'preset.apply': ({ presetId }) => {
     const preset = [...BUILTIN_SHOWS, ...useStudio.getState().userPresets].find((p) => p.id === presetId);
     if (!preset) throw new Error(`Preset "${presetId}" not found`);
-    loadShow(cloneShow(preset));
+    // Keep the visitor's fleet size, so the drones already in the air simply re-form into the new show.
+    const { droneCount, flight } = useStudio.getState().show;
+    loadShow({ ...cloneShow(preset), droneCount, flight });
   },
   'preset.save': ({ name }) =>
     mutate((s) => {

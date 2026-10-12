@@ -6,11 +6,11 @@ export const SHOW_VERSION = 1;
 export const vec3Schema = z.tuple([z.number(), z.number(), z.number()]);
 const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 
-export const COLOR_MODES = ['formation', 'solid', 'gradient', 'palette', 'rainbow', 'height'] as const;
+export const COLOR_MODES = ['formation', 'solid', 'gradient', 'palette', 'rainbow', 'random', 'height'] as const;
 export const AXES = ['x', 'y', 'z'] as const;
 export const SKY_PRESETS = ['midnight', 'aurora', 'dusk', 'deep-space'] as const;
 export const GROUNDS = ['water', 'city', 'none'] as const;
-export const CAMERA_PRESETS = ['front', 'low-hero', 'top-down', 'fly-around'] as const;
+export const CAMERA_PRESETS = ['spectator', 'walk', 'front', 'low-hero', 'top-down', 'fly-around'] as const;
 export const ORDERS = ['random', 'radial', 'top-down', 'by-color'] as const;
 export const EFFECTS = ['drop', 'burst', 'wind'] as const;
 /** Integrated curves; any other string is treated as a GSAP ease name. */
@@ -19,6 +19,8 @@ export const EASE_CURVES = ['power2.inOut', 'power3.inOut', 'expo.inOut', 'back.
 
 export const droneLookSchema = z.object({
   size: z.number().min(0.08).max(0.8).default(0.3),
+  /** Airframe size as a fraction of the largest that still clears the neighbouring drone. */
+  body: z.number().min(0.35).max(1).default(0.85),
   glow: z.number().min(0).max(3).default(1.2),
   twinkle: z.number().min(0).max(1).default(0.25),
   trails: z.boolean().default(true),
@@ -40,10 +42,12 @@ export const physicsSettingsSchema = z.object({
 export const sceneSettingsSchema = z.object({
   sky: z.enum(SKY_PRESETS).default('midnight'),
   ground: z.enum(GROUNDS).default('water'),
-  stars: z.number().min(0).max(1).default(0.6),
+  stars: z.number().min(0).max(1).default(0.35),
+  /** Brightness of everything that is not a drone (sky glow, city lights), so the LEDs can stand out. */
+  ambient: z.number().min(0).max(1).default(0.3),
   fog: z.number().min(0).max(1).default(0.15),
-  cameraPreset: z.enum(CAMERA_PRESETS).default('front'),
-  autoOrbit: z.number().min(0).max(1).default(0.15),
+  cameraPreset: z.enum(CAMERA_PRESETS).default('spectator'),
+  autoOrbit: z.number().min(0).max(1).default(0),
   bloom: z
     .object({
       strength: z.number().min(0).max(3).default(0.7),
@@ -61,7 +65,7 @@ export const sceneSettingsSchema = z.object({
 export const flightSchema = z.object({
   /** Stretch transitions so no drone exceeds `maxSpeed`, and plan routes that keep `separation`. */
   realistic: z.boolean().default(true),
-  maxSpeed: z.number().min(3).max(25).default(10),
+  maxSpeed: z.number().min(3).max(25).default(16),
   separation: z.number().min(0.5).max(4).default(1.5),
 });
 
@@ -91,7 +95,7 @@ export const showSchema = z.object({
   version: z.number().int().default(SHOW_VERSION),
   id: z.string(),
   name: z.string().min(1).max(60),
-  droneCount: z.number().int().min(100).max(20000).default(2000),
+  droneCount: z.number().int().min(100).max(20000).default(1200),
   keyframes: z.array(keyframeSchema).max(40),
   look: droneLookSchema.prefault({}),
   scene: sceneSettingsSchema.prefault({}),

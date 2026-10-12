@@ -50,8 +50,8 @@ function City({ scene }: { scene: SceneSettings }) {
     return { geometry: new BoxGeometry(1, 1, 1).translate(0, 0.5, 0), material, lights };
   }, []);
   useEffect(() => {
-    lights.value = scene.sky === 'deep-space' ? 0.35 : 0.5;
-  }, [lights, scene.sky]);
+    lights.value = scene.ambient * 0.9;
+  }, [lights, scene.ambient]);
   useEffect(
     () => () => {
       geometry.dispose();

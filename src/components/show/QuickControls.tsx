@@ -9,8 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SHAPES } from '@/engine/formations/sources/shape';
 import { BUILTIN_SHOWS } from '@/engine/presets/builtin';
-import { GROUNDS, SKY_PRESETS } from '@/engine/presets/schema';
+import { CAMERA_PRESETS, GROUNDS, SKY_PRESETS } from '@/engine/presets/schema';
 import { Link } from '@/i18n/navigation';
+import { useIsDesktop } from '@/hooks/useMediaQuery';
 import { IMAGE_ACCEPT } from '@/lib/image';
 import { cn } from '@/lib/utils';
 import { useStudio } from '@/store';
@@ -48,7 +49,10 @@ export function QuickControls({ className }: { className?: string }) {
   const playback = useStudio((s) => s.playback);
   const userPresets = useStudio((s) => s.userPresets);
   const maxDrones = useStudio((s) => s.runtime.capabilities?.tier.maxDrones ?? 20000);
-  const [open, setOpen] = useState(true);
+  const isDesktop = useIsDesktop();
+  // Open beside the show on wide screens; collapsed to the transport bar on phones so the sky stays visible.
+  const [openChoice, setOpen] = useState<boolean | null>(null);
+  const open = openChoice ?? isDesktop;
   const [prompt, setPrompt] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -82,7 +86,7 @@ export function QuickControls({ className }: { className?: string }) {
       className={cn('glass w-full outline-none', isDragActive && 'border-cyan ring-2 ring-cyan/40', className)}
     >
       <input {...getInputProps()} />
-      <header className="flex flex-wrap items-center gap-x-3 gap-y-2 px-3.5 py-2.5 sm:px-4">
+      <header className="flex items-center gap-3 px-3.5 pt-2.5 sm:px-4">
         <span className="flex items-center gap-2 rounded-full border border-line bg-black/25 px-2.5 py-1">
           <span
             className={cn(
@@ -95,17 +99,17 @@ export function QuickControls({ className }: { className?: string }) {
         <p className="min-w-0 flex-1 truncate text-sm text-paper/85">
           {current ? t('formationOf', { index: playback.index + 1, total: show.keyframes.length, name: current.name }) : t('empty')}
         </p>
-        <FleetStats className="hidden md:flex" />
         <Button
           variant="ghost"
           size="icon-sm"
           aria-expanded={open}
           aria-label={open ? t('collapse') : t('expand')}
-          onClick={() => setOpen((v) => !v)}
+          onClick={() => setOpen(!open)}
         >
           <ChevronDown className={cn('transition-transform duration-200', !open && 'rotate-180')} />
         </Button>
       </header>
+      <FleetStats className="flex-wrap gap-x-4 gap-y-1 px-3.5 py-2 sm:px-4" />
       <div className="mx-3.5 h-[3px] overflow-hidden rounded-full bg-white/10 sm:mx-4" aria-hidden="true">
         <div className="h-full origin-left bg-gradient-to-r from-glow to-cyan" style={{ transform: `scaleX(${progress})` }} />
       </div>
@@ -136,7 +140,6 @@ export function QuickControls({ className }: { className?: string }) {
         >
           <Repeat />
         </Button>
-        <FleetStats className="ml-auto md:hidden" compact />
       </div>
 
       {open && (
@@ -149,7 +152,7 @@ export function QuickControls({ className }: { className?: string }) {
             ))}
           </TabsList>
 
-          <div className="scrollbar-thin max-h-[38svh] overflow-y-auto px-3.5 pb-4 pt-3.5 sm:px-4 lg:max-h-none">
+          <div className="scrollbar-thin max-h-[38svh] overflow-y-auto px-3.5 pb-4 pt-3.5 sm:px-4 lg:max-h-[calc(100svh-19rem)]">
             <TabsContent value="show" className="space-y-4">
               <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin" role="group" aria-label={t('formations')}>
                 {show.keyframes.map((kf, i) => (
@@ -158,7 +161,7 @@ export function QuickControls({ className }: { className?: string }) {
                   </Chip>
                 ))}
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
                 <SelectField
                   label={t('preset')}
                   value={presets.some((p) => p.name === show.name) ? presets.find((p) => p.name === show.name)!.id : '__custom'}
@@ -172,8 +175,8 @@ export function QuickControls({ className }: { className?: string }) {
                   label={t('speed')}
                   value={playback.speed}
                   min={0.25}
-                  max={3}
-                  step={0.05}
+                  max={8}
+                  step={0.25}
                   format={(v) => (v === 1 ? t('realTime') : `${v.toFixed(2)}×`)}
                   onChange={(speed) => run({ type: 'playback.setSpeed', speed })}
                 />
@@ -222,6 +225,9 @@ export function QuickControls({ className }: { className?: string }) {
                 <Chip active={show.look.colorMode === 'rainbow'} onClick={() => setFleetColor('rainbow')}>
                   {t('rainbow')}
                 </Chip>
+                <Chip active={show.look.colorMode === 'random'} onClick={() => setFleetColor('random')}>
+                  {t('random')}
+                </Chip>
                 {FLEET_COLORS.map((color) => (
                   <button
                     key={color}
@@ -238,7 +244,8 @@ export function QuickControls({ className }: { className?: string }) {
                 ))}
                 <ColorSwatch label={t('customColor')} value={fleetColor ?? show.look.colors[0]} onChange={(color) => setFleetColor('solid', color)} />
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                <SliderField label={t('droneSize')} value={show.look.body} min={0.35} max={1} format={(v) => `${Math.round(v * 100)}%`} onChange={(body) => run({ type: 'look.set', patch: { body } })} />
                 <SliderField label={t('ledSize')} value={show.look.size} min={0.08} max={0.8} onChange={(size) => run({ type: 'look.set', patch: { size } })} />
                 <SliderField label={t('glow')} value={show.look.glow} min={0} max={3} onChange={(glow) => run({ type: 'look.set', patch: { glow } })} />
                 <SelectField
@@ -246,6 +253,13 @@ export function QuickControls({ className }: { className?: string }) {
                   value={show.scene.sky}
                   options={SKY_PRESETS.map((value) => ({ value, label: tOptions(`sky.${value}`) }))}
                   onChange={(sky) => run({ type: 'scene.set', patch: { sky } })}
+                />
+                <SliderField label={t('ambient')} value={show.scene.ambient} min={0} max={1} onChange={(ambient) => run({ type: 'scene.set', patch: { ambient } })} />
+                <SelectField
+                  label={t('view')}
+                  value={show.scene.cameraPreset}
+                  options={CAMERA_PRESETS.map((value) => ({ value, label: tOptions(`camera.${value}`) }))}
+                  onChange={(cameraPreset) => run({ type: 'scene.set', patch: { cameraPreset } })}
                 />
                 <SegmentedField
                   label={t('ground')}
@@ -269,7 +283,7 @@ export function QuickControls({ className }: { className?: string }) {
                 value={show.flight.realistic}
                 onChange={(realistic) => run({ type: 'flight.set', patch: { realistic } })}
               />
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
                 <SliderField
                   label={t('maxSpeed')}
                   value={show.flight.maxSpeed}

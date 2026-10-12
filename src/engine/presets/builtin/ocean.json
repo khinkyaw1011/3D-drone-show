@@ -2,7 +2,7 @@
   "version": 1,
   "id": "ocean",
   "name": "Ocean",
-  "droneCount": 2000,
+  "droneCount": 1200,
   "look": {
     "colorMode": "gradient",
     "colors": [
@@ -15,14 +15,13 @@
     "twinkle": 0.3,
     "swarm": 0.3,
     "hoverBob": 0.3,
-    "size": 0.3
+    "size": 0.34
   },
   "scene": {
     "sky": "midnight",
     "ground": "water",
-    "stars": 0.6,
-    "fog": 0.2,
-    "autoOrbit": 0.14,
+    "fog": 0.15,
+    "autoOrbit": 0,
     "bloom": {
       "strength": 0.7
     }

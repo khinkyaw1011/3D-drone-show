@@ -37,7 +37,7 @@ export const COMMANDS = {
   'playback.toggle': { description: 'Toggle play / pause.', schema: z.object({}) },
   'playback.seek': { description: 'Move the playhead to a time in seconds.', schema: z.object({ t: z.number().min(0) }) },
   'playback.goTo': { description: 'Fly to a formation by keyframe id.', schema: z.object({ id }) },
-  'playback.setSpeed': { description: 'Set the playback speed multiplier.', schema: z.object({ speed: z.number().min(0.25).max(3) }) },
+  'playback.setSpeed': { description: 'Set the playback speed multiplier.', schema: z.object({ speed: z.number().min(0.25).max(8) }) },
   'playback.step': { description: 'Jump to the next or previous formation.', schema: z.object({ direction: z.union([z.literal(1), z.literal(-1)]) }) },
   'playback.setLoop': { description: 'Turn looping on or off.', schema: z.object({ loop: z.boolean() }) },
   'preset.apply': { description: 'Load a built-in or saved show.', schema: z.object({ presetId: id }) },

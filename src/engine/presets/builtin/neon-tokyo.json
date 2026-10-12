@@ -2,7 +2,7 @@
   "version": 1,
   "id": "neon-tokyo",
   "name": "Neon Tokyo",
-  "droneCount": 2000,
+  "droneCount": 1200,
   "look": {
     "colorMode": "gradient",
     "colors": [
@@ -13,14 +13,13 @@
     "glow": 1.5,
     "twinkle": 0.15,
     "swarm": 0.2,
-    "size": 0.3
+    "size": 0.34
   },
   "scene": {
     "sky": "midnight",
     "ground": "city",
-    "stars": 0.35,
-    "fog": 0.3,
-    "autoOrbit": 0.1,
+    "fog": 0.15,
+    "autoOrbit": 0,
     "bloom": {
       "strength": 0.75,
       "radius": 0.7,
