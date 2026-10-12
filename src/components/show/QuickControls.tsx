@@ -1,9 +1,10 @@
 'use client';
 
-import { Clapperboard, Palette, Wand2, Wind } from 'lucide-react';
+import { Clapperboard, Palette, Wand2, Wind, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { Button } from '@/components/ui/button';
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useIsDesktop } from '@/hooks/useMediaQuery';
@@ -91,13 +92,15 @@ function DeckTabs({ tab, onTab, busy, onPickFile, className, scrollClassName }: 
  * opening the studio. This file is only the frame (drop target, transport bar, tab strip);
  * each tab and the transport live in `./deck`. Every control is a command on the shared store.
  */
-export function QuickControls({ className }: { className?: string }) {
+export function QuickControls({ className, onSheet }: { className?: string; /** Told when the phone sheet opens or closes, so the page can keep the show in view above it. */ onSheet?: (open: boolean) => void }) {
   const t = useTranslations('Quick');
   const { addFromFile } = useShowActions();
   const isDesktop = useIsDesktop();
   // Open beside the show on wide screens; on phones only the transport bar shows until the sheet is opened.
   const [openChoice, setOpen] = useState<boolean | null>(null);
   const open = openChoice ?? isDesktop;
+  const sheet = open && !isDesktop;
+  useEffect(() => onSheet?.(sheet), [sheet, onSheet]);
   const [tab, setTab] = useState<DeckTab>('show');
   const [busy, setBusy] = useState(false);
 
@@ -133,13 +136,18 @@ export function QuickControls({ className }: { className?: string }) {
 
       {/* Wide screens: the tabs open inside the panel, beside the show. */}
       {open && isDesktop && <DeckTabs {...tabs} className="border-t border-line" scrollClassName="max-h-[calc(100svh-19rem)]" />}
-      {/* Phones: a bottom sheet, so the settings get most of the screen to scroll in instead of a sliver. */}
-      <Drawer open={open && !isDesktop} onOpenChange={setOpen}>
-        <DrawerContent className="h-[76svh] !max-h-[76svh] border-line bg-ink-2">
+      {/* Phones: a bottom sheet, so the settings get room to scroll. It does not dim or block the page:
+          the show stays visible above it (the page lifts the picture clear, see `onSheet`), so every
+          tweak is seen as it is made. */}
+      <Drawer open={sheet} onOpenChange={setOpen} modal={false}>
+        <DrawerContent className="h-[58svh] !max-h-[58svh] border-line bg-ink-2/95 shadow-[0_-18px_48px_rgb(0_0_0/0.55)] backdrop-blur-xl">
           <DrawerHeader className="sr-only">
             <DrawerTitle>{t('label')}</DrawerTitle>
             <DrawerDescription>{t(`about.${tab}`)}</DrawerDescription>
           </DrawerHeader>
+          <Button variant="ghost" size="icon-sm" className="absolute right-2 top-2 z-10" aria-label={t('collapse')} onClick={() => setOpen(false)}>
+            <X />
+          </Button>
           <DeckTabs {...tabs} className="min-h-0 flex-1" scrollClassName="min-h-0 flex-1 pb-[max(1rem,env(safe-area-inset-bottom))]" />
         </DrawerContent>
       </Drawer>

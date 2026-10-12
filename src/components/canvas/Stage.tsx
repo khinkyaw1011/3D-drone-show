@@ -38,6 +38,8 @@ export interface StageProps {
   pushToy?: boolean;
   /** Shift the picture left by this many pixels to clear a panel on the right. */
   offsetX?: number;
+  /** Lift the picture by this fraction of the height to clear a sheet over the bottom. */
+  offsetY?: number;
   /** A lower fleet ceiling than the device tier's (found by the frame-rate watchdog). */
   maxDrones?: number | null;
   /** The device could not hold a smooth frame rate with `count` drones. */
@@ -62,6 +64,7 @@ export function Stage({
   interactive = true,
   pushToy = false,
   offsetX = 0,
+  offsetY = 0,
   maxDrones = null,
   onOverload,
   onTime,
@@ -224,7 +227,7 @@ export function Stage({
       ) : (
         <CameraRig preset={cameraPreset} autoOrbit={scene.autoOrbit} interactive={interactive} reducedMotion={reducedMotion} />
       )}
-      <ViewOffset pixels={offsetX} />
+      <ViewOffset pixels={offsetX} lift={offsetY} />
       <PostFX scene={scene} bloomScale={capabilities.tier.bloomScale} />
     </>
   );

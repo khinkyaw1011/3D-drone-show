@@ -18,6 +18,9 @@ import { useStudio } from '@/store';
 import { dispatch } from '@/store/dispatch';
 import { FaqSection, FeaturesSection, GallerySection, HowItWorksSection, QuickStartSection } from './sections';
 
+/** How far the picture is lifted (fraction of the screen height) while the phone settings sheet is open. */
+const SHEET_LIFT = 0.27;
+
 /** The headline over the show. It stays with the show and only steps aside when the visitor enters the 3D view. */
 function HeroText({ hidden, onExplore }: { hidden: boolean; onExplore: () => void }) {
   const t = useTranslations('Landing');
@@ -57,6 +60,7 @@ export function Landing() {
   // The page scrolls like any page until the visitor chooses to step into the show.
   const [exploring, setExploring] = useState(false);
   const immersive = exploring || walking;
+  const [sheetOpen, setSheetOpen] = useState(false);
   // Every visit opens on a different show, lifting off by itself. Only the formations and the
   // settings the visitor never touched change: everything they tweaked is carried into it.
   const picked = useRef(false);
@@ -81,11 +85,12 @@ export function Landing() {
           aria-label={t('stageLabel')}
           className={cn('flex flex-col overflow-hidden', immersive ? 'fixed inset-0 z-50' : 'relative h-svh min-h-[620px]')}
         >
-          {hydrated && <LiveShow interactive={immersive} paused={!inView && !immersive} />}
+          {/* With the phone sheet over the lower part of the screen, the picture is lifted so the show stays in view. */}
+          {hydrated && <LiveShow interactive={immersive} paused={!inView && !immersive} offsetY={sheetOpen && !immersive ? SHEET_LIFT : 0} />}
           {hydrated && <WalkOverlay />}
           <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-ink/80 to-transparent" />
 
-          <HeroText hidden={immersive} onExplore={() => setExploring(true)} />
+          <HeroText hidden={immersive || sheetOpen} onExplore={() => setExploring(true)} />
 
           {/* Always-available way in and out of the 3D view (on phones the hero button is the way in, so this
               only appears as the way out), and a cue that the page continues below. */}
@@ -121,7 +126,7 @@ export function Landing() {
               walking && 'hidden',
             )}
           >
-            {hydrated && <QuickControls />}
+            {hydrated && <QuickControls onSheet={setSheetOpen} />}
           </div>
         </section>
 

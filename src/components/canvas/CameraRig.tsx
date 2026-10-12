@@ -48,17 +48,26 @@ interface CameraRigProps {
 }
 
 /**
- * Slide the rendered picture sideways by `pixels` (positive = show moves left) so the show sits
- * in the part of the screen a side panel leaves free. A lens shift: perspective is unchanged.
+ * Slide the rendered picture so the show sits in the part of the screen a panel leaves free:
+ * `pixels` to the left (a panel on the right), and up by `lift`, a fraction of the height (a
+ * sheet over the bottom). A lens shift, so perspective is unchanged; it eases, so opening a
+ * panel glides the show aside rather than jumping it.
  */
-export function ViewOffset({ pixels }: { pixels: number }) {
+export function ViewOffset({ pixels, lift = 0 }: { pixels: number; lift?: number }) {
   const camera = useThree((s) => s.camera) as PerspectiveCamera;
   const size = useThree((s) => s.size);
-  useEffect(() => {
-    if (pixels) camera.setViewOffset(size.width, size.height, pixels, 0, size.width, size.height);
-    else camera.clearViewOffset();
-    return () => camera.clearViewOffset();
-  }, [camera, size, pixels]);
+  const now = useRef({ x: pixels, y: lift * size.height });
+  useFrame((_, dt) => {
+    const goal = { x: pixels, y: lift * size.height };
+    const ease = Math.min(1, dt * 6);
+    now.current.x += (goal.x - now.current.x) * ease;
+    now.current.y += (goal.y - now.current.y) * ease;
+    const { x, y } = now.current;
+    if (Math.abs(x) < 0.5 && Math.abs(y) < 0.5) {
+      if (camera.view?.enabled) camera.clearViewOffset();
+    } else camera.setViewOffset(size.width, size.height, x, y, size.width, size.height);
+  });
+  useEffect(() => () => camera.clearViewOffset(), [camera]);
   return null;
 }
 
