@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Skyloom — virtual drone show studio
 
-## Getting Started
-
-First, run the development server:
+Design a 3D drone light show in the browser: a fleet lifts off from a launch pad, flies at real-world speeds along collision-checked routes, and builds volumetric formations from shapes, words, pictures and 3D models. English, Japanese and Myanmar.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## What is in it
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Route | What it is |
+|---|---|
+| `/` | The live show with a control deck: pick a show, type a shape or word, upload a picture, change colours, fleet size, top speed and separation, switch views |
+| `/studio` | Full editor: formation library, sortable timeline, inspector, presets, undo/redo, share link, PNG and video export |
+| `/show` | Full-screen viewer for a share link (`#s=…`) or a built-in show (`?p=sakura-night`) |
+| `/gallery`, `/guide`, `/about` | Built-in shows, how to use it, how it works |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Prefix any route with `/ja` or `/my` for Japanese or Myanmar.
 
-## Learn More
+Also: fireworks behind the show, star and background-brightness controls, per-area and global reset to defaults. Everything you change is saved in this browser (localStorage) and can be undone in the studio.
 
-To learn more about Next.js, take a look at the following resources:
+Views: crowd (spectator), first-person walk (W A S D / arrows, drag to look), close-up, front, low, top, orbit.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## How it works
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Formations** come from a plugin registry (`src/engine/formations`): each source turns its input into one point per drone, fitted to the show volume and spaced so neighbours keep a safety gap.
+2. **Compiling a show** assigns every drone a target, stretches each transition to the fleet's top speed and plans routes that keep drones apart (`src/engine/timeline`).
+3. **Simulation** runs in a TSL compute shader on WebGPU, with a CPU fallback on WebGL2 (`src/engine/sim`). A GSAP timeline is the clock.
+4. **Rendering** is one instanced draw for LEDs and one for quadcopter airframes, plus a TSL sky, water reflection and bloom.
+5. **Every action is a typed command** (`src/engine/commands`), so the UI, shortcuts and future voice/LLM control share one entry point.
 
-## Deploy on Vercel
+See `DECISIONS.md` for trade-offs and known gaps, `CLAUDE.md` for conventions, `CREDITS.md` for assets.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Scripts
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`npm run lint` · `npm run typecheck` · `npm test` · `npm run build`
+
+Append `?webgl` to a URL to force the WebGL2 fallback.
+
+## Requirements
+
+A browser with WebGPU gives the full experience (up to 20,000 drones). Without it the show runs on WebGL2 with a smaller fleet. Video export needs WebCodecs.

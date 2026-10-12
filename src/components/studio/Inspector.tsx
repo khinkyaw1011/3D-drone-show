@@ -3,10 +3,11 @@
 import { formatNumber } from '@/lib/utils';
 import { Minus, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { ColorSwatch, FieldGroup, FieldShell, SegmentedField, SelectField, SliderField, SwitchField, TextField } from '@/components/controls/fields';
+import { ColorSwatch, FieldGroup, FieldShell, ResetButton, SegmentedField, SelectField, SliderField, SwitchField, TextField } from '@/components/controls/fields';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AXES, CAMERA_PRESETS, COLOR_MODES, EASE_CURVES, EFFECTS, GROUNDS, ORDERS, SIM_CURVES, SKY_PRESETS } from '@/engine/presets/schema';
+import { AXES, CAMERA_PRESETS, FIREWORK_PALETTES, COLOR_MODES, EASE_CURVES, EFFECTS, GROUNDS, ORDERS, SIM_CURVES, SKY_PRESETS } from '@/engine/presets/schema';
+import type { ResetScope } from '@/engine/commands/commands';
 import type { DroneLook, Keyframe, SceneSettings } from '@/engine/types';
 import { useShowActions } from '@/components/show/useShowActions';
 import { mutate, useStudio } from '@/store';
@@ -80,11 +81,12 @@ export function Inspector() {
 
   const { look, scene, flight } = show;
   const setLook = (patch: Partial<DroneLook>) => run({ type: 'look.set', patch });
-  const setScene = (patch: Partial<Omit<SceneSettings, 'bloom' | 'physics'>> & { bloom?: Partial<SceneSettings['bloom']>; physics?: Partial<SceneSettings['physics']> }) =>
+  const setScene = (patch: Partial<Omit<SceneSettings, 'bloom' | 'physics' | 'fireworks'>> & { bloom?: Partial<SceneSettings['bloom']>; physics?: Partial<SceneSettings['physics']>; fireworks?: Partial<SceneSettings['fireworks']> }) =>
     run({ type: 'scene.set', patch });
   const setKeyframe = (patch: Partial<Omit<Keyframe, 'transition'>> & { transition?: Partial<Keyframe['transition']> }) =>
     keyframe && run({ type: 'keyframe.update', id: keyframe.id, patch });
   const curve = keyframe?.transition.curve ?? 'power3.inOut';
+  const reset = (scope: ResetScope) => <ResetButton label={t('reset')} onClick={() => run({ type: 'settings.reset', scope })} />;
 
   return (
     <Tabs value={tab} onValueChange={(value) => mutate((s) => void (s.ui.inspectorTab = value as InspectorTab))} className="flex h-full min-h-0 flex-col gap-0">
@@ -97,7 +99,7 @@ export function Inspector() {
       </TabsList>
       <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto p-4">
         <TabsContent value="drones" className="space-y-6">
-          <FieldGroup title={t('fleet')}>
+          <FieldGroup title={t('fleet')} action={reset('look')}>
             <SliderField
               label={t('count')}
               value={Math.min(show.droneCount, maxDrones)}
@@ -167,7 +169,7 @@ export function Inspector() {
           ) : (
             <p className="rounded-lg border border-dashed border-line p-4 text-sm text-muted-foreground">{t('selectKeyframe')}</p>
           )}
-          <FieldGroup title={t('realism')}>
+          <FieldGroup title={t('realism')} action={reset('flight')}>
             <SwitchField label={t('realistic')} hint={t('realisticHint')} value={flight.realistic} onChange={(realistic) => run({ type: 'flight.set', patch: { realistic } })} />
             <SliderField label={t('maxSpeed')} value={flight.maxSpeed} min={3} max={25} step={0.5} disabled={!flight.realistic} format={(v) => `${v.toFixed(1)} m/s`} onChange={(maxSpeed) => run({ type: 'flight.set', patch: { maxSpeed } })} />
             <SliderField label={t('separation')} value={flight.separation} min={0.5} max={4} step={0.1} disabled={!flight.realistic} format={(v) => `${v.toFixed(1)} m`} onChange={(separation) => run({ type: 'flight.set', patch: { separation } })} />
@@ -186,12 +188,30 @@ export function Inspector() {
         </TabsContent>
 
         <TabsContent value="scene" className="space-y-6">
-          <FieldGroup title={t('environment')}>
+          <FieldGroup title={t('environment')} action={reset('scene')}>
             <SelectField label={t('sky')} value={scene.sky} options={SKY_PRESETS.map((value) => ({ value, label: tOptions(`sky.${value}`) }))} onChange={(sky) => setScene({ sky })} />
             <SegmentedField label={t('ground')} value={scene.ground} options={GROUNDS.map((value) => ({ value, label: tOptions(`ground.${value}`) }))} onChange={(ground) => setScene({ ground })} />
             <SliderField label={t('stars')} value={scene.stars} min={0} max={1} onChange={(stars) => setScene({ stars })} />
+            <SliderField label={t('starSize')} value={scene.starSize} min={0} max={1} onChange={(starSize) => setScene({ starSize })} />
             <SliderField label={t('ambient')} value={scene.ambient} min={0} max={1} onChange={(ambient) => setScene({ ambient })} />
             <SliderField label={t('fog')} value={scene.fog} min={0} max={1} onChange={(fog) => setScene({ fog })} />
+          </FieldGroup>
+          <FieldGroup title={t('fireworks')} action={reset('fireworks')}>
+            <SliderField
+              label={t('fireworksIntensity')}
+              value={scene.fireworks.intensity}
+              min={0}
+              max={1}
+              format={(v) => (v === 0 ? t('off') : `${Math.round(v * 100)}%`)}
+              onChange={(intensity) => setScene({ fireworks: { intensity } })}
+            />
+            <SliderField label={t('fireworksSize')} value={scene.fireworks.size} min={0.5} max={2} disabled={scene.fireworks.intensity === 0} onChange={(size) => setScene({ fireworks: { size } })} />
+            <SegmentedField
+              label={t('fireworksColors')}
+              value={scene.fireworks.palette}
+              options={FIREWORK_PALETTES.map((value) => ({ value, label: tOptions(`fireworks.${value}`) }))}
+              onChange={(palette) => setScene({ fireworks: { palette } })}
+            />
           </FieldGroup>
         </TabsContent>
 

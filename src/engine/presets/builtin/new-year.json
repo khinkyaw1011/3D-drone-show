@@ -24,6 +24,11 @@
       "strength": 0.75,
       "radius": 0.7,
       "threshold": 0.08
+    },
+    "fireworks": {
+      "intensity": 0.8,
+      "size": 1.2,
+      "palette": "rainbow"
     }
   },
   "keyframes": [

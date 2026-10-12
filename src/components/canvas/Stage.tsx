@@ -11,7 +11,7 @@ import type { Capabilities, Show } from '@/engine/types';
 import { useCompiledShow } from '@/hooks/useCompiledShow';
 import { CameraRig } from './CameraRig';
 import { Drones } from './Drones';
-import { Ground, LaunchPad, Sky } from './Environment';
+import { Fireworks, Ground, LaunchPad, Sky } from './Environment';
 import { PostFX } from './PostFX';
 import { WalkControls } from './WalkControls';
 
@@ -149,6 +149,7 @@ export function Stage({
       <Sky scene={scene} />
       <Ground scene={scene} tier={capabilities.tier} />
       {scene.ground !== 'none' && <LaunchPad count={count} />}
+      <Fireworks scene={scene} colors={look.colors} />
       {player && (
         <Drones
           sim={player.sim}

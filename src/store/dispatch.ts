@@ -5,6 +5,7 @@ import { BUILTIN_SHOWS } from '@/engine/presets/builtin';
 import { flightSchema, droneLookSchema, keyframeSchema, sceneSettingsSchema } from '@/engine/presets/schema';
 import type { Keyframe, SceneSettings } from '@/engine/types';
 import { history, mutate, useStudio } from './index';
+import { initialPlaybackSlice } from './slices/playback';
 import { cloneShow, emptyShow } from './slices/show';
 
 const VOLUMETRIC = new Set(['shape', 'model', 'baked']);
@@ -106,6 +107,19 @@ const handlers: CommandHandlers = {
     mutate((s) => {
       s.show.flight = flightSchema.parse({ ...s.show.flight, ...patch });
     }),
+  'settings.reset': ({ scope }) =>
+    mutate((s) => {
+      // Defaults come straight from the schemas, so there is one source of truth for them.
+      const all = scope === 'all';
+      if (all || scope === 'look') {
+        s.show.look = droneLookSchema.parse({});
+        for (const kf of s.show.keyframes) delete kf.look;
+      }
+      if (all || scope === 'flight') s.show.flight = flightSchema.parse({});
+      if (all || scope === 'scene') s.show.scene = sceneSettingsSchema.parse({ fireworks: all ? undefined : s.show.scene.fireworks });
+      if (scope === 'fireworks') s.show.scene.fireworks = sceneSettingsSchema.parse({}).fireworks;
+      if (all) s.playback.speed = initialPlaybackSlice().playback.speed;
+    }),
   'scene.set': ({ patch }) =>
     mutate((s) => {
       const p = patch as Partial<SceneSettings>;
@@ -114,6 +128,7 @@ const handlers: CommandHandlers = {
         ...p,
         bloom: { ...s.show.scene.bloom, ...p.bloom },
         physics: { ...s.show.scene.physics, ...p.physics },
+        fireworks: { ...s.show.scene.fireworks, ...p.fireworks },
       });
     }),
   'playback.play': () => mutate((s) => void (s.playback.playing = true)),

@@ -25,6 +25,11 @@
       "strength": 0.75,
       "radius": 0.65,
       "threshold": 0.1
+    },
+    "fireworks": {
+      "intensity": 0.4,
+      "size": 1,
+      "palette": "gold"
     }
   },
   "keyframes": [

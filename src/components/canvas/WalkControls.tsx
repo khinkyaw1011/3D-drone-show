@@ -4,6 +4,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
 import { MathUtils } from 'three';
 import { padLayout } from '@/engine/formations/fit';
+import { walkInput } from '@/lib/walkInput';
 
 const EYE_HEIGHT = 1.7;
 const WALK_SPEED = 7; // world units per second: a brisk walk at the show's scale
@@ -16,13 +17,12 @@ const KEYS: Record<string, [number, number]> = {
 
 /**
  * First-person view from the ground: drag to look around (all the way up at the show),
- * walk with WASD / arrow keys. On touch screens the left third of the screen is a
- * movement stick and the rest looks around.
+ * walk with WASD / arrow keys, or the on-screen joystick on touch screens (`WalkOverlay`).
  */
 export function WalkControls({ enabled }: { enabled: boolean }) {
   const camera = useThree((s) => s.camera);
   const dom = useThree((s) => s.gl.domElement);
-  const state = useRef({ yaw: 0, pitch: 0.32, move: [0, 0] as [number, number], keys: new Set<string>() });
+  const state = useRef({ yaw: 0, pitch: 0.32, keys: new Set<string>() });
 
   // Start in the crowd, facing the show.
   useEffect(() => {
@@ -35,30 +35,22 @@ export function WalkControls({ enabled }: { enabled: boolean }) {
   useEffect(() => {
     if (!enabled) return;
     const s = state.current;
-    const pointers = new Map<number, { x: number; y: number; stick: boolean; ox: number; oy: number }>();
+    const pointers = new Map<number, { x: number; y: number }>();
 
     const down = (e: PointerEvent) => {
-      const stick = e.pointerType === 'touch' && e.clientX < window.innerWidth / 3;
-      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, stick, ox: e.clientX, oy: e.clientY });
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       dom.setPointerCapture(e.pointerId);
     };
     const moveHandler = (e: PointerEvent) => {
       const p = pointers.get(e.pointerId);
       if (!p) return;
-      if (p.stick) {
-        s.move = [MathUtils.clamp((e.clientX - p.ox) / 60, -1, 1), MathUtils.clamp((p.oy - e.clientY) / 60, -1, 1)];
-      } else {
-        s.yaw -= (e.clientX - p.x) * LOOK_SPEED;
-        // Straight up is allowed: the whole point is to stand under the show and look at the sky.
-        s.pitch = MathUtils.clamp(s.pitch - (e.clientY - p.y) * LOOK_SPEED, -0.5, Math.PI / 2 - 0.02);
-      }
+      s.yaw -= (e.clientX - p.x) * LOOK_SPEED;
+      // Straight up is allowed: the whole point is to stand under the show and look at the sky.
+      s.pitch = MathUtils.clamp(s.pitch - (e.clientY - p.y) * LOOK_SPEED, -0.5, Math.PI / 2 - 0.02);
       p.x = e.clientX;
       p.y = e.clientY;
     };
-    const up = (e: PointerEvent) => {
-      if (pointers.get(e.pointerId)?.stick) s.move = [0, 0];
-      pointers.delete(e.pointerId);
-    };
+    const up = (e: PointerEvent) => void pointers.delete(e.pointerId);
     const typing = (e: KeyboardEvent) => e.target instanceof HTMLElement && e.target.closest('input, textarea, select, [contenteditable], [role="slider"]');
     const keyDown = (e: KeyboardEvent) => {
       if (!(e.code in KEYS) || typing(e)) return;
@@ -84,13 +76,13 @@ export function WalkControls({ enabled }: { enabled: boolean }) {
       window.removeEventListener('keyup', keyUp);
       window.removeEventListener('blur', blur);
       s.keys.clear();
-      s.move = [0, 0];
     };
   }, [dom, enabled]);
 
   useFrame((_, dt) => {
     const s = state.current;
-    let [strafe, forward] = s.move;
+    // Keyboard and the on-screen joystick add up.
+    let { strafe, forward } = walkInput;
     for (const code of s.keys) {
       strafe += KEYS[code][0];
       forward += KEYS[code][1];

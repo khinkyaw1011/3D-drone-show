@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, Download, FilePlus2, FolderOpen, HelpCircle, Link2, PanelLeft, PanelRight, Redo2, Save, Trash2, Undo2, Upload } from 'lucide-react';
+import { ChevronDown, Download, FilePlus2, FolderOpen, HelpCircle, Link2, PanelLeft, PanelRight, Redo2, RotateCcw, Save, Trash2, Undo2, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRef } from 'react';
 import { toast } from 'sonner';
@@ -142,6 +142,10 @@ export function TopBar({ onExport, onHelp }: TopBarProps) {
           >
             <Save />
             {t('saveCurrent')}
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => run({ type: 'settings.reset', scope: 'all' })}>
+            <RotateCcw />
+            {t('resetAll')}
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => run({ type: 'show.new' })}>
             <FilePlus2 />

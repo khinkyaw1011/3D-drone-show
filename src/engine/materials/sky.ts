@@ -44,6 +44,7 @@ export function createSkyMaterial() {
     stars: uniform(0.6),
     haze: uniform(0.15),
     ambient: uniform(0.3),
+    starSize: uniform(0.3),
   };
 
   const dir = normalize(positionLocal);
@@ -60,7 +61,7 @@ export function createSkyMaterial() {
   const rnd = mx_cell_noise_float(cell);
   const dist = length(fract(p).sub(0.5));
   const flicker = sin(time.mul(rnd.mul(3).add(0.6)).add(rnd.mul(40))).mul(0.25).add(0.75);
-  const star = smoothstep(0.16, 0.0, dist)
+  const star = smoothstep(u.starSize.mul(0.34).add(0.06), 0.0, dist)
     .mul(step(float(1).sub(u.stars.mul(0.075)), rnd))
     .mul(flicker)
     .mul(smoothstep(0.02, 0.22, dir.y));
@@ -81,7 +82,7 @@ export function createSkyMaterial() {
   const dim = u.ambient.mul(1.4).add(0.12);
   material.colorNode = base.mul(dim).add(starColor.mul(star).mul(0.55)).add(auroraColor.mul(aurora).mul(0.42).mul(dim));
 
-  const apply = (scene: Pick<SceneSettings, 'sky' | 'stars' | 'fog' | 'ambient'>) => {
+  const apply = (scene: Pick<SceneSettings, 'sky' | 'stars' | 'fog' | 'ambient' | 'starSize'>) => {
     const preset = SKY[scene.sky];
     u.top.value.set(preset.top);
     u.horizon.value.set(preset.horizon);
@@ -90,6 +91,7 @@ export function createSkyMaterial() {
     u.stars.value = scene.stars * preset.starBoost;
     u.haze.value = scene.fog;
     u.ambient.value = scene.ambient;
+    u.starSize.value = scene.starSize;
   };
   return { material, uniforms: u, apply };
 }

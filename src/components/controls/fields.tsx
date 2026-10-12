@@ -1,5 +1,6 @@
 'use client';
 
+import { RotateCcw } from 'lucide-react';
 import { type ReactNode, useId } from 'react';
 import { HexColorInput, HexColorPicker } from 'react-colorful';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -202,5 +203,19 @@ export function FieldGroup({ title, children, action }: { title: string; childre
       </div>
       {children}
     </section>
+  );
+}
+
+/** Small "back to defaults" button for a group heading. */
+export function ResetButton({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[0.6875rem] text-muted-foreground transition-colors duration-150 hover:bg-white/5 hover:text-paper"
+    >
+      <RotateCcw className="size-3" aria-hidden="true" />
+      {label}
+    </button>
   );
 }

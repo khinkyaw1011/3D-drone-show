@@ -4,12 +4,12 @@ import { ChevronDown, ImageUp, Pause, Play, Repeat, Rocket, SkipBack, SkipForwar
 import { useTranslations } from 'next-intl';
 import { type FormEvent, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { ColorSwatch, SegmentedField, SelectField, SliderField, SwitchField } from '@/components/controls/fields';
+import { ColorSwatch, ResetButton, SegmentedField, SelectField, SliderField, SwitchField } from '@/components/controls/fields';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SHAPES } from '@/engine/formations/sources/shape';
 import { BUILTIN_SHOWS } from '@/engine/presets/builtin';
-import { CAMERA_PRESETS, GROUNDS, SKY_PRESETS } from '@/engine/presets/schema';
+import { CAMERA_PRESETS, FIREWORK_PALETTES, GROUNDS, SKY_PRESETS } from '@/engine/presets/schema';
 import { Link } from '@/i18n/navigation';
 import { useIsDesktop } from '@/hooks/useMediaQuery';
 import { IMAGE_ACCEPT } from '@/lib/image';
@@ -227,6 +227,10 @@ export function QuickControls({ className }: { className?: string }) {
             </TabsContent>
 
             <TabsContent value="look" className="space-y-4">
+              <div className="flex justify-end gap-1">
+                <ResetButton label={t('resetDrones')} onClick={() => run({ type: 'settings.reset', scope: 'look' })} />
+                <ResetButton label={t('resetSky')} onClick={() => run({ type: 'settings.reset', scope: 'scene' })} />
+              </div>
               <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t('droneColor')}>
                 <span className="mr-1 text-[0.8125rem] text-foreground/85">{t('droneColor')}</span>
                 <Chip active={show.look.colorMode === 'formation'} onClick={() => setFleetColor('formation')}>
@@ -265,6 +269,23 @@ export function QuickControls({ className }: { className?: string }) {
                   onChange={(sky) => run({ type: 'scene.set', patch: { sky } })}
                 />
                 <SliderField label={t('ambient')} value={show.scene.ambient} min={0} max={1} onChange={(ambient) => run({ type: 'scene.set', patch: { ambient } })} />
+                <SliderField label={t('stars')} value={show.scene.stars} min={0} max={1} onChange={(stars) => run({ type: 'scene.set', patch: { stars } })} />
+                <SliderField
+                  label={t('fireworks')}
+                  value={show.scene.fireworks.intensity}
+                  min={0}
+                  max={1}
+                  format={(v) => (v === 0 ? t('off') : `${Math.round(v * 100)}%`)}
+                  onChange={(intensity) => run({ type: 'scene.set', patch: { fireworks: { intensity } } })}
+                />
+                {show.scene.fireworks.intensity > 0 && (
+                  <SegmentedField
+                    label={t('fireworkColors')}
+                    value={show.scene.fireworks.palette}
+                    options={FIREWORK_PALETTES.map((value) => ({ value, label: tOptions(`fireworks.${value}`) }))}
+                    onChange={(palette) => run({ type: 'scene.set', patch: { fireworks: { palette } } })}
+                  />
+                )}
                 <SegmentedField
                   label={t('ground')}
                   value={show.scene.ground}
@@ -275,6 +296,9 @@ export function QuickControls({ className }: { className?: string }) {
             </TabsContent>
 
             <TabsContent value="flight" className="space-y-4">
+              <div className="flex justify-end">
+                <ResetButton label={t('resetFlight')} onClick={() => run({ type: 'settings.reset', scope: 'flight' })} />
+              </div>
               <SegmentedField
                 label={t('drones')}
                 value={String(show.droneCount)}
@@ -322,7 +346,11 @@ export function QuickControls({ className }: { className?: string }) {
               </div>
             </TabsContent>
 
-            <p className="mt-4 border-t border-line pt-3 text-xs text-muted-foreground">
+            <div className="mt-4 flex items-center justify-between gap-2 border-t border-line pt-3">
+              <span className="text-xs text-muted-foreground">{t('autosaved')}</span>
+              <ResetButton label={t('resetAll')} onClick={() => run({ type: 'settings.reset', scope: 'all' })} />
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
               {t('studioPitch')}{' '}
               <Link href="/studio" className="text-cyan underline-offset-4 hover:underline">
                 {t('openStudio')}

@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useMemo } from 'react';
-import { BoxGeometry, type InstancedMesh, MeshBasicNodeMaterial, Object3D } from 'three/webgpu';
+import { BoxGeometry, type InstancedMesh, MeshBasicNodeMaterial, Object3D, PlaneGeometry } from 'three/webgpu';
 import { floor, mx_cell_noise_float, normalLocal, positionWorld, smoothstep, step, uniform, uv, vec3 } from 'three/tsl';
 import { padLayout } from '@/engine/formations/fit';
 import { seededRng } from '@/engine/formations/sample';
+import { FIREWORK_COUNT, FIREWORK_SHELLS, createFireworksMaterial } from '@/engine/materials/fireworks';
 import { createSkyMaterial, horizonColor } from '@/engine/materials/sky';
 import { createWaterMaterial } from '@/engine/materials/water';
 import type { QualityTier, SceneSettings } from '@/engine/types';
@@ -44,13 +45,14 @@ function City({ scene }: { scene: SceneSettings }) {
   const { geometry, material, lights } = useMemo(() => {
     const lights = uniform(0.5);
     const material = new MeshBasicNodeMaterial({ fog: false });
-    const cell = floor(vec3(positionWorld.x.mul(0.9), positionWorld.y.mul(0.75), positionWorld.z.mul(0.9)));
-    const lit = step(0.86, mx_cell_noise_float(cell)).mul(step(0.6, positionWorld.y));
-    material.colorNode = vec3(0.012, 0.014, 0.022).add(vec3(1, 0.74, 0.4).mul(lit).mul(lights));
+    // Small, sparse, dim windows: a skyline at night should sit well below the drones' brightness.
+    const cell = floor(vec3(positionWorld.x.mul(1.7), positionWorld.y.mul(1.5), positionWorld.z.mul(1.7)));
+    const lit = step(0.93, mx_cell_noise_float(cell)).mul(step(0.6, positionWorld.y));
+    material.colorNode = vec3(0.003, 0.0035, 0.006).add(vec3(1, 0.74, 0.4).mul(lit).mul(lights));
     return { geometry: new BoxGeometry(1, 1, 1).translate(0, 0.5, 0), material, lights };
   }, []);
   useEffect(() => {
-    lights.value = scene.ambient * 0.9;
+    lights.value = scene.ambient * 0.35;
   }, [lights, scene.ambient]);
   useEffect(
     () => () => {
@@ -67,9 +69,9 @@ function City({ scene }: { scene: SceneSettings }) {
     for (let i = 0; i < BUILDINGS; i++) {
       // Arc of towers behind and beside the stage, taller towards the back.
       const angle = Math.PI * (0.08 + 0.84 * (i / BUILDINGS)) + (rng() - 0.5) * 0.04;
-      const radius = 95 + rng() * 70;
+      const radius = 120 + rng() * 80;
       dummy.position.set(Math.cos(angle) * radius, 0, -Math.sin(angle) * radius + 20);
-      dummy.scale.set(4 + rng() * 7, 5 + rng() * rng() * 38, 4 + rng() * 7);
+      dummy.scale.set(5 + rng() * 8, 4 + rng() * rng() * 20, 5 + rng() * 8);
       dummy.rotation.y = rng() * 0.6;
       dummy.updateMatrix();
       mesh.setMatrixAt(i, dummy.matrix);
@@ -78,6 +80,34 @@ function City({ scene }: { scene: SceneSettings }) {
   };
 
   return <instancedMesh ref={place} args={[geometry, material, BUILDINGS]} frustumCulled={false} />;
+}
+
+const GOLD = ['#ffd27a', '#fff4d6', '#ffb84d'];
+
+/** Fireworks behind the show; one stateless instanced draw (see `createFireworksMaterial`). */
+export function Fireworks({ scene, colors }: { scene: SceneSettings; colors: string[] }) {
+  const fireworks = useMemo(() => createFireworksMaterial(), []);
+  const geometry = useMemo(() => new PlaneGeometry(1, 1), []);
+  const { intensity, size, palette } = scene.fireworks;
+  useEffect(() => {
+    const u = fireworks.uniforms;
+    u.active.value = Math.ceil(intensity * FIREWORK_SHELLS);
+    u.scale.value = size;
+    u.rainbow.value = palette === 'rainbow' ? 1 : 0;
+    const stops = palette === 'gold' ? GOLD : colors;
+    u.colorA.value.set(stops[0]);
+    u.colorB.value.set(stops[1] ?? stops[0]);
+    u.colorC.value.set(stops[2] ?? stops[0]);
+  }, [fireworks, intensity, size, palette, colors]);
+  useEffect(
+    () => () => {
+      fireworks.material.dispose();
+      geometry.dispose();
+    },
+    [fireworks, geometry],
+  );
+  if (intensity <= 0) return null;
+  return <mesh geometry={geometry} material={fireworks.material} count={FIREWORK_COUNT} frustumCulled={false} renderOrder={1} />;
 }
 
 /** The barge the fleet lifts off from: a dark deck with a thin lit rim, sized to the fleet. */

@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import { showSchema } from '../presets/schema';
 
+export const RESET_SCOPES = ['look', 'flight', 'scene', 'fireworks', 'all'] as const;
+export type ResetScope = (typeof RESET_SCOPES)[number];
+
 const id = z.string().min(1);
 const patch = z.record(z.string(), z.unknown());
 
@@ -31,6 +34,10 @@ export const COMMANDS = {
   'look.set': { description: 'Change how drones look and move (size, glow, colours, swarm...).', schema: z.object({ patch }) },
   'look.clearOverrides': { description: 'Remove per-keyframe look overrides so the show look applies everywhere.', schema: z.object({}) },
   'flight.set': { description: 'Change real-world flight limits: realistic mode, top speed (m/s), minimum separation (m).', schema: z.object({ patch }) },
+  'settings.reset': {
+    description: 'Restore default settings for one area (drone look, flight rules, scene, fireworks) or all of them. Formations are kept.',
+    schema: z.object({ scope: z.enum(RESET_SCOPES) }),
+  },
   'scene.set': { description: 'Change sky, ground, camera, post-FX or physics settings.', schema: z.object({ patch }) },
   'playback.play': { description: 'Play the show.', schema: z.object({}) },
   'playback.pause': { description: 'Pause the show.', schema: z.object({}) },

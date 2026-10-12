@@ -86,7 +86,16 @@
     "droneSize": "Drone size",
     "random": "Random",
     "ambient": "Background brightness",
-    "view": "View"
+    "view": "View",
+    "stars": "Stars",
+    "fireworks": "Fireworks",
+    "fireworkColors": "Firework colours",
+    "off": "Off",
+    "resetDrones": "Reset drones",
+    "resetSky": "Reset sky",
+    "resetFlight": "Reset flight",
+    "resetAll": "Reset all settings",
+    "autosaved": "Saved on this device automatically"
   },
   "Options": {
     "shape": {
@@ -187,6 +196,11 @@
       "low-hero": "Low",
       "top-down": "Top",
       "fly-around": "Orbit"
+    },
+    "fireworks": {
+      "show": "Show colours",
+      "rainbow": "Rainbow",
+      "gold": "Gold"
     }
   },
   "Gallery": {
@@ -308,7 +322,8 @@
       "shareCopied": "Link copied",
       "shareFailed": "Could not copy the link",
       "shareLong": "Link copied, but it is long",
-      "shareLongBody": "Uploaded pictures make links long. Some apps may cut it short; export a .json file to be safe."
+      "shareLongBody": "Uploaded pictures make links long. Some apps may cut it short; export a .json file to be safe.",
+      "resetAll": "Reset all settings"
     },
     "library": {
       "title": "Formations",
@@ -413,7 +428,14 @@
       "film": "Film",
       "exposure": "Exposure",
       "vignette": "Vignette",
-      "grain": "Grain"
+      "grain": "Grain",
+      "starSize": "Star size",
+      "fireworks": "Fireworks",
+      "fireworksIntensity": "Amount",
+      "fireworksSize": "Burst size",
+      "fireworksColors": "Colours",
+      "off": "Off",
+      "reset": "Reset"
     },
     "export": {
       "title": "Export",
@@ -547,7 +569,8 @@
   },
   "Walk": {
     "hintKeys": "W A S D or arrow keys to walk · drag to look around · Esc to exit",
-    "hintTouch": "Drag the left side to walk · drag elsewhere to look around",
-    "exit": "Exit walk"
+    "hintTouch": "Use the joystick to walk · drag to look around",
+    "exit": "Exit walk",
+    "joystick": "Walk joystick"
   }
 }

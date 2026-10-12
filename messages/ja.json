@@ -86,7 +86,16 @@
     "separation": "最小間隔",
     "spin": "隊形の回転",
     "studioPitch": "タイムライン、隊形ごとのタイミング、カメラショット、書き出しが必要ですか？",
-    "openStudio": "スタジオを開く"
+    "openStudio": "スタジオを開く",
+    "stars": "星",
+    "fireworks": "花火",
+    "fireworkColors": "花火の色",
+    "off": "オフ",
+    "resetDrones": "機体をリセット",
+    "resetSky": "空をリセット",
+    "resetFlight": "飛行をリセット",
+    "resetAll": "すべての設定をリセット",
+    "autosaved": "この端末に自動保存されます"
   },
   "Options": {
     "shape": {
@@ -187,6 +196,11 @@
       "flat": "平面",
       "relief": "レリーフ",
       "curve": "カーブ"
+    },
+    "fireworks": {
+      "show": "ショーの色",
+      "rainbow": "虹色",
+      "gold": "金色"
     }
   },
   "Gallery": {
@@ -308,7 +322,8 @@
       "shareCopied": "リンクをコピーしました",
       "shareFailed": "リンクをコピーできませんでした",
       "shareLong": "リンクをコピーしましたが、長めです",
-      "shareLongBody": "アップロードした画像があるとリンクが長くなります。アプリによっては途中で切れるため、.json の書き出しが確実です。"
+      "shareLongBody": "アップロードした画像があるとリンクが長くなります。アプリによっては途中で切れるため、.json の書き出しが確実です。",
+      "resetAll": "すべての設定をリセット"
     },
     "library": {
       "title": "隊形",
@@ -413,7 +428,14 @@
       "film": "フィルム",
       "exposure": "露出",
       "vignette": "周辺減光",
-      "grain": "粒子"
+      "grain": "粒子",
+      "starSize": "星の大きさ",
+      "fireworks": "花火",
+      "fireworksIntensity": "量",
+      "fireworksSize": "開花の大きさ",
+      "fireworksColors": "色",
+      "off": "オフ",
+      "reset": "リセット"
     },
     "export": {
       "title": "書き出し",
@@ -547,7 +569,8 @@
   },
   "Walk": {
     "hintKeys": "W A S D または矢印キーで歩く · ドラッグで見回す · Esc で終了",
-    "hintTouch": "画面左側をドラッグして歩く · それ以外をドラッグして見回す",
-    "exit": "歩行を終了"
+    "hintTouch": "ジョイスティックで歩く · ドラッグで見回す",
+    "exit": "歩行を終了",
+    "joystick": "歩行ジョイスティック"
   }
 }

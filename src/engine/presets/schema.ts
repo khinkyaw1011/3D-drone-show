@@ -39,6 +39,15 @@ export const physicsSettingsSchema = z.object({
   maxBodies: z.number().int().min(100).max(3000).default(1500),
 });
 
+export const FIREWORK_PALETTES = ['show', 'rainbow', 'gold'] as const;
+
+/** Fireworks behind the show. Intensity 0 switches them off. */
+export const fireworksSchema = z.object({
+  intensity: z.number().min(0).max(1).default(0),
+  size: z.number().min(0.5).max(2).default(1),
+  palette: z.enum(FIREWORK_PALETTES).default('show'),
+});
+
 export const sceneSettingsSchema = z.object({
   sky: z.enum(SKY_PRESETS).default('midnight'),
   ground: z.enum(GROUNDS).default('water'),
@@ -59,6 +68,9 @@ export const sceneSettingsSchema = z.object({
   vignette: z.number().min(0).max(1).default(0.45),
   exposure: z.number().min(0.3).max(2.5).default(1),
   physics: physicsSettingsSchema.prefault({}),
+  fireworks: fireworksSchema.prefault({}),
+  /** Apparent size of the stars. */
+  starSize: z.number().min(0).max(1).default(0.3),
 });
 
 /** How faithfully the fleet obeys real-world limits. Speeds and distances are in metres. */
