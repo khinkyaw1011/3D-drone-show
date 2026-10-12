@@ -95,13 +95,17 @@
       "heart": "Heart",
       "blossom": "Blossom",
       "galaxy": "Galaxy",
-      "grid": "Grid wall",
+      "grid": "Light block",
       "cube": "Cube",
       "torus": "Torus",
       "star": "Star",
       "helix": "DNA helix",
       "wave": "Wave",
-      "burst": "Firework"
+      "burst": "Firework",
+      "saturn": "Saturn",
+      "diamond": "Diamond",
+      "pyramid": "Pyramid",
+      "tornado": "Tornado"
     },
     "sky": {
       "midnight": "Midnight",
@@ -120,7 +124,69 @@
       "front": "Front",
       "low-hero": "Low hero",
       "top-down": "Top-down",
-      "fly-around": "Fly-around"
+      "fly-around": "Fly-around",
+      "close-up": "Close-up (see the drones)"
+    },
+    "colorMode": {
+      "formation": "From formation",
+      "solid": "Solid",
+      "gradient": "Gradient",
+      "palette": "Palette",
+      "rainbow": "Rainbow",
+      "random": "Random",
+      "height": "By height"
+    },
+    "curve": {
+      "spring": "Spring",
+      "swarm": "Swarm",
+      "physics": "Physics",
+      "power2.inOut": "Smooth",
+      "power3.inOut": "Smoother",
+      "expo.inOut": "Snap",
+      "back.out(1.4)": "Overshoot",
+      "sine.inOut": "Gentle",
+      "none": "Linear"
+    },
+    "effect": {
+      "drop": "Drop",
+      "burst": "Burst",
+      "wind": "Wind"
+    },
+    "order": {
+      "random": "Random",
+      "radial": "From the centre",
+      "top-down": "Top to bottom",
+      "by-color": "By colour"
+    },
+    "font": {
+      "helvetiker": "Helvetiker",
+      "optimer": "Optimer",
+      "gentilis": "Gentilis"
+    },
+    "model": {
+      "horse": "Horse",
+      "parrot": "Parrot",
+      "flamingo": "Flamingo"
+    },
+    "mode": {
+      "luminance": "Brightness",
+      "alpha": "Transparency",
+      "edges": "Edges",
+      "subject": "Subject"
+    },
+    "depth": {
+      "flat": "Flat",
+      "relief": "Relief",
+      "curve": "Curved"
+    },
+    "cameraShort": {
+      "spectator": "Crowd",
+      "walk": "Walk",
+      "close-up": "Close-up",
+      "front": "Front",
+      "low-hero": "Low",
+      "top-down": "Top",
+      "fly-around": "Orbit"
     }
   },
   "Gallery": {
@@ -128,17 +194,20 @@
     "title": "Six shows, ready to fly",
     "lead": "Every preview is drawn from the same formation data the drones fly. Watch one, or remix it in the studio.",
     "previewOf": "Preview of {name}",
-    "meta": "{formations, plural, one {# formation} other {# formations}} · {drones, number} drones",
+    "meta": {
+      "title": "Gallery",
+      "description": "Six ready-made drone shows to watch or remix."
+    },
     "fly": "Fly it here",
     "watch": "Watch",
     "remix": "Remix",
     "shows": {
       "sakura-night": "A cherry blossom opens over the water, becomes a heart, and bursts into petals.",
       "neon-tokyo": "Sky-writing, a wall of light and a spiral galaxy over a city skyline.",
-      "aurora": "Slow waves and rings under northern lights.",
+      "aurora": "Slow waves, a ringed planet and a double helix under northern lights.",
       "new-year": "Three, two, one — a firework, then the new year in gold.",
-      "ocean": "Waves, a flamingo and a globe in cool blues, ending in rain.",
-      "gold-gala": "A star, a word and a ring in warm gold."
+      "ocean": "Waves, a flamingo and a globe in cool blues, ending in a waterspout.",
+      "gold-gala": "A diamond, a word and a ring in warm gold."
     }
   },
   "Landing": {
@@ -191,5 +260,288 @@
       }
     }
   },
-  "Fields": {}
+  "Fields": {
+    "shape": "Shape",
+    "fill": "Size",
+    "text": "Text",
+    "font": "Font",
+    "letterSpacing": "Letter spacing",
+    "stacked": "Stack words",
+    "model": "Model",
+    "rotation": "Rotation",
+    "useColors": "Use its colours",
+    "mode": "Place drones by",
+    "threshold": "Threshold",
+    "invert": "Invert",
+    "depth": "Depth",
+    "saturation": "Saturation"
+  },
+  "Studio": {
+    "meta": {
+      "title": "Studio",
+      "description": "Build a drone show on a timeline: formations, timing, camera, colour and export."
+    },
+    "linkBroken": "That link could not be opened",
+    "sheetDescription": "Studio panel",
+    "top": {
+      "home": "Back to Skyloom",
+      "showName": "Show name",
+      "shows": "Shows",
+      "builtIn": "Built-in shows",
+      "saved": "Your shows",
+      "deleteSaved": "Delete {name}",
+      "saveCurrent": "Save this show",
+      "savedToast": "Saved “{name}”",
+      "newShow": "New empty show",
+      "importJson": "Import .json",
+      "exportJson": "Export .json",
+      "imported": "Imported {name}",
+      "importFailed": "That file is not a Skyloom show",
+      "undo": "Undo",
+      "redo": "Redo",
+      "toggleLibrary": "Show or hide formations",
+      "toggleInspector": "Show or hide inspector",
+      "shortcuts": "Keyboard shortcuts",
+      "share": "Share",
+      "export": "Export",
+      "shareCopied": "Link copied",
+      "shareFailed": "Could not copy the link",
+      "shareLong": "Link copied, but it is long",
+      "shareLongBody": "Uploaded pictures make links long. Some apps may cut it short; export a .json file to be safe."
+    },
+    "library": {
+      "title": "Formations",
+      "editing": "Editing · {name}",
+      "preview": "Preview of {name}",
+      "addWord": "Add a word or shape",
+      "wordLabel": "Word or shape name",
+      "wordPlaceholder": "heart, saturn, HELLO, 桜…",
+      "shapes": "Shapes",
+      "models": "3D models",
+      "upload": "Your own",
+      "sampling": "Sampling…",
+      "dropTitle": "Upload a picture, SVG or .glb",
+      "dropHint": "Or drop a file anywhere on this panel"
+    },
+    "timeline": {
+      "title": "Timeline",
+      "label": "Formations in order",
+      "select": "Fly to {name}",
+      "timing": "fly {duration}s · hold {hold}s",
+      "duplicate": "Duplicate",
+      "delete": "Delete",
+      "reorder": "Drag to reorder",
+      "play": "Play",
+      "pause": "Pause",
+      "previous": "Previous formation",
+      "next": "Next formation",
+      "loop": "Loop",
+      "scrub": "Playhead",
+      "empty": "No formations yet. Add your first one."
+    },
+    "inspector": {
+      "title": "Inspector",
+      "tabs": {
+        "drones": "Drones",
+        "motion": "Motion",
+        "scene": "Scene",
+        "camera": "Camera",
+        "fx": "FX"
+      },
+      "fleet": "Fleet",
+      "count": "Drones",
+      "countHint": "This device can fly up to {max, number}.",
+      "droneSize": "Drone size",
+      "size": "LED size",
+      "glow": "Glow",
+      "twinkle": "Twinkle",
+      "trails": "Light trails",
+      "color": "Colour",
+      "colorMode": "Colour mode",
+      "colors": "Colours",
+      "colorStop": "Colour {index}",
+      "addColor": "Add a colour",
+      "removeColor": "Remove a colour",
+      "axis": "Direction",
+      "transitionInto": "Flying into · {name}",
+      "name": "Name",
+      "curve": "Flight style",
+      "effect": "Physics effect",
+      "duration": "Flight time",
+      "durationHint": "Real-world flight may lengthen this to respect the top speed.",
+      "hold": "Hold",
+      "stagger": "Stagger",
+      "order": "Who leaves first",
+      "spin": "Spin",
+      "ownColors": "Own colours",
+      "ownColorsHint": "Give this formation its own colours instead of the show's.",
+      "selectKeyframe": "Select a formation on the timeline to edit how the fleet flies into it.",
+      "realism": "Real-world flight",
+      "realistic": "Obey real limits",
+      "realisticHint": "Caps speed and plans routes that keep drones apart.",
+      "maxSpeed": "Top speed",
+      "separation": "Minimum separation",
+      "feel": "Feel",
+      "swarm": "Swarm wobble",
+      "hoverBob": "Hover drift",
+      "physics": "Physics moments",
+      "gravity": "Gravity",
+      "restitution": "Bounciness",
+      "windDirection": "Wind direction",
+      "windStrength": "Wind strength",
+      "maxBodies": "Physics bodies",
+      "environment": "Environment",
+      "sky": "Sky",
+      "ground": "Ground",
+      "stars": "Stars",
+      "fog": "Haze",
+      "ambient": "Background brightness",
+      "cameraShow": "Whole show",
+      "cameraPreset": "View",
+      "autoOrbit": "Auto-rotate",
+      "cameraShot": "During · {name}",
+      "shot": "Camera shot",
+      "inherit": "Same as the show",
+      "toys": "Play",
+      "pushToy": "Push drones with the pointer",
+      "pushToyHint": "Move the pointer through the fleet and nearby drones shy away.",
+      "bloom": "Bloom",
+      "strength": "Strength",
+      "radius": "Radius",
+      "threshold": "Threshold",
+      "film": "Film",
+      "exposure": "Exposure",
+      "vignette": "Vignette",
+      "grain": "Grain"
+    },
+    "export": {
+      "title": "Export",
+      "description": "Save a still of this frame, or render the whole show to video.",
+      "pngSize": "Image size",
+      "savePng": "Save PNG",
+      "frameRate": "Frame rate",
+      "saveVideo": "Render video",
+      "videoHint": "Rendered frame by frame in your browser (MP4, or WebM where H.264 is unavailable). Keep this tab open.",
+      "rendering": "Rendering {percent}%",
+      "cancel": "Cancel",
+      "pngDone": "Image saved",
+      "videoDone": "{format} video saved",
+      "notReady": "The show is still loading",
+      "failed": "Export failed"
+    },
+    "shortcuts": {
+      "title": "Keyboard shortcuts",
+      "description": "Work without leaving the keyboard.",
+      "toggle": "Play / pause",
+      "next": "Next formation",
+      "previous": "Previous formation",
+      "loop": "Toggle loop",
+      "undo": "Undo",
+      "redo": "Redo",
+      "duplicate": "Duplicate formation",
+      "delete": "Delete formation",
+      "share": "Copy share link",
+      "help": "Show this list",
+      "walk": "Walk (first-person view)"
+    }
+  },
+  "Viewer": {
+    "meta": {
+      "title": "Watch a show",
+      "description": "A drone show made with Skyloom."
+    },
+    "home": "Skyloom home",
+    "play": "Play",
+    "pause": "Pause",
+    "relaunch": "Relaunch",
+    "remix": "Remix",
+    "brokenTitle": "This show link is broken",
+    "brokenBody": "The link is incomplete or was changed on the way here. Ask for it again, or pick a show from the gallery.",
+    "browse": "Browse the gallery"
+  },
+  "Guide": {
+    "meta": {
+      "title": "Guide",
+      "description": "How to design, fly and share a drone show with Skyloom."
+    },
+    "eyebrow": "Guide",
+    "title": "Fly your first show",
+    "lead": "Everything happens live: change something and the fleet re-forms in front of you.",
+    "steps": {
+      "pick": {
+        "title": "Pick a show",
+        "body": "Choose a show from the gallery or the Show tab. The drones already in the air fly straight into it."
+      },
+      "create": {
+        "title": "Add formations",
+        "body": "Type a shape or a word, tap a shape, or upload a picture, SVG or .glb model. Text can be English, Japanese or Burmese."
+      },
+      "look": {
+        "title": "Make it yours",
+        "body": "Set drone size, LED size and glow, pick one colour, a rainbow or random colours, and dim the background until the lights stand out."
+      },
+      "flight": {
+        "title": "Set the rules of flight",
+        "body": "Choose the fleet size, the top speed in metres per second and the minimum gap between drones. Flight times stretch to obey them."
+      },
+      "views": {
+        "title": "Watch from anywhere",
+        "body": "Stand in the crowd, zoom in to see the propellers, or switch to Walk and stroll under the show with W A S D or the arrow keys."
+      },
+      "studio": {
+        "title": "Go deeper in the studio",
+        "body": "The studio adds a timeline, per-formation timing and spin, camera shots, physics moments, undo and redo."
+      },
+      "share": {
+        "title": "Share and export",
+        "body": "Copy a link that contains the whole show, save a PNG, or render a video frame by frame."
+      }
+    },
+    "keys": {
+      "title": "Keys",
+      "play": "Play / pause",
+      "step": "Previous / next formation",
+      "walk": "Walk in first person",
+      "undo": "Undo",
+      "help": "All studio shortcuts"
+    },
+    "cta": "Open the studio"
+  },
+  "About": {
+    "meta": {
+      "title": "About",
+      "description": "How Skyloom plans a drone show: sampling, assignment, collision-free routes and real flight speeds."
+    },
+    "eyebrow": "About",
+    "title": "How the show is planned",
+    "lead": "Skyloom is a simulator. It borrows the steps a real show goes through before a single drone leaves the ground.",
+    "topics": {
+      "sampling": {
+        "title": "Shapes become points",
+        "body": "Meshes, text, pictures and 3D models are sampled into one point per drone, then pushed apart until every drone has a safety gap around it."
+      },
+      "assignment": {
+        "title": "Every drone gets a target",
+        "body": "Drones and targets are sorted along a space-filling curve and paired, then swapped wherever a swap shortens the trip. Short trips rarely cross."
+      },
+      "routes": {
+        "title": "Routes are checked before take-off",
+        "body": "Each transition is sampled in time. Any two drones that would pass too close get their routes bent apart, and the check repeats until it is clean."
+      },
+      "speed": {
+        "title": "Time follows speed",
+        "body": "A transition lasts as long as the farthest-flying drone needs at the fleet's top speed. Lower the speed limit and the show slows down, like a real one."
+      },
+      "rendering": {
+        "title": "One draw call for the fleet",
+        "body": "Positions are computed on the GPU and every drone is drawn in a single instanced call: an LED sprite plus a small quadcopter with spinning propellers."
+      },
+      "limits": {
+        "title": "What it is not",
+        "body": "Drones are drawn larger than life so you can see them, wind and battery are not modelled, and nothing here is a flight plan for real aircraft."
+      }
+    },
+    "credits": "Built with",
+    "disclaimer": "Virtual simulation only. Bundled 3D models and typefaces come from the three.js examples (MIT licence)."
+  }
 }

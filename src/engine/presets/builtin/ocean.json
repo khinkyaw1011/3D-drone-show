@@ -43,7 +43,8 @@
         "curve": "sine.inOut",
         "stagger": 0.35,
         "order": "radial"
-      }
+      },
+      "spin": 8
     },
     {
       "id": "oc2",
@@ -95,22 +96,22 @@
     },
     {
       "id": "oc4",
-      "name": "Rain",
+      "name": "Waterspout",
       "formation": {
         "sourceId": "shape",
         "input": {
-          "shape": "wave",
+          "shape": "tornado",
           "fill": 0.95
         }
       },
       "hold": 2,
       "transition": {
-        "duration": 5,
-        "curve": "physics",
+        "duration": 4,
+        "curve": "power3.inOut",
         "stagger": 0.35,
-        "order": "random",
-        "effect": "drop"
-      }
+        "order": "top-down"
+      },
+      "spin": 24
     }
   ]
 }

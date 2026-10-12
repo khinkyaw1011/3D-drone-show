@@ -161,6 +161,16 @@ export function QuickControls({ className }: { className?: string }) {
                   </Chip>
                 ))}
               </div>
+              <div role="group" aria-label={t('view')}>
+                <p className="mb-1.5 text-[0.8125rem] text-foreground/85">{t('view')}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {CAMERA_PRESETS.map((preset) => (
+                    <Chip key={preset} active={show.scene.cameraPreset === preset} onClick={() => run({ type: 'scene.set', patch: { cameraPreset: preset } })}>
+                      {tOptions(`cameraShort.${preset}`)}
+                    </Chip>
+                  ))}
+                </div>
+              </div>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
                 <SelectField
                   label={t('preset')}
@@ -255,12 +265,6 @@ export function QuickControls({ className }: { className?: string }) {
                   onChange={(sky) => run({ type: 'scene.set', patch: { sky } })}
                 />
                 <SliderField label={t('ambient')} value={show.scene.ambient} min={0} max={1} onChange={(ambient) => run({ type: 'scene.set', patch: { ambient } })} />
-                <SelectField
-                  label={t('view')}
-                  value={show.scene.cameraPreset}
-                  options={CAMERA_PRESETS.map((value) => ({ value, label: tOptions(`camera.${value}`) }))}
-                  onChange={(cameraPreset) => run({ type: 'scene.set', patch: { cameraPreset } })}
-                />
                 <SegmentedField
                   label={t('ground')}
                   value={show.scene.ground}

@@ -23,7 +23,7 @@ const safeShow = (raw: unknown): Show | null => {
 };
 
 /** Upgrade anything a previous version wrote to localStorage. Invalid shows are dropped, never thrown on. */
-export function migratePersisted(persisted: unknown, _fromVersion: number): Persisted {
+export function migratePersisted(persisted: unknown): Persisted {
   const raw = (persisted ?? {}) as Partial<Record<keyof Persisted, unknown>>;
   const fallback = initialShowSlice().show;
   return {

@@ -53,7 +53,9 @@ export function createQuadcopterGeometry(): BufferGeometry {
     parts.push(part(new BoxGeometry(ARM, 0.03, 0.045).rotateY(-a).translate(x / 2, 0, z / 2), PART.frame, 0.12)); // arm
     parts.push(part(new CylinderGeometry(0.045, 0.05, 0.07, 10).translate(x, 0.03, z), PART.motor, 0.4)); // motor
     // Two-blade propeller: a thin, slightly pitched bar centred on the motor.
-    parts.push(part(new BoxGeometry(0.36, 0.008, 0.04).rotateX(0.12).translate(x, 0.075, z), PART.frame, 0.55, [x, z, direction]));
+    parts.push(part(new BoxGeometry(0.36, 0.01, 0.045).rotateX(0.12).translate(x, 0.078, z), PART.frame, 1, [x, z, direction]));
+    // The blur a fast propeller leaves: a thin disc just under the blades, so the "fan" reads even when small.
+    parts.push(part(new CylinderGeometry(0.185, 0.185, 0.004, 20).translate(x, 0.07, z), PART.frame, 0.45));
   }
   const merged = mergeGeometries(parts);
   parts.forEach((p) => p.dispose());
@@ -73,7 +75,7 @@ export function createQuadcopterMaterial(buffers: SimBuffers, u: DroneUniforms) 
   const rotor = attribute('rotor', 'vec3');
 
   // Propellers: rotate about their own motor axis; each drone starts at a different blade angle.
-  const angle = time.mul(34).mul(rotor.z).add(hash(instanceIndex).mul(6.283));
+  const angle = time.mul(26).mul(rotor.z).add(hash(instanceIndex).mul(6.283));
   const rel = positionLocal.xz.sub(rotor.xy);
   const spun = vec3(
     rel.x.mul(cos(angle)).sub(rel.y.mul(sin(angle))).add(rotor.x),
@@ -92,7 +94,8 @@ export function createQuadcopterMaterial(buffers: SimBuffers, u: DroneUniforms) 
   const led = buffers.color.toAttribute().xyz.pow(vec3(2.2)).mul(u.power);
   const shade = normalLocal.y.mul(0.35).add(0.65);
   const underglow = float(1).sub(normalLocal.y).mul(0.5).add(0.2);
-  const frame = mix(vec3(0.035, 0.038, 0.048), vec3(0.2, 0.21, 0.24), tag.y).mul(shade).add(led.mul(0.09).mul(underglow));
+  // Dark carbon to pale plastic by part, then washed with the drone's own LED so it reads at night.
+  const frame = mix(vec3(0.07, 0.075, 0.09), vec3(0.42, 0.44, 0.5), tag.y).mul(shade).add(led.mul(0.22).mul(underglow));
   material.colorNode = mix(frame, led.mul(2.6), tag.x);
   return material;
 }

@@ -43,15 +43,16 @@
         "curve": "sine.inOut",
         "stagger": 0.35,
         "order": "radial"
-      }
+      },
+      "spin": 8
     },
     {
       "id": "au2",
-      "name": "Ring",
+      "name": "Saturn",
       "formation": {
         "sourceId": "shape",
         "input": {
-          "shape": "ring",
+          "shape": "saturn",
           "fill": 0.8
         }
       },

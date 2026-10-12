@@ -1,7 +1,7 @@
-import { setRequestLocale } from 'next-intl/server';
 import { Landing } from '@/components/landing/Landing';
+import { type LocaleParams, pageLocale } from '@/lib/page';
 
-export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
-  setRequestLocale((await params).locale);
+export default async function HomePage(props: LocaleParams) {
+  await pageLocale(props);
   return <Landing />;
 }

@@ -7,13 +7,17 @@ const ALIASES: Record<string, ShapeName> = {
   circle: 'ring', 円: 'ring', 丸: 'ring', リング: 'ring', စက်ဝိုင်း: 'ring', ကွင်း: 'ring',
   spiral: 'galaxy', 銀河: 'galaxy', らせん: 'galaxy', 螺旋: 'galaxy', ဂလက်ဆီ: 'galaxy',
   box: 'cube', キューブ: 'cube', 立方体: 'cube', အတုံး: 'cube',
-  ball: 'sphere', globe: 'sphere', planet: 'sphere', 球: 'sphere', ボール: 'sphere', 地球: 'sphere', ဘောလုံး: 'sphere', ကမ္ဘာ: 'sphere',
+  ball: 'sphere', globe: 'sphere', 球: 'sphere', ボール: 'sphere', 地球: 'sphere', ဘောလုံး: 'sphere', ကမ္ဘာ: 'sphere',
   donut: 'torus', doughnut: 'torus', ドーナツ: 'torus', トーラス: 'torus',
   dna: 'helix', 二重らせん: 'helix',
   ocean: 'wave', sea: 'wave', 波: 'wave', ウェーブ: 'wave', လှိုင်း: 'wave',
   sakura: 'blossom', cherry: 'blossom', flower: 'blossom', 桜: 'blossom', さくら: 'blossom', サクラ: 'blossom', 花: 'blossom', ဆာကူရာ: 'blossom', ချယ်ရီ: 'blossom', ပန်း: 'blossom',
   firework: 'burst', fireworks: 'burst', explosion: 'burst', 花火: 'burst', 爆発: 'burst', မီးပန်း: 'burst',
-  wall: 'grid', グリッド: 'grid',
+  wall: 'grid', block: 'grid', グリッド: 'grid',
+  planet: 'saturn', 土星: 'saturn', စနေဂြိုဟ်: 'saturn',
+  gem: 'diamond', ダイヤ: 'diamond', ダイヤモンド: 'diamond', စိန်: 'diamond',
+  ピラミッド: 'pyramid', ပိရမစ်: 'pyramid',
+  twister: 'tornado', 竜巻: 'tornado', လေဆင်နှာမောင်း: 'tornado',
 };
 
 export type PromptResult = { sourceId: 'shape'; input: { shape: ShapeName } } | { sourceId: 'text'; input: { text: string } };

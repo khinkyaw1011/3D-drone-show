@@ -30,11 +30,11 @@
   "keyframes": [
     {
       "id": "gg1",
-      "name": "Star",
+      "name": "Diamond",
       "formation": {
         "sourceId": "shape",
         "input": {
-          "shape": "star",
+          "shape": "diamond",
           "fill": 0.85
         }
       },

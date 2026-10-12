@@ -7,6 +7,8 @@ import type { Keyframe, SceneSettings } from '@/engine/types';
 import { history, mutate, useStudio } from './index';
 import { cloneShow, emptyShow } from './slices/show';
 
+const VOLUMETRIC = new Set(['shape', 'model', 'baked']);
+
 const findKeyframe = (keyframes: Keyframe[], id: string) => {
   const index = keyframes.findIndex((k) => k.id === id);
   if (index < 0) throw new Error(`Keyframe "${id}" not found`);
@@ -35,6 +37,8 @@ const handlers: CommandHandlers = {
       id: nanoid(8),
       name: name ?? source.describe(parsed),
       formation: { sourceId, input: parsed },
+      // Solid formations turn slowly by default so their depth reads, as on a real show.
+      spin: VOLUMETRIC.has(sourceId) ? 8 : 0,
     });
     mutate((s) => {
       s.show.keyframes.splice(at ?? s.show.keyframes.length, 0, keyframe);

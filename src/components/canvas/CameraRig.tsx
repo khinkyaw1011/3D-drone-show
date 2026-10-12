@@ -3,7 +3,7 @@
 import { CameraControls } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
-import { Vector3 } from 'three';
+import { Box3, Vector3 } from 'three';
 import type { SceneSettings, Vec3 } from '@/engine/types';
 
 type Preset = Exclude<SceneSettings['cameraPreset'], 'walk'>;
@@ -11,11 +11,18 @@ type Preset = Exclude<SceneSettings['cameraPreset'], 'walk'>;
 export const CAMERA_SHOTS: Record<Preset, { position: Vec3; target: Vec3; orbit: number }> = {
   // Standing in the crowd, looking up at the show.
   spectator: { position: [0, 1.7, 46], target: [0, 16, 0], orbit: 0.6 },
+  // In among the fleet: close enough to see airframes, skids and spinning propellers.
+  'close-up': { position: [5, 18.5, 13], target: [0, 17, 0], orbit: 1 },
   front: { position: [0, 12, 44], target: [0, 16, 0], orbit: 1 },
   'low-hero': { position: [-20, 2, 34], target: [0, 17, 0], orbit: 1 },
   'top-down': { position: [0, 70, 20], target: [0, 12, 0], orbit: 0.5 },
   'fly-around': { position: [34, 20, 34], target: [0, 16, 0], orbit: 5 },
 };
+
+/** Farthest the viewer may pull back: the whole show still fills a good part of the frame. */
+const MAX_DISTANCE = 95;
+/** The point being looked at stays inside this box, so panning can never lose the show. */
+const TARGET_BOUNDS = new Box3(new Vector3(-26, 2, -16), new Vector3(26, 32, 16));
 
 /** Eye height the camera may not go below (it would dip under the ground). */
 const MIN_EYE = 1.2;
@@ -41,10 +48,14 @@ export function CameraRig({ preset, autoOrbit, interactive, reducedMotion }: Cam
   const scratch = useMemo(() => new Vector3(), []);
 
   useEffect(() => {
+    controls.current?.setBoundary(TARGET_BOUNDS);
+  }, []);
+
+  useEffect(() => {
     const c = controls.current;
     if (!c) return;
     const shot = CAMERA_SHOTS[preset];
-    const pullBack = Math.min(3, Math.max(1, 1.5 / aspect));
+    const pullBack = preset === 'close-up' ? 1 : Math.min(1.9, Math.max(1, 1.5 / aspect));
     const [tx, ty, tz] = shot.target;
     const [px, py, pz] = shot.position;
     void c.setLookAt(
@@ -78,7 +89,7 @@ export function CameraRig({ preset, autoOrbit, interactive, reducedMotion }: Cam
       makeDefault
       enabled={interactive}
       minDistance={3}
-      maxDistance={220}
+      maxDistance={MAX_DISTANCE}
       smoothTime={reducedMotion ? 0.6 : 0.35}
       onStart={() => (lastInput.current = performance.now())}
       onChange={() => {

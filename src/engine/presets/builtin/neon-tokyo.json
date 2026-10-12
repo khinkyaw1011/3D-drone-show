@@ -50,7 +50,7 @@
     },
     {
       "id": "nt2",
-      "name": "Grid wall",
+      "name": "Light block",
       "formation": {
         "sourceId": "shape",
         "input": {
@@ -72,7 +72,8 @@
           "#ff4fd8",
           "#ffe66d"
         ]
-      }
+      },
+      "spin": 8
     },
     {
       "id": "nt3",

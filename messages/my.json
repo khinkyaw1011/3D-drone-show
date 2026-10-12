@@ -95,13 +95,17 @@
       "heart": "Heart",
       "blossom": "Blossom",
       "galaxy": "Galaxy",
-      "grid": "Grid wall",
+      "grid": "Light block",
       "cube": "Cube",
       "torus": "Torus",
       "star": "Star",
       "helix": "DNA helix",
       "wave": "Wave",
-      "burst": "Firework"
+      "burst": "Firework",
+      "saturn": "Saturn",
+      "diamond": "Diamond",
+      "pyramid": "Pyramid",
+      "tornado": "Tornado"
     },
     "sky": {
       "midnight": "Midnight",
@@ -120,7 +124,8 @@
       "front": "Front",
       "low-hero": "Low hero",
       "top-down": "Top-down",
-      "fly-around": "Fly-around"
+      "fly-around": "Fly-around",
+      "close-up": "Close-up (see the drones)"
     }
   },
   "Gallery": {
@@ -135,10 +140,10 @@
     "shows": {
       "sakura-night": "A cherry blossom opens over the water, becomes a heart, and bursts into petals.",
       "neon-tokyo": "Sky-writing, a wall of light and a spiral galaxy over a city skyline.",
-      "aurora": "Slow waves and rings under northern lights.",
+      "aurora": "Slow waves, a ringed planet and a double helix under northern lights.",
       "new-year": "Three, two, one — a firework, then the new year in gold.",
-      "ocean": "Waves, a flamingo and a globe in cool blues, ending in rain.",
-      "gold-gala": "A star, a word and a ring in warm gold."
+      "ocean": "Waves, a flamingo and a globe in cool blues, ending in a waterspout.",
+      "gold-gala": "A diamond, a word and a ring in warm gold."
     }
   },
   "Landing": {

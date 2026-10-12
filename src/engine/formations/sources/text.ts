@@ -1,6 +1,6 @@
 import { type Font, FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { type BufferGeometry, ShapeGeometry } from 'three/webgpu';
+import { type BufferGeometry, ExtrudeGeometry } from 'three/webgpu';
 import { z } from 'zod';
 import type { FormationSource } from '../../types';
 import { assetUrl } from '../assets';
@@ -35,7 +35,7 @@ function loadFont(name: FontName): Promise<Font> {
   return font;
 }
 
-/** Lay glyphs out one by one so letter spacing is adjustable; lines are centred. */
+/** Lay glyphs out one by one so letter spacing is adjustable; lines are centred. Letters are extruded, so words have depth. */
 function textGeometry(font: Font, lines: string[], spacing: number): BufferGeometry {
   const data = font.data as unknown as { glyphs: Record<string, { ha: number }>; resolution: number };
   const parts: BufferGeometry[] = [];
@@ -44,7 +44,7 @@ function textGeometry(font: Font, lines: string[], spacing: number): BufferGeome
     const width = advances.reduce((a, b) => a + b, 0) - spacing;
     let x = -width / 2;
     [...line].forEach((ch, i) => {
-      if (ch.trim()) parts.push(new ShapeGeometry(font.generateShapes(ch, 1), 6).translate(x, -row * 1.35, 0));
+      if (ch.trim()) parts.push(new ExtrudeGeometry(font.generateShapes(ch, 1), { depth: 0.22, bevelEnabled: false, curveSegments: 6 }).translate(x, -row * 1.35, 0));
       x += advances[i];
     });
   });
@@ -92,6 +92,7 @@ function rasterText(lines: string[], count: number, signal?: AbortSignal): Float
     const pixel = inked[Math.min(inked.length - 1, Math.floor(((i + rng()) / count) * inked.length))];
     positions[i * 3] = (pixel % width) + rng();
     positions[i * 3 + 1] = -(Math.floor(pixel / width) + rng());
+    positions[i * 3 + 2] = (i % 2) * size * 0.22; // front and back face, like the extruded Latin letters
   }
   return positions;
 }

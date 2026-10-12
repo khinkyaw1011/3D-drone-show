@@ -10,7 +10,7 @@ export const COLOR_MODES = ['formation', 'solid', 'gradient', 'palette', 'rainbo
 export const AXES = ['x', 'y', 'z'] as const;
 export const SKY_PRESETS = ['midnight', 'aurora', 'dusk', 'deep-space'] as const;
 export const GROUNDS = ['water', 'city', 'none'] as const;
-export const CAMERA_PRESETS = ['spectator', 'walk', 'front', 'low-hero', 'top-down', 'fly-around'] as const;
+export const CAMERA_PRESETS = ['spectator', 'walk', 'close-up', 'front', 'low-hero', 'top-down', 'fly-around'] as const;
 export const ORDERS = ['random', 'radial', 'top-down', 'by-color'] as const;
 export const EFFECTS = ['drop', 'burst', 'wind'] as const;
 /** Integrated curves; any other string is treated as a GSAP ease name. */

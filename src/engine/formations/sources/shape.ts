@@ -1,9 +1,13 @@
 import { interpolate, converter } from 'culori';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { random } from 'maath';
 import {
   BoxGeometry,
   type BufferGeometry,
+  ConeGeometry,
   ExtrudeGeometry,
+  OctahedronGeometry,
+  RingGeometry,
   PlaneGeometry,
   Shape,
   ShapeGeometry,
@@ -28,6 +32,10 @@ export const SHAPES = [
   'helix',
   'wave',
   'burst',
+  'saturn',
+  'diamond',
+  'pyramid',
+  'tornado',
 ] as const;
 export type ShapeName = (typeof SHAPES)[number];
 
@@ -97,9 +105,18 @@ const GEOMETRY: Partial<Record<ShapeName, () => BufferGeometry>> = {
   blossom: () => {
     const g = new ShapeGeometry(blossomShape(), 64);
     const pos = g.attributes.position;
-    for (let i = 0; i < pos.count; i++) pos.setZ(i, Math.hypot(pos.getX(i), pos.getY(i)) ** 2 * 0.32 - 0.12);
-    return g;
+    for (let i = 0; i < pos.count; i++) pos.setZ(i, Math.hypot(pos.getX(i), pos.getY(i)) ** 2 * 0.62 - 0.2);
+    // Tilt it back like a flower facing the crowd, so the bowl has real depth from every side.
+    return g.rotateX(-0.5);
   },
+  diamond: () => new OctahedronGeometry(1, 0).scale(0.8, 1.15, 0.8),
+  pyramid: () => new ConeGeometry(1, 1.35, 4, 6).rotateY(Math.PI / 4),
+  // A planet with its ring: two surfaces merged, so the fleet splits between globe and ring by area.
+  saturn: () =>
+    mergeGeometries([
+      new SphereGeometry(0.62, 40, 28).toNonIndexed(),
+      new RingGeometry(0.88, 1.35, 96, 6).rotateX(-Math.PI / 2).toNonIndexed(),
+    ]).rotateZ(0.42).rotateX(0.3),
   wave: () => {
     const g = new PlaneGeometry(4, 1.6, 96, 24);
     const pos = g.attributes.position;
@@ -116,12 +133,27 @@ type Points = { positions: Float32Array; colors?: Float32Array };
 
 /** Shapes that are not surfaces of a mesh: lattices, volumes and parametric curves. */
 const PARAMETRIC: Partial<Record<ShapeName, (count: number) => Points>> = {
+  // A solid block of light: a 3D lattice, wider than it is deep.
   grid: (count) => {
-    const cols = Math.ceil(Math.sqrt(count * 1.9));
+    const nz = Math.max(2, Math.round(Math.cbrt(count / 6)));
+    const nx = Math.ceil(Math.sqrt((count / nz) * 1.7));
+    const ny = Math.ceil(count / nz / nx);
     const positions = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      positions[i * 3] = i % cols;
-      positions[i * 3 + 1] = -Math.floor(i / cols);
+      positions[i * 3] = i % nx;
+      positions[i * 3 + 1] = -(Math.floor(i / nx) % ny);
+      positions[i * 3 + 2] = Math.floor(i / (nx * ny));
+    }
+    return { positions };
+  },
+  tornado: (count) => {
+    const rng = seededRng(13);
+    const positions = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      const t = (i + 0.5) / count;
+      const radius = (0.12 + t * t * 0.95) * (0.9 + rng() * 0.2);
+      const angle = t * Math.PI * 14 + (i % 3) * ((Math.PI * 2) / 3);
+      positions.set([Math.cos(angle) * radius, t * 2.6 - 1.3, Math.sin(angle) * radius], i * 3);
     }
     return { positions };
   },

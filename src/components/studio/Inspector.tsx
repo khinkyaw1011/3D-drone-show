@@ -105,6 +105,7 @@ export function Inspector() {
               hint={t('countHint', { max: maxDrones })}
               onChange={(count) => run({ type: 'show.setDroneCount', count })}
             />
+            <SliderField label={t('droneSize')} value={look.body} min={0.35} max={1} format={(v) => `${Math.round(v * 100)}%`} onChange={(body) => setLook({ body })} />
             <SliderField label={t('size')} value={look.size} min={0.08} max={0.8} onChange={(size) => setLook({ size })} />
             <SliderField label={t('glow')} value={look.glow} min={0} max={3} onChange={(glow) => setLook({ glow })} />
             <SliderField label={t('twinkle')} value={look.twinkle} min={0} max={1} onChange={(twinkle) => setLook({ twinkle })} />
@@ -186,6 +187,7 @@ export function Inspector() {
             <SelectField label={t('sky')} value={scene.sky} options={SKY_PRESETS.map((value) => ({ value, label: tOptions(`sky.${value}`) }))} onChange={(sky) => setScene({ sky })} />
             <SegmentedField label={t('ground')} value={scene.ground} options={GROUNDS.map((value) => ({ value, label: tOptions(`ground.${value}`) }))} onChange={(ground) => setScene({ ground })} />
             <SliderField label={t('stars')} value={scene.stars} min={0} max={1} onChange={(stars) => setScene({ stars })} />
+            <SliderField label={t('ambient')} value={scene.ambient} min={0} max={1} onChange={(ambient) => setScene({ ambient })} />
             <SliderField label={t('fog')} value={scene.fog} min={0} max={1} onChange={(fog) => setScene({ fog })} />
           </FieldGroup>
         </TabsContent>
