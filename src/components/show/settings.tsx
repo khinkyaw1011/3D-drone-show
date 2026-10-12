@@ -1,5 +1,6 @@
 'use client';
 
+import { type DroneLighting, LIGHTING_GLOW, bodyGlowOf } from '@/lib/site';
 import { Minus, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { ColorSwatch, FieldGroup, FieldShell, ResetButton, SegmentedField, SelectField, SliderField, SwitchField } from '@/components/controls/fields';
@@ -134,10 +135,29 @@ export function EnvironmentPicker() {
 }
 
 /** How many drones, and how each one looks. */
-/** Airframe glow the "realistic lighting" switch sets: mostly lamp-lit, with just enough colour to read from the crowd. */
-const REALISTIC_GLOW = 0.15;
+/**
+ * How the airframes are lit: the whole drone glowing in its colour, or dark and lit by its own lamp.
+ * Shows the visitor's choice, or the site default (from the environment) until they make one.
+ */
+export function LightingField() {
+  const { t, setLook } = useSettings();
+  const look = useStudio((s) => s.show.look);
+  const value: DroneLighting = bodyGlowOf(look) < 0.5 ? 'realistic' : 'glow';
+  return (
+    <SegmentedField
+      label={t('lighting')}
+      hint={t('lightingHint')}
+      value={value}
+      options={[
+        { value: 'glow', label: t('lightingGlow') },
+        { value: 'realistic', label: t('lightingRealistic') },
+      ]}
+      onChange={(next) => setLook({ bodyGlow: LIGHTING_GLOW[next] })}
+    />
+  );
+}
 
-export function DroneSection(group: SectionProps) {
+export function DroneSection({ lighting = true, ...group }: SectionProps & { lighting?: boolean }) {
   const { t, run, setLook, reset } = useSettings();
   const look = useStudio((s) => s.show.look);
   const count = useStudio((s) => s.show.droneCount);
@@ -157,13 +177,8 @@ export function DroneSection(group: SectionProps) {
       <SliderField label={t('droneSize')} value={look.body} min={0.35} max={1} format={percent} onChange={(body) => setLook({ body })} />
       <SliderField label={t('ledSize')} value={look.size} min={0.08} max={0.8} onChange={(size) => setLook({ size })} />
       <SliderField label={t('glow')} value={look.glow} min={0} max={3} onChange={(glow) => setLook({ glow })} />
-      <SwitchField
-        label={t('realisticLight')}
-        hint={t('realisticLightHint')}
-        value={look.bodyGlow < 0.5}
-        onChange={(realistic) => setLook({ bodyGlow: realistic ? REALISTIC_GLOW : 1 })}
-      />
-      <SliderField label={t('bodyGlow')} hint={t('bodyGlowHint')} value={look.bodyGlow} min={0} max={1} format={percent} onChange={(bodyGlow) => setLook({ bodyGlow })} />
+      {lighting && <LightingField />}
+      <SliderField label={t('bodyGlow')} hint={t('bodyGlowHint')} value={bodyGlowOf(look)} min={0} max={1} format={percent} onChange={(bodyGlow) => setLook({ bodyGlow })} />
       <SliderField label={t('twinkle')} value={look.twinkle} min={0} max={1} onChange={(twinkle) => setLook({ twinkle })} />
       <SwitchField label={t('trails')} value={look.trails} onChange={(trails) => setLook({ trails })} />
     </FieldGroup>

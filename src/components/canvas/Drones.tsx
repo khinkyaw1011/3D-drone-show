@@ -8,6 +8,7 @@ import { MOTION_ID, createDroneMaterial, createDroneUniforms } from '@/engine/ma
 import { AIRFRAME_FADE, createQuadcopterGeometry, createQuadcopterMaterial } from '@/engine/materials/quadcopter';
 import type { ShowPlayer } from '@/engine/playback/ShowPlayer';
 import type { DroneLook } from '@/engine/types';
+import { bodyGlowOf } from '@/lib/site';
 
 const VOLUME = new Box3().setFromCenterAndSize(new Vector3(...SHOW_VOLUME.center), new Vector3(...SHOW_VOLUME.size));
 const CENTER = new Vector3(...SHOW_VOLUME.center);
@@ -63,7 +64,7 @@ export function Drones({ player, look, power, spacing, ambient = 0.3, pushToy = 
     // The LED is a lamp on the airframe, never bigger than the drone carrying it.
     // Sizes and glow are targets: the frame loop eases towards them, so nothing pops when a new
     // formation changes the fleet's spacing or a slider moves.
-    goal.current = { body, size: Math.min(look.size, body * 0.55), glow: look.glow, bodyGlow: look.bodyGlow };
+    goal.current = { body, size: Math.min(look.size, body * 0.55), glow: look.glow, bodyGlow: bodyGlowOf(look) };
     uniforms.twinkle.value = look.twinkle;
     uniforms.trail.value = look.trails ? 1 : 0;
     uniforms.bob.value = look.hoverBob;

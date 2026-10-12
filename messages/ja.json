@@ -696,8 +696,6 @@
     "droneSize": "機体サイズ",
     "ledSize": "LED サイズ",
     "glow": "輝き",
-    "realisticLight": "リアルなライティング",
-    "realisticLightHint": "暗い機体が自分のランプで照らされ、陰影がつきます。オフ：機体全体が色で光ります。",
     "bodyGlow": "機体の発光",
     "bodyGlowHint": "0% はリアル：機体は自分のランプだけで照らされます。100% で機体全体が色で光ります。",
     "twinkle": "きらめき",
@@ -747,7 +745,11 @@
     },
     "wind": "風",
     "windHint": "草や木を揺らし、風の演出ではドローンを押します。",
-    "windDirection": "風向き"
+    "windDirection": "風向き",
+    "lighting": "ドローンのライティング",
+    "lightingGlow": "全体発光",
+    "lightingRealistic": "リアル",
+    "lightingHint": "全体発光：機体全体が色で光ります。リアル：暗い機体が自分のランプで照らされ、陰影がつきます。"
   },
   "Files": {
     "missingTitle": "このショーが使うファイルを確認してください",

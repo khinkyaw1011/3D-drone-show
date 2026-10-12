@@ -696,8 +696,6 @@
     "droneSize": "Drone size",
     "ledSize": "LED size",
     "glow": "Glow",
-    "realisticLight": "Realistic lighting",
-    "realisticLightHint": "Dark airframes lit by their own lamp, with shading. Off: the whole drone glows in its colour.",
     "bodyGlow": "Airframe glow",
     "bodyGlowHint": "0% is realistic: the drone is lit only by its own lamp. 100% makes the whole drone glow in its colour.",
     "twinkle": "Twinkle",
@@ -747,7 +745,11 @@
     },
     "wind": "Wind",
     "windHint": "Bends the grass and trees, and pushes drones during wind moments.",
-    "windDirection": "Wind direction"
+    "windDirection": "Wind direction",
+    "lighting": "Drone lighting",
+    "lightingGlow": "Full glow",
+    "lightingRealistic": "Realistic",
+    "lightingHint": "Full glow: the whole drone shines in its colour. Realistic: dark airframes lit by their own lamp, with shading."
   },
   "Files": {
     "missingTitle": "A file this show uses needs your attention",

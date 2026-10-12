@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 /** Bump when the persisted/shared Show shape changes, and add a step in `migrateShow`. */
-export const SHOW_VERSION = 1;
+export const SHOW_VERSION = 2;
 
 export const vec3Schema = z.tuple([z.number(), z.number(), z.number()]);
 const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/);
@@ -22,8 +22,11 @@ export const droneLookSchema = z.object({
   /** Airframe size as a fraction of the largest that still clears the neighbouring drone. */
   body: z.number().min(0.35).max(1).default(1),
   glow: z.number().min(0).max(3).default(1.2),
-  /** 0 = airframe lit only by its own lamp and the sky (realistic); 1 = the whole airframe glows in its colour. */
-  bodyGlow: z.number().min(0).max(1).default(1),
+  /**
+   * 0 = airframe lit only by its own lamp and the sky (realistic); 1 = the whole airframe glows in its colour.
+   * Unset until the visitor chooses: the site default then applies (`defaultBodyGlow` in `lib/site.ts`, set from the environment).
+   */
+  bodyGlow: z.number().min(0).max(1).optional(),
   twinkle: z.number().min(0).max(1).default(0.25),
   trails: z.boolean().default(true),
   colorMode: z.enum(COLOR_MODES).default('formation'),
@@ -143,7 +146,14 @@ export function migrateShow(raw: unknown): unknown {
   if (!raw || typeof raw !== 'object') return raw;
   const show = { ...(raw as Record<string, unknown>) };
   // v0 (pre-release) had no version field.
-  if (typeof show.version !== 'number') show.version = SHOW_VERSION;
+  if (typeof show.version !== 'number') show.version = 1;
+  // v1 always stored `look.bodyGlow`, 1 unless changed. From v2 it is only stored once the visitor
+  // chooses, so the site default can apply; a stored 1 cannot be told from "never touched" and is dropped.
+  if ((show.version as number) < 2) {
+    const look = show.look as Record<string, unknown> | undefined;
+    if (look && look.bodyGlow === 1) show.look = Object.fromEntries(Object.entries(look).filter(([key]) => key !== 'bodyGlow'));
+    show.version = 2;
+  }
   return show;
 }
 

@@ -310,3 +310,17 @@ describe('re-forming a fleet that is already flying', () => {
     player.dispose();
   });
 });
+
+describe('show migration v1 -> v2', () => {
+  it('drops the old stored default airframe glow so the site default can apply, and keeps a real choice', async () => {
+    const { parseShow, SHOW_VERSION } = await import('../presets/schema');
+    const base = { id: 'a', name: 'A', keyframes: [] };
+    const untouched = parseShow({ ...base, version: 1, look: { bodyGlow: 1, glow: 2 } });
+    expect(untouched.version).toBe(SHOW_VERSION);
+    expect(untouched.look.bodyGlow).toBeUndefined();
+    expect(untouched.look.glow).toBe(2);
+    expect(parseShow({ ...base, version: 1, look: { bodyGlow: 0.15 } }).look.bodyGlow).toBe(0.15);
+    expect(parseShow({ ...base, version: 2, look: { bodyGlow: 1 } }).look.bodyGlow).toBe(1);
+  });
+});
+

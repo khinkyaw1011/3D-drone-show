@@ -164,8 +164,10 @@ const handlers: CommandHandlers = {
     const preset = [...BUILTIN_SHOWS, ...useStudio.getState().userPresets].find((p) => p.id === presetId);
     if (!preset) throw new Error(`Preset "${presetId}" not found`);
     // Keep the visitor's fleet size, so the drones already in the air simply re-form into the new show.
-    const { droneCount, flight } = useStudio.getState().show;
-    loadShow({ ...cloneShow(preset), droneCount, flight });
+    // The lighting style is the visitor's preference too, not part of a show: it carries over.
+    const { droneCount, flight, look } = useStudio.getState().show;
+    const show = cloneShow(preset);
+    loadShow({ ...show, droneCount, flight, look: { ...show.look, bodyGlow: look.bodyGlow } });
   },
   'preset.save': ({ name }) =>
     mutate((s) => {

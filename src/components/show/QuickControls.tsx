@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
 import { useStudio } from '@/store';
 import { FleetStats } from './FleetStats';
 import { VIEW_ICONS } from './icons';
-import { ColorSection, DroneSection, EnvironmentPicker, ScopeReset, FireworksSection, FlightSection, SkySection, VenueSection } from './settings';
+import { ColorSection, DroneSection, LightingField, EnvironmentPicker, ScopeReset, FireworksSection, FlightSection, SkySection, VenueSection } from './settings';
 import { useShowActions } from './useShowActions';
 
 export const FLEET_COLORS = ['#ff5ca8', '#ff4d4d', '#ff9f43', '#ffd27a', '#5dff9b', '#7cf7e4', '#4d8dff', '#a46bff', '#ffffff'] as const;
@@ -304,6 +304,7 @@ export function QuickControls({ className }: { className?: string }) {
             </TabsContent>
 
             <TabsContent value="look" className="space-y-5">
+              <LightingField />
               <EnvironmentPicker />
               <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t('droneColor')}>
                 <span className="mr-1 text-[0.8125rem] text-foreground/85">{t('droneColor')}</span>
@@ -333,7 +334,7 @@ export function QuickControls({ className }: { className?: string }) {
                 <ColorSwatch label={t('customColor')} value={fleetColor ?? show.look.colors[0]} onChange={(color) => setFleetColor('solid', color)} />
               </div>
               <div className="space-y-2">
-                <DroneSection fold defaultOpen />
+                <DroneSection fold defaultOpen lighting={false} />
                 <ColorSection fold />
                 <SkySection fold />
                 <FireworksSection fold />
