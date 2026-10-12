@@ -22,6 +22,7 @@ Skyloom is a virtual drone-show studio (Next.js App Router, three.js WebGPU/TSL,
 - Schema changes: bump `SHOW_VERSION` / `PERSIST_VERSION`, extend `migrateShow` / `migratePersisted`, add a test. New fields must have a schema default: stored state is re-parsed on every load (`merge` in `src/store/index.ts`), which is what fills them in for shows saved earlier.
 - The path function in `engine/sim/path.ts` is implemented three times (TSL in `GpuSimulator`, JS in `CpuSimulator`, and the planner). Change all three together or the pre-flight separation guarantee is void.
 - Fleet size limits live in `FLEET` / `TIERS` (`engine/renderer/capabilities.ts`); read them through `useFleetLimits` / `currentFleetLimits`, never hard-code a count.
+- The landing deck is a frame (`components/show/QuickControls.tsx`) around small parts in `components/show/deck/` (transport bar, one file per tab, `Chip`); landing page sections are in `components/landing/sections.tsx` (`Section`, `SectionHeading`). Add to those rather than growing the frame.
 - Settings controls shared by the landing deck and the studio live in `components/show/settings.tsx`. Add a control there once rather than in each panel.
 - Anything that should stop when the show is paused must run on the show clock (`player.motionTime` / the `clock` uniform), not TSL `time`.
 - WebGPU allows 8 storage buffers per shader stage; `SimBuffers` is at that limit. Acceleration is packed into the spare `w` of position / velocity / colour.
