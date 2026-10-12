@@ -1,200 +1,553 @@
 {
   "Meta": {
-    "title": "Skyloom — Virtual Drone Show Studio",
-    "description": "Design, fly and share a 3D drone light show in your browser. Real flight speeds, collision-free routes, thousands of drones."
+    "title": "Skyloom — အတုယောင် ဒရုန်းပြပွဲ စတူဒီယို",
+    "description": "သင့်ဘရောက်ဇာထဲတွင် 3D ဒရုန်းမီးပြပွဲကို ဒီဇိုင်းဆွဲ၊ ပျံသန်းစေပြီး မျှဝေပါ။ တကယ့်ပျံသန်းမှုအမြန်နှုန်း၊ မတိုက်မိသော လမ်းကြောင်းများ၊ ဒရုန်း ထောင်ပေါင်းများစွာ။"
   },
   "Site": {
-    "home": "Skyloom home",
-    "primaryNav": "Main",
-    "footerNav": "Footer",
-    "menu": "Menu",
-    "language": "Language",
-    "openStudio": "Open Studio",
+    "home": "Skyloom ပင်မစာမျက်နှာ",
+    "primaryNav": "ပင်မ",
+    "footerNav": "အောက်ခြေ",
+    "menu": "မီနူး",
+    "language": "ဘာသာစကား",
+    "openStudio": "စတူဒီယို ဖွင့်ရန်",
     "nav": {
-      "gallery": "Gallery",
-      "guide": "Guide",
-      "about": "About",
-      "studio": "Studio"
+      "gallery": "ပြခန်း",
+      "guide": "လမ်းညွှန်",
+      "about": "အကြောင်း",
+      "studio": "စတူဒီယို"
     },
-    "footerNote": "A virtual drone show simulator. No real aircraft are flown."
+    "footerNote": "အတုယောင် ဒရုန်းပြပွဲ စမ်းသပ်ပြသမှု ဖြစ်ပါသည်။ တကယ့်လေယာဉ် မပျံသန်းပါ။"
   },
   "Stage": {
-    "launching": "Preparing the fleet…",
-    "errorTitle": "The show could not load",
-    "fallbackTitle": "Running in compatibility mode",
-    "fallbackBody": "This browser has no WebGPU, so the show runs on WebGL2 with up to {count, number} drones."
+    "launching": "ဒရုန်းများ ပြင်ဆင်နေသည်…",
+    "errorTitle": "ပြပွဲကို ဖွင့်၍မရပါ",
+    "fallbackTitle": "လိုက်ဖက်မှုမုဒ်ဖြင့် လုပ်ဆောင်နေသည်",
+    "fallbackBody": "ဤဘရောက်ဇာတွင် WebGPU မရှိသဖြင့် WebGL2 ဖြင့် ဒရုန်း {count} စီးအထိသာ ပြသပါမည်။"
   },
   "Actions": {
-    "failed": "That did not work",
-    "fileFailed": "Could not use that file"
+    "failed": "မအောင်မြင်ပါ",
+    "fileFailed": "ဤဖိုင်ကို အသုံးပြု၍မရပါ"
   },
   "Stats": {
-    "drones": "drones",
-    "speed": "m/s peak",
-    "gap": "m min gap"
+    "drones": "စီး",
+    "speed": "m/s အမြင့်ဆုံး",
+    "gap": "m အနည်းဆုံးအကွာ"
   },
   "Quick": {
-    "label": "Show controls",
+    "label": "ပြပွဲ ထိန်းချုပ်မှုများ",
     "status": {
-      "playing": "Flying",
-      "paused": "Paused",
-      "standby": "Standby"
+      "playing": "ပျံသန်းနေသည်",
+      "paused": "ခဏရပ်ထားသည်",
+      "standby": "အသင့်အနေအထား"
     },
-    "formationOf": "Formation {index}/{total} · {name}",
-    "empty": "No formations yet — create one below",
-    "collapse": "Collapse controls",
-    "expand": "Expand controls",
-    "play": "Play",
-    "pause": "Pause",
-    "previous": "Previous formation",
-    "next": "Next formation",
-    "relaunch": "Relaunch",
-    "loop": "Loop",
+    "formationOf": "ပုံစံ {index}/{total} · {name}",
+    "empty": "ပုံစံ မရှိသေးပါ — အောက်တွင် ဖန်တီးပါ",
+    "collapse": "ထိန်းချုပ်မှုများ ခေါက်သိမ်းရန်",
+    "expand": "ထိန်းချုပ်မှုများ ဖြန့်ရန်",
+    "play": "စတင်",
+    "pause": "ခဏရပ်",
+    "previous": "ယခင်ပုံစံ",
+    "next": "နောက်ပုံစံ",
+    "relaunch": "ပြန်လည်ပျံတက်",
+    "loop": "ထပ်ကျော့",
     "tabs": {
-      "show": "Show",
-      "create": "Create",
-      "look": "Look",
-      "flight": "Flight"
+      "show": "ပြပွဲ",
+      "create": "ဖန်တီး",
+      "look": "အသွင်အပြင်",
+      "flight": "ပျံသန်းမှု"
     },
-    "formations": "Formations",
-    "preset": "Show",
-    "speed": "Playback speed",
-    "realTime": "Real time",
-    "promptLabel": "Shape or word",
-    "promptPlaceholder": "Type a shape or a word: heart, galaxy, HELLO, 桜…",
-    "create": "Create",
-    "upload": "Upload",
-    "sampling": "Sampling…",
-    "uploadHint": "Drop a picture, SVG or .glb model anywhere on this panel. The drones take its shape and colours.",
-    "shapes": "Shapes",
-    "droneColor": "Drone colour",
-    "original": "Original",
-    "rainbow": "Rainbow",
-    "customColor": "Custom colour",
-    "ledSize": "LED size",
-    "glow": "Glow",
-    "sky": "Sky",
-    "ground": "Ground",
-    "drones": "Fleet size",
-    "realistic": "Real-world flight",
-    "realisticHint": "Limits every drone to the top speed below and plans routes that keep them apart.",
-    "maxSpeed": "Top speed",
-    "separation": "Minimum separation",
-    "spin": "Formation spin",
-    "studioPitch": "Want a timeline, per-formation timing, camera shots and export?",
-    "openStudio": "Open the full studio",
-    "droneSize": "Drone size",
-    "random": "Random",
-    "ambient": "Background brightness",
-    "view": "View"
+    "formations": "ပုံစံများ",
+    "preset": "ပြပွဲ",
+    "speed": "ပြသမှု အမြန်နှုန်း",
+    "realTime": "တကယ့်အချိန်",
+    "promptLabel": "ပုံသဏ္ဌာန် သို့မဟုတ် စာလုံး",
+    "promptPlaceholder": "ပုံသဏ္ဌာန် သို့မဟုတ် စာလုံး ရိုက်ပါ — နှလုံး၊ ကြယ်၊ HELLO၊ ဆာကူရာ…",
+    "create": "ဖန်တီး",
+    "upload": "တင်ရန်",
+    "sampling": "ပြောင်းလဲနေသည်…",
+    "uploadHint": "ဓာတ်ပုံ၊ SVG သို့မဟုတ် .glb မော်ဒယ်ကို ဤအကွက်ပေါ် ဆွဲချပါ။ ဒရုန်းများက ၎င်း၏ ပုံသဏ္ဌာန်နှင့် အရောင်ကို ယူပါမည်။",
+    "shapes": "ပုံသဏ္ဌာန်များ",
+    "droneColor": "ဒရုန်းအရောင်",
+    "original": "မူလ",
+    "rainbow": "သက်တံ",
+    "random": "ကျပန်း",
+    "customColor": "စိတ်ကြိုက်အရောင်",
+    "droneSize": "ဒရုန်းအရွယ်အစား",
+    "ledSize": "LED အရွယ်အစား",
+    "glow": "အလင်းရောင်",
+    "sky": "ကောင်းကင်",
+    "ground": "မြေပြင်",
+    "ambient": "နောက်ခံ အလင်းအမှောင်",
+    "view": "မြင်ကွင်း",
+    "drones": "ဒရုန်းအရေအတွက်",
+    "realistic": "လက်တွေ့ ပျံသန်းမှု",
+    "realisticHint": "ဒရုန်းတိုင်းကို အောက်ပါ အမြင့်ဆုံးအမြန်နှုန်းအတွင်း ထိန်းပြီး တစ်စီးနှင့်တစ်စီး ခွာထားသော လမ်းကြောင်းများ စီစဉ်ပေးသည်။",
+    "maxSpeed": "အမြင့်ဆုံး အမြန်နှုန်း",
+    "separation": "အနည်းဆုံး အကွာအဝေး",
+    "spin": "ပုံစံ လည်ပတ်မှု",
+    "studioPitch": "အချိန်ဇယား၊ ပုံစံအလိုက် အချိန်ကိုက်မှု၊ ကင်မရာရိုက်ကွက်နှင့် ထုတ်ယူမှု လိုပါသလား။",
+    "openStudio": "စတူဒီယို အပြည့်အစုံ ဖွင့်ရန်"
   },
   "Options": {
     "shape": {
-      "sphere": "Sphere",
-      "ring": "Ring",
-      "heart": "Heart",
-      "blossom": "Blossom",
-      "galaxy": "Galaxy",
-      "grid": "Light block",
-      "cube": "Cube",
-      "torus": "Torus",
-      "star": "Star",
-      "helix": "DNA helix",
-      "wave": "Wave",
-      "burst": "Firework",
-      "saturn": "Saturn",
-      "diamond": "Diamond",
-      "pyramid": "Pyramid",
-      "tornado": "Tornado"
+      "sphere": "စက်လုံး",
+      "ring": "ကွင်း",
+      "heart": "နှလုံး",
+      "blossom": "ဆာကူရာပန်း",
+      "galaxy": "ဂလက်ဆီ",
+      "grid": "အလင်းတုံး",
+      "cube": "ကုဗတုံး",
+      "torus": "ဒိုးနတ်ပုံ",
+      "star": "ကြယ်",
+      "helix": "DNA ခရုပတ်",
+      "wave": "လှိုင်း",
+      "burst": "မီးပန်း",
+      "saturn": "စနေဂြိုဟ်",
+      "diamond": "စိန်",
+      "pyramid": "ပိရမစ်",
+      "tornado": "လေဆင်နှာမောင်း"
     },
     "sky": {
-      "midnight": "Midnight",
-      "aurora": "Aurora",
-      "dusk": "Dusk",
-      "deep-space": "Deep space"
+      "midnight": "သန်းခေါင်",
+      "aurora": "အော်ရိုရာ",
+      "dusk": "ဆည်းဆာ",
+      "deep-space": "အာကာသနက်"
     },
     "ground": {
-      "water": "Water",
-      "city": "City",
-      "none": "None"
+      "water": "ရေပြင်",
+      "city": "မြို့",
+      "none": "မရှိ"
     },
     "camera": {
-      "spectator": "Spectator",
-      "walk": "Walk (first person)",
-      "front": "Front",
-      "low-hero": "Low hero",
-      "top-down": "Top-down",
-      "fly-around": "Fly-around",
-      "close-up": "Close-up (see the drones)"
+      "spectator": "ပရိသတ်နေရာ",
+      "walk": "လမ်းလျှောက် (ကိုယ်တိုင်မြင်ကွင်း)",
+      "close-up": "အနီးကပ် (ဒရုန်းများကို ကြည့်ရန်)",
+      "front": "အရှေ့",
+      "low-hero": "အနိမ့်မြင်ကွင်း",
+      "top-down": "အပေါ်စီး",
+      "fly-around": "ပတ်ပျံ"
+    },
+    "cameraShort": {
+      "spectator": "ပရိသတ်",
+      "walk": "လျှောက်",
+      "close-up": "အနီးကပ်",
+      "front": "အရှေ့",
+      "low-hero": "အနိမ့်",
+      "top-down": "အပေါ်",
+      "fly-around": "ပတ်ပျံ"
+    },
+    "colorMode": {
+      "formation": "ပုံစံ၏အရောင်",
+      "solid": "တစ်ရောင်တည်း",
+      "gradient": "အရောင်ပြေး",
+      "palette": "အရောင်စု",
+      "rainbow": "သက်တံ",
+      "random": "ကျပန်း",
+      "height": "အမြင့်အလိုက်"
+    },
+    "curve": {
+      "spring": "စပရိန်",
+      "swarm": "အုပ်စုလိုက်",
+      "physics": "ရူပဗေဒ",
+      "power2_inOut": "ချောမွေ့",
+      "power3_inOut": "ပိုချောမွေ့",
+      "expo_inOut": "လျင်မြန်ပြတ်သား",
+      "back_out_1_4_": "ကျော်လွန်ပြန်ဝင်",
+      "sine_inOut": "ညင်သာ",
+      "none": "တစ်ပြေးညီ"
+    },
+    "effect": {
+      "drop": "ကျဆင်း",
+      "burst": "ပေါက်ကွဲ",
+      "wind": "လေ"
+    },
+    "order": {
+      "random": "ကျပန်း",
+      "radial": "အလယ်မှ",
+      "top-down": "အပေါ်မှ အောက်",
+      "by-color": "အရောင်အလိုက်"
+    },
+    "font": {
+      "helvetiker": "Helvetiker",
+      "optimer": "Optimer",
+      "gentilis": "Gentilis"
+    },
+    "model": {
+      "horse": "မြင်း",
+      "parrot": "ကြက်တူရွေး",
+      "flamingo": "ဖလမင်ဂို"
+    },
+    "mode": {
+      "luminance": "အလင်းအမှောင်",
+      "alpha": "ဖောက်ထွင်းမြင်ရမှု",
+      "edges": "အနားသတ်",
+      "subject": "အဓိကအရာ"
+    },
+    "depth": {
+      "flat": "ပြား",
+      "relief": "ထုထည်ဖောင်း",
+      "curve": "ကွေး"
     }
   },
   "Gallery": {
-    "eyebrow": "Gallery",
-    "title": "Six shows, ready to fly",
-    "lead": "Every preview is drawn from the same formation data the drones fly. Watch one, or remix it in the studio.",
-    "previewOf": "Preview of {name}",
-    "meta": "{formations, plural, one {# formation} other {# formations}} · {drones, number} drones",
-    "fly": "Fly it here",
-    "watch": "Watch",
-    "remix": "Remix",
+    "meta": {
+      "title": "ပြခန်း",
+      "description": "ကြည့်ရှုရန် သို့မဟုတ် ပြန်လည်ပြုပြင်ရန် အသင့်လုပ်ထားသော ဒရုန်းပြပွဲ ခြောက်ခု။"
+    },
+    "eyebrow": "ပြခန်း",
+    "title": "ပျံသန်းရန် အသင့်ဖြစ်သော ပြပွဲ ခြောက်ခု",
+    "lead": "အကြိုကြည့်ပုံတိုင်းကို ဒရုန်းများ တကယ်ပျံသန်းသော ပုံစံဒေတာမှ ဆွဲထားသည်။ ကြည့်ရှုပါ၊ သို့မဟုတ် စတူဒီယိုတွင် ပြန်လည်ပြုပြင်ပါ။",
+    "previewOf": "{name} အကြိုကြည့်ပုံ",
+    "summary": "ပုံစံ {formations} ခု · ဒရုန်း {drones} စီး",
+    "fly": "ဤနေရာတွင် ပျံသန်းစေရန်",
+    "watch": "ကြည့်ရန်",
+    "remix": "ပြန်ပြုပြင်ရန်",
     "shows": {
-      "sakura-night": "A cherry blossom opens over the water, becomes a heart, and bursts into petals.",
-      "neon-tokyo": "Sky-writing, a wall of light and a spiral galaxy over a city skyline.",
-      "aurora": "Slow waves, a ringed planet and a double helix under northern lights.",
-      "new-year": "Three, two, one — a firework, then the new year in gold.",
-      "ocean": "Waves, a flamingo and a globe in cool blues, ending in a waterspout.",
-      "gold-gala": "A diamond, a word and a ring in warm gold."
+      "sakura-night": "ရေပြင်ပေါ်တွင် ချယ်ရီပန်း ပွင့်လာပြီး နှလုံးပုံဖြစ်ကာ ပွင့်ချပ်များအဖြစ် ပွင့်ထွက်သွားသည်။",
+      "neon-tokyo": "မြို့ပြကောင်းကင်ပေါ်တွင် စာလုံးများ၊ အလင်းတုံးနှင့် ခရုပတ်ဂလက်ဆီ။",
+      "aurora": "အော်ရိုရာအလင်းအောက်တွင် ဖြည်းညင်းသော လှိုင်းများ၊ ကွင်းပါသော ဂြိုဟ်နှင့် ခရုပတ်နှစ်ထပ်။",
+      "new-year": "သုံး၊ နှစ်၊ တစ် — မီးပန်း၊ ထို့နောက် ရွှေရောင် နှစ်သစ်။",
+      "ocean": "အေးမြသော အပြာရောင်များဖြင့် လှိုင်း၊ ဖလမင်ဂိုနှင့် ကမ္ဘာလုံး၊ ရေလေဆင်နှာမောင်းဖြင့် အဆုံးသတ်သည်။",
+      "gold-gala": "နွေးထွေးသော ရွှေရောင်ဖြင့် စိန်၊ စာလုံးနှင့် ကွင်း။"
     }
   },
   "Landing": {
-    "stageLabel": "Live drone show",
-    "eyebrow": "Virtual drone show studio",
-    "title": "Draw on the night sky",
-    "tagline": "Thousands of drones lift off, fly at real speeds and build 3D formations you design.",
-    "start": "Launch the show",
-    "openStudio": "Open Studio",
-    "hint": "Drag to look around · scroll or pinch to zoom · choose Walk in Look to stroll under the show",
-    "backToShow": "Back to the show",
+    "stageLabel": "တိုက်ရိုက် ဒရုန်းပြပွဲ",
+    "eyebrow": "အတုယောင် ဒရုန်းပြပွဲ စတူဒီယို",
+    "title": "ညကောင်းကင်ပေါ် ပုံဆွဲပါ",
+    "tagline": "ဒရုန်း ထောင်ပေါင်းများစွာ ပျံတက်ပြီး တကယ့်အမြန်နှုန်းဖြင့် ပျံသန်းကာ သင်ဒီဇိုင်းဆွဲထားသော 3D ပုံစံများကို တည်ဆောက်သည်။",
+    "start": "ပြပွဲ စတင်ရန်",
+    "openStudio": "စတူဒီယို ဖွင့်ရန်",
+    "hint": "ဆွဲ၍ လှည့်ကြည့်ပါ · scroll သို့မဟုတ် လက်နှစ်ချောင်းဖြင့် ချဲ့ပါ · “အသွင်အပြင်” တွင် “လျှောက်” ကို ရွေးပြီး ပြပွဲအောက် လမ်းလျှောက်နိုင်သည်",
+    "backToShow": "ပြပွဲသို့ ပြန်သွားရန်",
     "gallery": {
-      "eyebrow": "Gallery",
-      "title": "Pick a show and fly it",
-      "lead": "Choose a show and the fleet above re-forms into it. Then change anything you like."
+      "eyebrow": "ပြခန်း",
+      "title": "ပြပွဲတစ်ခု ရွေးပြီး ပျံသန်းစေပါ",
+      "lead": "ပြပွဲတစ်ခုကို ရွေးလိုက်လျှင် အပေါ်ရှိ ဒရုန်းအုပ်စုက ထိုပုံစံသို့ ပြန်လည်ဖွဲ့စည်းသည်။ ထို့နောက် စိတ်ကြိုက် ပြောင်းလဲနိုင်သည်။"
     },
     "how": {
-      "eyebrow": "How it works",
-      "title": "Planned like a real show",
-      "lead": "Real drone shows are choreographed before take-off. Skyloom does the same three jobs in your browser.",
+      "eyebrow": "အလုပ်လုပ်ပုံ",
+      "title": "တကယ့်ပြပွဲကဲ့သို့ စီစဉ်ထားသည်",
+      "lead": "တကယ့်ဒရုန်းပြပွဲများကို မပျံတက်မီ ကြိုတင်စီစဉ်ရသည်။ Skyloom က ထိုအဆင့် သုံးဆင့်ကို သင့်ဘရောက်ဇာထဲတွင် လုပ်ဆောင်ပေးသည်။",
       "design": {
-        "title": "Design",
-        "body": "Shapes, words, 3D models and your own pictures are sampled into evenly spaced points — one per drone, coloured from the source."
+        "title": "ဒီဇိုင်း",
+        "body": "ပုံသဏ္ဌာန်၊ စာလုံး၊ 3D မော်ဒယ်နှင့် သင့်ဓာတ်ပုံများကို အကွာအဝေးညီသော အမှတ်များအဖြစ် ပြောင်းသည် — ဒရုန်းတစ်စီးလျှင် တစ်မှတ်၊ အရောင်ကို မူရင်းမှ ယူသည်။"
       },
       "animate": {
-        "title": "Animate",
-        "body": "Each drone is assigned the nearest free point, routes are checked for conflicts, and timing is stretched until nobody exceeds the fleet's top speed."
+        "title": "လှုပ်ရှားမှု",
+        "body": "ဒရုန်းတိုင်းကို အနီးဆုံး လွတ်နေသော နေရာ သတ်မှတ်ပေးပြီး လမ်းကြောင်းများ တိုက်မိမှု ရှိမရှိ စစ်ဆေးကာ အမြင့်ဆုံးအမြန်နှုန်း မကျော်စေရန် အချိန်ကို ချိန်ညှိသည်။"
       },
       "share": {
-        "title": "Share",
-        "body": "The whole show fits in a link. Send it, export a video, or save it as a preset and keep editing."
+        "title": "မျှဝေ",
+        "body": "ပြပွဲတစ်ခုလုံးသည် လင့်ခ်တစ်ခုထဲတွင် ဆံ့သည်။ ပို့ပါ၊ ဗီဒီယိုထုတ်ပါ၊ သို့မဟုတ် သိမ်းထားပြီး ဆက်လက်ပြင်ဆင်ပါ။"
       }
     },
     "facts": {
       "drawCall": {
         "value": "1",
-        "label": "Draw call for the fleet"
+        "label": "ဒရုန်းအုပ်စုအတွက် ဆွဲမှုအကြိမ်"
       },
       "speed": {
-        "value": "10 m/s",
-        "label": "Default top speed"
+        "value": "16 m/s",
+        "label": "ပုံမှန် အမြင့်ဆုံးအမြန်နှုန်း"
       },
       "gap": {
         "value": "1.5 m",
-        "label": "Planned separation"
+        "label": "စီစဉ်ထားသော အကွာအဝေး"
       },
       "aircraft": {
         "value": "0",
-        "label": "Real aircraft"
+        "label": "တကယ့်လေယာဉ်"
       }
     }
   },
-  "Fields": {}
+  "Fields": {
+    "shape": "ပုံသဏ္ဌာန်",
+    "fill": "အရွယ်အစား",
+    "text": "စာသား",
+    "font": "ဖောင့်",
+    "letterSpacing": "စာလုံးအကွာ",
+    "stacked": "စကားလုံးများ ထပ်စီရန်",
+    "model": "မော်ဒယ်",
+    "rotation": "လှည့်ခြင်း",
+    "useColors": "မူရင်းအရောင် သုံးရန်",
+    "mode": "ဒရုန်းနေရာချပုံ",
+    "threshold": "ကန့်သတ်အဆင့်",
+    "invert": "ပြောင်းပြန်",
+    "depth": "အနက်",
+    "saturation": "အရောင်ရင့်မှု"
+  },
+  "Studio": {
+    "meta": {
+      "title": "စတူဒီယို",
+      "description": "အချိန်ဇယားပေါ်တွင် ဒရုန်းပြပွဲ တည်ဆောက်ပါ — ပုံစံများ၊ အချိန်ကိုက်မှု၊ ကင်မရာ၊ အရောင်နှင့် ထုတ်ယူမှု။"
+    },
+    "linkBroken": "ထိုလင့်ခ်ကို ဖွင့်၍မရပါ",
+    "sheetDescription": "စတူဒီယို အကွက်",
+    "top": {
+      "home": "Skyloom သို့ ပြန်သွားရန်",
+      "showName": "ပြပွဲအမည်",
+      "shows": "ပြပွဲများ",
+      "builtIn": "ပါဝင်ပြီးသား ပြပွဲများ",
+      "saved": "သင့်ပြပွဲများ",
+      "deleteSaved": "{name} ကို ဖျက်ရန်",
+      "saveCurrent": "ဤပြပွဲကို သိမ်းရန်",
+      "savedToast": "“{name}” ကို သိမ်းပြီးပါပြီ",
+      "newShow": "ပြပွဲအသစ် (အလွတ်)",
+      "importJson": ".json သွင်းရန်",
+      "exportJson": ".json ထုတ်ရန်",
+      "imported": "{name} ကို သွင်းပြီးပါပြီ",
+      "importFailed": "ထိုဖိုင်သည် Skyloom ပြပွဲ မဟုတ်ပါ",
+      "undo": "နောက်ပြန်ဆုတ်",
+      "redo": "ပြန်လုပ်",
+      "toggleLibrary": "ပုံစံအကွက် ပြ/ဖျောက်",
+      "toggleInspector": "ချိန်ညှိအကွက် ပြ/ဖျောက်",
+      "shortcuts": "ကီးဘုတ် ဖြတ်လမ်းများ",
+      "share": "မျှဝေ",
+      "export": "ထုတ်ယူ",
+      "shareCopied": "လင့်ခ် ကူးပြီးပါပြီ",
+      "shareFailed": "လင့်ခ်ကို ကူး၍မရပါ",
+      "shareLong": "လင့်ခ် ကူးပြီးပါပြီ၊ သို့သော် ရှည်လွန်းသည်",
+      "shareLongBody": "တင်ထားသော ဓာတ်ပုံများကြောင့် လင့်ခ် ရှည်သွားသည်။ အချို့အက်ပ်များတွင် ပြတ်သွားနိုင်သဖြင့် .json ဖိုင် ထုတ်ယူခြင်းက ပိုစိတ်ချရသည်။"
+    },
+    "library": {
+      "title": "ပုံစံများ",
+      "editing": "ပြင်ဆင်နေသည် · {name}",
+      "preview": "{name} အကြိုကြည့်ပုံ",
+      "addWord": "စာလုံး သို့မဟုတ် ပုံသဏ္ဌာန် ထည့်ရန်",
+      "wordLabel": "စာလုံး သို့မဟုတ် ပုံသဏ္ဌာန်အမည်",
+      "wordPlaceholder": "နှလုံး၊ စနေဂြိုဟ်၊ HELLO၊ ဆာကူရာ…",
+      "shapes": "ပုံသဏ္ဌာန်များ",
+      "models": "3D မော်ဒယ်များ",
+      "upload": "ကိုယ်ပိုင်ဖိုင်",
+      "sampling": "ပြောင်းလဲနေသည်…",
+      "dropTitle": "ဓာတ်ပုံ၊ SVG သို့မဟုတ် .glb တင်ရန်",
+      "dropHint": "သို့မဟုတ် ဤအကွက်ပေါ် ဖိုင်ကို ဆွဲချပါ"
+    },
+    "timeline": {
+      "title": "အချိန်ဇယား",
+      "label": "ပုံစံများ အစီအစဉ်",
+      "select": "{name} သို့ ပျံရန်",
+      "timing": "ပျံ {duration}စက္ကန့် · ရပ် {hold}စက္ကန့်",
+      "duplicate": "ပွားယူ",
+      "delete": "ဖျက်",
+      "reorder": "ဆွဲ၍ အစီအစဉ်ပြောင်းရန်",
+      "play": "စတင်",
+      "pause": "ခဏရပ်",
+      "previous": "ယခင်ပုံစံ",
+      "next": "နောက်ပုံစံ",
+      "loop": "ထပ်ကျော့",
+      "scrub": "ပြသနေသော နေရာ",
+      "empty": "ပုံစံ မရှိသေးပါ။ ပထမဆုံးတစ်ခု ထည့်ပါ။"
+    },
+    "inspector": {
+      "title": "ချိန်ညှိမှုများ",
+      "tabs": {
+        "drones": "ဒရုန်း",
+        "motion": "လှုပ်ရှား",
+        "scene": "မြင်ကွင်း",
+        "camera": "ကင်မရာ",
+        "fx": "အထူး"
+      },
+      "fleet": "ဒရုန်းအုပ်စု",
+      "count": "ဒရုန်းအရေအတွက်",
+      "countHint": "ဤစက်ပေါ်တွင် {max} စီးအထိ ပျံသန်းနိုင်သည်။",
+      "droneSize": "ဒရုန်းအရွယ်အစား",
+      "size": "LED အရွယ်အစား",
+      "glow": "အလင်းရောင်",
+      "twinkle": "တဖျတ်ဖျတ်လက်မှု",
+      "trails": "အလင်းတန်း",
+      "color": "အရောင်",
+      "colorMode": "အရောင်ပုံစံ",
+      "colors": "အရောင်များ",
+      "colorStop": "အရောင် {index}",
+      "addColor": "အရောင် ထည့်ရန်",
+      "removeColor": "အရောင် ဖယ်ရန်",
+      "axis": "ဦးတည်ရာ",
+      "transitionInto": "ဤပုံစံသို့ ပျံသန်းမှု · {name}",
+      "name": "အမည်",
+      "curve": "ပျံသန်းပုံ",
+      "effect": "ရူပဗေဒ အကျိုးသက်ရောက်မှု",
+      "duration": "ပျံသန်းချိန်",
+      "durationHint": "လက်တွေ့ပျံသန်းမှုတွင် အမြင့်ဆုံးအမြန်နှုန်းကို လိုက်နာရန် ဤအချိန် ပိုကြာနိုင်သည်။",
+      "hold": "ရပ်နေချိန်",
+      "stagger": "အချိန်ခြားမှု",
+      "order": "အရင်ထွက်မည့်သူ",
+      "spin": "လည်ပတ်မှု",
+      "ownColors": "ကိုယ်ပိုင်အရောင်",
+      "ownColorsHint": "ပြပွဲ၏အရောင်အစား ဤပုံစံအတွက် သီးသန့်အရောင် သုံးရန်။",
+      "selectKeyframe": "ဒရုန်းအုပ်စု ဝင်ရောက်ပုံကို ပြင်ဆင်ရန် အချိန်ဇယားပေါ်မှ ပုံစံတစ်ခုကို ရွေးပါ။",
+      "realism": "လက်တွေ့ ပျံသန်းမှု",
+      "realistic": "တကယ့်ကန့်သတ်ချက်များ လိုက်နာရန်",
+      "realisticHint": "အမြန်နှုန်းကို ကန့်သတ်ပြီး ဒရုန်းများ ခွာနေစေမည့် လမ်းကြောင်းများ စီစဉ်သည်။",
+      "maxSpeed": "အမြင့်ဆုံး အမြန်နှုန်း",
+      "separation": "အနည်းဆုံး အကွာအဝေး",
+      "feel": "ခံစားမှု",
+      "swarm": "အုပ်စုလှုပ်ရမ်းမှု",
+      "hoverBob": "ရပ်ပျံစဉ် လှုပ်ရှားမှု",
+      "physics": "ရူပဗေဒ အခိုက်အတန့်များ",
+      "gravity": "ဆွဲအား",
+      "restitution": "ခုန်ပြန်မှု",
+      "windDirection": "လေဦးတည်ရာ",
+      "windStrength": "လေအား",
+      "maxBodies": "ရူပဗေဒ အရာဝတ္ထုအရေအတွက်",
+      "environment": "ပတ်ဝန်းကျင်",
+      "sky": "ကောင်းကင်",
+      "ground": "မြေပြင်",
+      "stars": "ကြယ်များ",
+      "fog": "မြူ",
+      "ambient": "နောက်ခံ အလင်းအမှောင်",
+      "cameraShow": "ပြပွဲတစ်ခုလုံး",
+      "cameraPreset": "မြင်ကွင်း",
+      "autoOrbit": "အလိုအလျောက် လှည့်ရန်",
+      "cameraShot": "ပြသစဉ် · {name}",
+      "shot": "ကင်မရာ ရိုက်ကွက်",
+      "inherit": "ပြပွဲနှင့် အတူတူ",
+      "toys": "ကစားစရာ",
+      "pushToy": "ညွှန်ပြမြှားဖြင့် ဒရုန်းများကို တွန်းရန်",
+      "pushToyHint": "ညွှန်ပြမြှားကို ဒရုန်းအုပ်စုထဲ ရွှေ့လျှင် အနီးရှိ ဒရုန်းများ ရှောင်ထွက်သည်။",
+      "bloom": "အလင်းဖြာမှု",
+      "strength": "အားအင်",
+      "radius": "အချင်းဝက်",
+      "threshold": "ကန့်သတ်အဆင့်",
+      "film": "ရုပ်ရှင်အသွင်",
+      "exposure": "အလင်းဝင်မှု",
+      "vignette": "ထောင့်မှောင်မှု",
+      "grain": "အမှုန်"
+    },
+    "export": {
+      "title": "ထုတ်ယူ",
+      "description": "ဤဖရိမ်ကို ပုံအဖြစ် သိမ်းပါ၊ သို့မဟုတ် ပြပွဲတစ်ခုလုံးကို ဗီဒီယိုအဖြစ် ထုတ်ပါ။",
+      "pngSize": "ပုံအရွယ်အစား",
+      "savePng": "PNG သိမ်းရန်",
+      "frameRate": "ဖရိမ်နှုန်း",
+      "saveVideo": "ဗီဒီယို ထုတ်ရန်",
+      "videoHint": "သင့်ဘရောက်ဇာထဲတွင် ဖရိမ်တစ်ခုချင်း ထုတ်ပေးသည် (MP4၊ H.264 မရလျှင် WebM)။ ဤတက်ဘ်ကို ဖွင့်ထားပါ။",
+      "rendering": "ထုတ်နေသည် {percent}%",
+      "cancel": "ပယ်ဖျက်",
+      "pngDone": "ပုံ သိမ်းပြီးပါပြီ",
+      "videoDone": "{format} ဗီဒီယို သိမ်းပြီးပါပြီ",
+      "notReady": "ပြပွဲကို ဖွင့်နေဆဲဖြစ်သည်",
+      "failed": "ထုတ်ယူမှု မအောင်မြင်ပါ"
+    },
+    "shortcuts": {
+      "title": "ကီးဘုတ် ဖြတ်လမ်းများ",
+      "description": "ကီးဘုတ်ဖြင့်သာ လုပ်ဆောင်နိုင်သည်။",
+      "toggle": "စတင် / ခဏရပ်",
+      "next": "နောက်ပုံစံ",
+      "previous": "ယခင်ပုံစံ",
+      "loop": "ထပ်ကျော့ ဖွင့်/ပိတ်",
+      "undo": "နောက်ပြန်ဆုတ်",
+      "redo": "ပြန်လုပ်",
+      "duplicate": "ပုံစံ ပွားယူ",
+      "delete": "ပုံစံ ဖျက်",
+      "share": "မျှဝေလင့်ခ် ကူးရန်",
+      "help": "ဤစာရင်းကို ပြရန်",
+      "walk": "လမ်းလျှောက် (ကိုယ်တိုင်မြင်ကွင်း)"
+    }
+  },
+  "Viewer": {
+    "meta": {
+      "title": "ပြပွဲ ကြည့်ရန်",
+      "description": "Skyloom ဖြင့် ပြုလုပ်ထားသော ဒရုန်းပြပွဲ။"
+    },
+    "home": "Skyloom ပင်မစာမျက်နှာ",
+    "play": "စတင်",
+    "pause": "ခဏရပ်",
+    "relaunch": "ပြန်လည်ပျံတက်",
+    "remix": "ပြန်ပြုပြင်ရန်",
+    "brokenTitle": "ဤပြပွဲလင့်ခ် ပျက်နေသည်",
+    "brokenBody": "လင့်ခ်သည် မပြည့်စုံပါ သို့မဟုတ် လမ်းခုလတ်တွင် ပြောင်းသွားသည်။ ထပ်မံတောင်းယူပါ၊ သို့မဟုတ် ပြခန်းမှ ပြပွဲတစ်ခု ရွေးပါ။",
+    "browse": "ပြခန်းကို ကြည့်ရန်"
+  },
+  "Guide": {
+    "meta": {
+      "title": "လမ်းညွှန်",
+      "description": "Skyloom ဖြင့် ဒရုန်းပြပွဲကို ဒီဇိုင်းဆွဲ၊ ပျံသန်းစေပြီး မျှဝေပုံ။"
+    },
+    "eyebrow": "လမ်းညွှန်",
+    "title": "သင့်ပထမဆုံး ပြပွဲကို ပျံသန်းစေပါ",
+    "lead": "အရာအားလုံး တိုက်ရိုက်ဖြစ်သည် — တစ်ခုခု ပြောင်းလိုက်လျှင် ဒရုန်းအုပ်စုက သင့်ရှေ့တွင် ပြန်လည်ဖွဲ့စည်းသည်။",
+    "steps": {
+      "pick": {
+        "title": "ပြပွဲတစ်ခု ရွေးပါ",
+        "body": "ပြခန်း သို့မဟုတ် “ပြပွဲ” တက်ဘ်မှ ရွေးပါ။ လေထဲရှိ ဒရုန်းများက ထိုပြပွဲထဲသို့ တိုက်ရိုက် ပျံဝင်သည်။"
+      },
+      "create": {
+        "title": "ပုံစံများ ထည့်ပါ",
+        "body": "ပုံသဏ္ဌာန် သို့မဟုတ် စာလုံး ရိုက်ပါ၊ ပုံသဏ္ဌာန်ကို နှိပ်ပါ၊ သို့မဟုတ် ဓာတ်ပုံ၊ SVG၊ .glb မော်ဒယ် တင်ပါ။ စာသားကို အင်္ဂလိပ်၊ ဂျပန်၊ မြန်မာ ဘာသာဖြင့် ရေးနိုင်သည်။"
+      },
+      "look": {
+        "title": "သင့်စိတ်ကြိုက် ပြင်ပါ",
+        "body": "ဒရုန်းအရွယ်အစား၊ LED အရွယ်အစားနှင့် အလင်းရောင်ကို ချိန်ပါ၊ တစ်ရောင်တည်း၊ သက်တံ သို့မဟုတ် ကျပန်းအရောင် ရွေးပါ၊ မီးများ ထင်ရှားလာသည်အထိ နောက်ခံကို မှောင်ချပါ။"
+      },
+      "flight": {
+        "title": "ပျံသန်းမှု စည်းမျဉ်း သတ်မှတ်ပါ",
+        "body": "ဒရုန်းအရေအတွက်၊ အမြင့်ဆုံးအမြန်နှုန်း (တစ်စက္ကန့်လျှင် မီတာ) နှင့် ဒရုန်းများကြား အနည်းဆုံးအကွာအဝေးကို ရွေးပါ။ ပျံသန်းချိန်က ၎င်းတို့ကို လိုက်နာရန် ရှည်သွားမည်။"
+      },
+      "views": {
+        "title": "မည်သည့်နေရာမှမဆို ကြည့်ပါ",
+        "body": "ပရိသတ်ထဲ ရပ်ကြည့်ပါ၊ ပန်ကာများ မြင်ရသည်အထိ ချဲ့ပါ၊ သို့မဟုတ် “လျှောက်” သို့ ပြောင်းပြီး W A S D သို့မဟုတ် မြှားခလုတ်များဖြင့် ပြပွဲအောက် လမ်းလျှောက်ပါ။"
+      },
+      "studio": {
+        "title": "စတူဒီယိုတွင် ပိုမိုလုပ်ဆောင်ပါ",
+        "body": "စတူဒီယိုတွင် အချိန်ဇယား၊ ပုံစံအလိုက် အချိန်ကိုက်မှုနှင့် လည်ပတ်မှု၊ ကင်မရာရိုက်ကွက်၊ ရူပဗေဒ အခိုက်အတန့်၊ နောက်ပြန်ဆုတ်/ပြန်လုပ် ပါဝင်သည်။"
+      },
+      "share": {
+        "title": "မျှဝေပြီး ထုတ်ယူပါ",
+        "body": "ပြပွဲတစ်ခုလုံး ပါဝင်သော လင့်ခ်ကို ကူးပါ၊ PNG သိမ်းပါ၊ သို့မဟုတ် ဖရိမ်တစ်ခုချင်း ဗီဒီယို ထုတ်ပါ။"
+      }
+    },
+    "keys": {
+      "title": "ခလုတ်များ",
+      "play": "စတင် / ခဏရပ်",
+      "step": "ယခင် / နောက် ပုံစံ",
+      "walk": "ကိုယ်တိုင်မြင်ကွင်းဖြင့် လမ်းလျှောက်",
+      "undo": "နောက်ပြန်ဆုတ်",
+      "help": "စတူဒီယို ဖြတ်လမ်းအားလုံး"
+    },
+    "cta": "စတူဒီယို ဖွင့်ရန်"
+  },
+  "About": {
+    "meta": {
+      "title": "အကြောင်း",
+      "description": "Skyloom က ဒရုန်းပြပွဲကို စီစဉ်ပုံ — အမှတ်ယူခြင်း၊ နေရာသတ်မှတ်ခြင်း၊ မတိုက်မိသော လမ်းကြောင်းများနှင့် တကယ့်ပျံသန်းမှုအမြန်နှုန်း။"
+    },
+    "eyebrow": "အကြောင်း",
+    "title": "ပြပွဲကို စီစဉ်ပုံ",
+    "lead": "Skyloom သည် စမ်းသပ်ပြသမှု ဖြစ်သည်။ ဒရုန်းတစ်စီးမျှ မြေပြင်မှ မခွာမီ တကယ့်ပြပွဲတစ်ခု ဖြတ်သန်းရသော အဆင့်များကို ယူသုံးထားသည်။",
+    "topics": {
+      "sampling": {
+        "title": "ပုံသဏ္ဌာန်များ အမှတ်များ ဖြစ်လာသည်",
+        "body": "မျက်နှာပြင်၊ စာသား၊ ဓာတ်ပုံနှင့် 3D မော်ဒယ်များကို ဒရုန်းတစ်စီးလျှင် တစ်မှတ်အဖြစ် ပြောင်းပြီး ဒရုန်းတိုင်းတွင် ဘေးကင်းသော အကွာအဝေး ရှိလာသည်အထိ ခွာပေးသည်။"
+      },
+      "assignment": {
+        "title": "ဒရုန်းတိုင်း ပစ်မှတ်တစ်ခု ရသည်",
+        "body": "ဒရုန်းများနှင့် ပစ်မှတ်များကို နေရာဖြည့်မျဉ်းကွေးတစ်လျှောက် စီပြီး တွဲပေးသည်၊ ခရီးတိုသွားမည်ဆိုလျှင် လဲလှယ်ပေးသည်။ ခရီးတိုများသည် ဖြတ်ကျော်မှု နည်းသည်။"
+      },
+      "routes": {
+        "title": "လမ်းကြောင်းများကို မပျံတက်မီ စစ်ဆေးသည်",
+        "body": "အကူးအပြောင်းတိုင်းကို အချိန်အလိုက် စစ်ဆေးသည်။ အလွန်နီးကပ်စွာ ဖြတ်သွားမည့် ဒရုန်းနှစ်စီး၏ လမ်းကြောင်းများကို ခွာပေးပြီး ပြဿနာမရှိတော့သည်အထိ ထပ်စစ်သည်။"
+      },
+      "speed": {
+        "title": "အချိန်သည် အမြန်နှုန်းကို လိုက်သည်",
+        "body": "အကူးအပြောင်းတစ်ခုသည် အဝေးဆုံးပျံရသော ဒရုန်းက အမြင့်ဆုံးအမြန်နှုန်းဖြင့် လိုအပ်သလောက် ကြာသည်။ အမြန်နှုန်းကန့်သတ်ချက် လျှော့လိုက်လျှင် တကယ့်ပြပွဲကဲ့သို့ ပြပွဲ နှေးသွားသည်။"
+      },
+      "rendering": {
+        "title": "ဒရုန်းအုပ်စုအတွက် တစ်ကြိမ်တည်း ဆွဲသည်",
+        "body": "တည်နေရာများကို GPU ပေါ်တွင် တွက်ပြီး ဒရုန်းတိုင်းကို တစ်ကြိမ်တည်းဖြင့် ဆွဲသည် — LED အလင်းနှင့် ပန်ကာလည်နေသော ဒရုန်းငယ်တစ်စီး။"
+      },
+      "limits": {
+        "title": "မဟုတ်သည့်အရာများ",
+        "body": "မြင်သာစေရန် ဒရုန်းများကို တကယ့်အရွယ်ထက် ကြီးကြီး ဆွဲထားသည်၊ လေနှင့် ဘက်ထရီကို ထည့်မတွက်ထားပါ၊ ဤနေရာရှိ မည်သည့်အရာမျှ တကယ့်လေယာဉ်အတွက် ပျံသန်းမှုအစီအစဉ် မဟုတ်ပါ။"
+      }
+    },
+    "credits": "အသုံးပြုထားသည်များ",
+    "disclaimer": "အတုယောင် စမ်းသပ်ပြသမှုသာ ဖြစ်သည်။ ပါဝင်သော 3D မော်ဒယ်များနှင့် ဖောင့်များသည် three.js နမူနာများ (MIT လိုင်စင်) မှ ဖြစ်သည်။"
+  },
+  "Walk": {
+    "hintKeys": "W A S D သို့မဟုတ် မြှားခလုတ်များဖြင့် လျှောက်ပါ · ဆွဲ၍ လှည့်ကြည့်ပါ · Esc ဖြင့် ထွက်ပါ",
+    "hintTouch": "ဘယ်ဘက်ခြမ်းကို ဆွဲ၍ လျှောက်ပါ · အခြားနေရာကို ဆွဲ၍ လှည့်ကြည့်ပါ",
+    "exit": "လမ်းလျှောက်ခြင်းမှ ထွက်ရန်"
+  }
 }

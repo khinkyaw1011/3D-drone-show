@@ -1,5 +1,6 @@
 'use client';
 
+import { formatNumber } from '@/lib/utils';
 import { Play, Wand2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
@@ -48,7 +49,7 @@ function ShowCard({ show, onFly }: { show: Show; onFly?: (show: Show) => void })
           <h3 className="font-serif text-2xl leading-tight text-paper">{show.name}</h3>
           <p className="mt-1.5 text-sm text-muted-foreground">{t.has(`shows.${show.id}`) ? t(`shows.${show.id}`) : null}</p>
         </div>
-        <p className="eyebrow mt-auto">{t('meta', { formations: show.keyframes.length, drones: show.droneCount })}</p>
+        <p className="eyebrow mt-auto">{t('summary', { formations: show.keyframes.length, drones: formatNumber(show.droneCount) })}</p>
         <div className="flex flex-wrap gap-2">
           {onFly ? (
             <Button size="sm" className="rounded-full px-4" onClick={() => onFly(show)}>

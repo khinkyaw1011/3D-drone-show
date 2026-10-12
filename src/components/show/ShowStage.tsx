@@ -6,7 +6,7 @@ import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import type { ShowHandle } from '@/components/canvas/ShowCanvas';
 import type { StageProps } from '@/components/canvas/Stage';
-import { cn } from '@/lib/utils';
+import { cn, formatNumber } from '@/lib/utils';
 
 // WebGPU needs the browser: never server-render the canvas.
 const ShowCanvas = dynamic(() => import('@/components/canvas/ShowCanvas'), { ssr: false });
@@ -77,7 +77,7 @@ export function ShowStage({ className, quiet = false, paused = false, onStatus, 
       } catch {
         /* private mode: showing the notice again is harmless */
       }
-      toast(t('fallbackTitle'), { description: t('fallbackBody', { count: handle.capabilities.tier.maxDrones }), duration: 8000 });
+      toast(t('fallbackTitle'), { description: t('fallbackBody', { count: formatNumber(handle.capabilities.tier.maxDrones) }), duration: 8000 });
     },
     [onReady, t],
   );

@@ -22,7 +22,7 @@
     "launching": "Preparing the fleet…",
     "errorTitle": "The show could not load",
     "fallbackTitle": "Running in compatibility mode",
-    "fallbackBody": "This browser has no WebGPU, so the show runs on WebGL2 with up to {count, number} drones."
+    "fallbackBody": "This browser has no WebGPU, so the show runs on WebGL2 with up to {count} drones."
   },
   "Actions": {
     "failed": "That did not work",
@@ -140,11 +140,11 @@
       "spring": "Spring",
       "swarm": "Swarm",
       "physics": "Physics",
-      "power2.inOut": "Smooth",
-      "power3.inOut": "Smoother",
-      "expo.inOut": "Snap",
-      "back.out(1.4)": "Overshoot",
-      "sine.inOut": "Gentle",
+      "power2_inOut": "Smooth",
+      "power3_inOut": "Smoother",
+      "expo_inOut": "Snap",
+      "back_out_1_4_": "Overshoot",
+      "sine_inOut": "Gentle",
       "none": "Linear"
     },
     "effect": {
@@ -208,7 +208,8 @@
       "new-year": "Three, two, one — a firework, then the new year in gold.",
       "ocean": "Waves, a flamingo and a globe in cool blues, ending in a waterspout.",
       "gold-gala": "A diamond, a word and a ring in warm gold."
-    }
+    },
+    "summary": "{formations, plural, one {# formation} other {# formations}} · {drones} drones"
   },
   "Landing": {
     "stageLabel": "Live drone show",
@@ -247,7 +248,7 @@
         "label": "Draw call for the fleet"
       },
       "speed": {
-        "value": "10 m/s",
+        "value": "16 m/s",
         "label": "Default top speed"
       },
       "gap": {
@@ -350,7 +351,7 @@
       },
       "fleet": "Fleet",
       "count": "Drones",
-      "countHint": "This device can fly up to {max, number}.",
+      "countHint": "This device can fly up to {max}.",
       "droneSize": "Drone size",
       "size": "LED size",
       "glow": "Glow",
@@ -543,5 +544,10 @@
     },
     "credits": "Built with",
     "disclaimer": "Virtual simulation only. Bundled 3D models and typefaces come from the three.js examples (MIT licence)."
+  },
+  "Walk": {
+    "hintKeys": "W A S D or arrow keys to walk · drag to look around · Esc to exit",
+    "hintTouch": "Drag the left side to walk · drag elsewhere to look around",
+    "exit": "Exit walk"
   }
 }

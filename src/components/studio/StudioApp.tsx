@@ -7,6 +7,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
 import { FleetStats } from '@/components/show/FleetStats';
 import { LiveShow } from '@/components/show/LiveShow';
+import { WalkOverlay } from '@/components/show/WalkOverlay';
 import { useShowActions } from '@/components/show/useShowActions';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -85,6 +86,7 @@ export function StudioApp() {
   return (
     <div className="fixed inset-0 overflow-hidden bg-ink">
       <LiveShow />
+      <WalkOverlay />
 
       <div className="pointer-events-none absolute inset-0 flex flex-col gap-2 p-2 sm:gap-3 sm:p-3 [&>*]:pointer-events-auto">
         <TopBar onExport={() => setExportOpen(true)} onHelp={() => setHelpOpen(true)} />
@@ -116,7 +118,7 @@ export function StudioApp() {
           </div>
         )}
 
-        <section aria-label={t('timeline.title')} className="glass h-[168px] shrink-0 sm:h-[176px]">
+        <section aria-label={t('timeline.title')} className="glass h-[184px] shrink-0 sm:h-[196px]">
           <Timeline onAdd={() => (isDesktop ? mutate((s) => void (s.ui.leftOpen = true)) : setMobilePanel('library'))} />
         </section>
 

@@ -1,200 +1,553 @@
 {
   "Meta": {
-    "title": "Skyloom — Virtual Drone Show Studio",
-    "description": "Design, fly and share a 3D drone light show in your browser. Real flight speeds, collision-free routes, thousands of drones."
+    "title": "Skyloom — バーチャル・ドローンショー スタジオ",
+    "description": "ブラウザで3Dドローンライトショーをデザインし、飛ばし、共有。実際の飛行速度、衝突のない経路、数千機のドローン。"
   },
   "Site": {
-    "home": "Skyloom home",
-    "primaryNav": "Main",
-    "footerNav": "Footer",
-    "menu": "Menu",
-    "language": "Language",
-    "openStudio": "Open Studio",
+    "home": "Skyloom ホーム",
+    "primaryNav": "メイン",
+    "footerNav": "フッター",
+    "menu": "メニュー",
+    "language": "言語",
+    "openStudio": "スタジオを開く",
     "nav": {
-      "gallery": "Gallery",
-      "guide": "Guide",
-      "about": "About",
-      "studio": "Studio"
+      "gallery": "ギャラリー",
+      "guide": "ガイド",
+      "about": "概要",
+      "studio": "スタジオ"
     },
-    "footerNote": "A virtual drone show simulator. No real aircraft are flown."
+    "footerNote": "バーチャルなドローンショー シミュレーターです。実機は飛行しません。"
   },
   "Stage": {
-    "launching": "Preparing the fleet…",
-    "errorTitle": "The show could not load",
-    "fallbackTitle": "Running in compatibility mode",
-    "fallbackBody": "This browser has no WebGPU, so the show runs on WebGL2 with up to {count, number} drones."
+    "launching": "機体を準備中…",
+    "errorTitle": "ショーを読み込めませんでした",
+    "fallbackTitle": "互換モードで実行中",
+    "fallbackBody": "このブラウザは WebGPU に対応していないため、WebGL2 で最大 {count} 機まで表示します。"
   },
   "Actions": {
-    "failed": "That did not work",
-    "fileFailed": "Could not use that file"
+    "failed": "うまくいきませんでした",
+    "fileFailed": "このファイルは使用できません"
   },
   "Stats": {
-    "drones": "drones",
-    "speed": "m/s peak",
-    "gap": "m min gap"
+    "drones": "機",
+    "speed": "m/s 最高",
+    "gap": "m 最小間隔"
   },
   "Quick": {
-    "label": "Show controls",
+    "label": "ショーの操作",
     "status": {
-      "playing": "Flying",
-      "paused": "Paused",
-      "standby": "Standby"
+      "playing": "飛行中",
+      "paused": "一時停止",
+      "standby": "待機中"
     },
-    "formationOf": "Formation {index}/{total} · {name}",
-    "empty": "No formations yet — create one below",
-    "collapse": "Collapse controls",
-    "expand": "Expand controls",
-    "play": "Play",
-    "pause": "Pause",
-    "previous": "Previous formation",
-    "next": "Next formation",
-    "relaunch": "Relaunch",
-    "loop": "Loop",
+    "formationOf": "隊形 {index}/{total} · {name}",
+    "empty": "隊形がまだありません。下で作成してください",
+    "collapse": "操作パネルを閉じる",
+    "expand": "操作パネルを開く",
+    "play": "再生",
+    "pause": "一時停止",
+    "previous": "前の隊形",
+    "next": "次の隊形",
+    "relaunch": "再離陸",
+    "loop": "ループ",
     "tabs": {
-      "show": "Show",
-      "create": "Create",
-      "look": "Look",
-      "flight": "Flight"
+      "show": "ショー",
+      "create": "作成",
+      "look": "見た目",
+      "flight": "飛行"
     },
-    "formations": "Formations",
-    "preset": "Show",
-    "speed": "Playback speed",
-    "realTime": "Real time",
-    "promptLabel": "Shape or word",
-    "promptPlaceholder": "Type a shape or a word: heart, galaxy, HELLO, 桜…",
-    "create": "Create",
-    "upload": "Upload",
-    "sampling": "Sampling…",
-    "uploadHint": "Drop a picture, SVG or .glb model anywhere on this panel. The drones take its shape and colours.",
-    "shapes": "Shapes",
-    "droneColor": "Drone colour",
-    "original": "Original",
-    "rainbow": "Rainbow",
-    "customColor": "Custom colour",
-    "ledSize": "LED size",
-    "glow": "Glow",
-    "sky": "Sky",
-    "ground": "Ground",
-    "drones": "Fleet size",
-    "realistic": "Real-world flight",
-    "realisticHint": "Limits every drone to the top speed below and plans routes that keep them apart.",
-    "maxSpeed": "Top speed",
-    "separation": "Minimum separation",
-    "spin": "Formation spin",
-    "studioPitch": "Want a timeline, per-formation timing, camera shots and export?",
-    "openStudio": "Open the full studio",
-    "droneSize": "Drone size",
-    "random": "Random",
-    "ambient": "Background brightness",
-    "view": "View"
+    "formations": "隊形",
+    "preset": "ショー",
+    "speed": "再生速度",
+    "realTime": "等速",
+    "promptLabel": "形または言葉",
+    "promptPlaceholder": "形や言葉を入力：ハート、銀河、HELLO、桜…",
+    "create": "作成",
+    "upload": "アップロード",
+    "sampling": "変換中…",
+    "uploadHint": "画像・SVG・.glb モデルをこのパネルにドロップできます。ドローンがその形と色になります。",
+    "shapes": "形",
+    "droneColor": "ドローンの色",
+    "original": "元の色",
+    "rainbow": "虹色",
+    "random": "ランダム",
+    "customColor": "カスタム色",
+    "droneSize": "機体サイズ",
+    "ledSize": "LED サイズ",
+    "glow": "輝き",
+    "sky": "空",
+    "ground": "地面",
+    "ambient": "背景の明るさ",
+    "view": "視点",
+    "drones": "機体数",
+    "realistic": "現実の飛行ルール",
+    "realisticHint": "下の最高速度を超えず、機体同士が離れる経路を計画します。",
+    "maxSpeed": "最高速度",
+    "separation": "最小間隔",
+    "spin": "隊形の回転",
+    "studioPitch": "タイムライン、隊形ごとのタイミング、カメラショット、書き出しが必要ですか？",
+    "openStudio": "スタジオを開く"
   },
   "Options": {
     "shape": {
-      "sphere": "Sphere",
-      "ring": "Ring",
-      "heart": "Heart",
-      "blossom": "Blossom",
-      "galaxy": "Galaxy",
-      "grid": "Light block",
-      "cube": "Cube",
-      "torus": "Torus",
-      "star": "Star",
-      "helix": "DNA helix",
-      "wave": "Wave",
-      "burst": "Firework",
-      "saturn": "Saturn",
-      "diamond": "Diamond",
-      "pyramid": "Pyramid",
-      "tornado": "Tornado"
+      "sphere": "球",
+      "ring": "リング",
+      "heart": "ハート",
+      "blossom": "桜",
+      "galaxy": "銀河",
+      "grid": "光のブロック",
+      "cube": "立方体",
+      "torus": "トーラス",
+      "star": "星",
+      "helix": "DNA らせん",
+      "wave": "波",
+      "burst": "花火",
+      "saturn": "土星",
+      "diamond": "ダイヤモンド",
+      "pyramid": "ピラミッド",
+      "tornado": "竜巻"
     },
     "sky": {
-      "midnight": "Midnight",
-      "aurora": "Aurora",
-      "dusk": "Dusk",
-      "deep-space": "Deep space"
+      "midnight": "真夜中",
+      "aurora": "オーロラ",
+      "dusk": "夕暮れ",
+      "deep-space": "深宇宙"
     },
     "ground": {
-      "water": "Water",
-      "city": "City",
-      "none": "None"
+      "water": "水面",
+      "city": "街",
+      "none": "なし"
     },
     "camera": {
-      "spectator": "Spectator",
-      "walk": "Walk (first person)",
-      "front": "Front",
-      "low-hero": "Low hero",
-      "top-down": "Top-down",
-      "fly-around": "Fly-around",
-      "close-up": "Close-up (see the drones)"
+      "spectator": "観客席",
+      "walk": "歩く（一人称）",
+      "close-up": "クローズアップ（機体を見る）",
+      "front": "正面",
+      "low-hero": "ローアングル",
+      "top-down": "真上",
+      "fly-around": "周回"
+    },
+    "cameraShort": {
+      "spectator": "観客席",
+      "walk": "歩く",
+      "close-up": "接近",
+      "front": "正面",
+      "low-hero": "ロー",
+      "top-down": "真上",
+      "fly-around": "周回"
+    },
+    "colorMode": {
+      "formation": "隊形の色",
+      "solid": "単色",
+      "gradient": "グラデーション",
+      "palette": "パレット",
+      "rainbow": "虹色",
+      "random": "ランダム",
+      "height": "高さで変化"
+    },
+    "curve": {
+      "spring": "スプリング",
+      "swarm": "群れ",
+      "physics": "物理",
+      "power2_inOut": "なめらか",
+      "power3_inOut": "よりなめらか",
+      "expo_inOut": "キレよく",
+      "back_out_1_4_": "オーバーシュート",
+      "sine_inOut": "やさしく",
+      "none": "リニア"
+    },
+    "effect": {
+      "drop": "落下",
+      "burst": "爆発",
+      "wind": "風"
+    },
+    "order": {
+      "random": "ランダム",
+      "radial": "中心から",
+      "top-down": "上から下へ",
+      "by-color": "色ごと"
+    },
+    "font": {
+      "helvetiker": "Helvetiker",
+      "optimer": "Optimer",
+      "gentilis": "Gentilis"
+    },
+    "model": {
+      "horse": "馬",
+      "parrot": "オウム",
+      "flamingo": "フラミンゴ"
+    },
+    "mode": {
+      "luminance": "明るさ",
+      "alpha": "透明度",
+      "edges": "輪郭",
+      "subject": "被写体"
+    },
+    "depth": {
+      "flat": "平面",
+      "relief": "レリーフ",
+      "curve": "カーブ"
     }
   },
   "Gallery": {
-    "eyebrow": "Gallery",
-    "title": "Six shows, ready to fly",
-    "lead": "Every preview is drawn from the same formation data the drones fly. Watch one, or remix it in the studio.",
-    "previewOf": "Preview of {name}",
-    "meta": "{formations, plural, one {# formation} other {# formations}} · {drones, number} drones",
-    "fly": "Fly it here",
-    "watch": "Watch",
-    "remix": "Remix",
+    "meta": {
+      "title": "ギャラリー",
+      "description": "すぐに見られる、リミックスできる6つのドローンショー。"
+    },
+    "eyebrow": "ギャラリー",
+    "title": "すぐに飛ばせる6つのショー",
+    "lead": "プレビューは、ドローンが実際に飛ぶ隊形データから描いています。鑑賞するか、スタジオでリミックスしてください。",
+    "previewOf": "{name} のプレビュー",
+    "summary": "隊形 {formations} 個 · ドローン {drones} 機",
+    "fly": "ここで飛ばす",
+    "watch": "見る",
+    "remix": "リミックス",
     "shows": {
-      "sakura-night": "A cherry blossom opens over the water, becomes a heart, and bursts into petals.",
-      "neon-tokyo": "Sky-writing, a wall of light and a spiral galaxy over a city skyline.",
-      "aurora": "Slow waves, a ringed planet and a double helix under northern lights.",
-      "new-year": "Three, two, one — a firework, then the new year in gold.",
-      "ocean": "Waves, a flamingo and a globe in cool blues, ending in a waterspout.",
-      "gold-gala": "A diamond, a word and a ring in warm gold."
+      "sakura-night": "水面の上で桜が開き、ハートになり、花びらとなって弾けます。",
+      "neon-tokyo": "街のスカイラインに浮かぶ文字、光のブロック、渦巻銀河。",
+      "aurora": "オーロラの下で、ゆるやかな波、環を持つ惑星、二重らせん。",
+      "new-year": "3、2、1 — 花火、そして金色の新年。",
+      "ocean": "涼やかな青の波、フラミンゴ、地球。最後は水の竜巻。",
+      "gold-gala": "あたたかな金色のダイヤモンド、言葉、リング。"
     }
   },
   "Landing": {
-    "stageLabel": "Live drone show",
-    "eyebrow": "Virtual drone show studio",
-    "title": "Draw on the night sky",
-    "tagline": "Thousands of drones lift off, fly at real speeds and build 3D formations you design.",
-    "start": "Launch the show",
-    "openStudio": "Open Studio",
-    "hint": "Drag to look around · scroll or pinch to zoom · choose Walk in Look to stroll under the show",
-    "backToShow": "Back to the show",
+    "stageLabel": "ライブ ドローンショー",
+    "eyebrow": "バーチャル・ドローンショー スタジオ",
+    "title": "夜空に描こう",
+    "tagline": "数千機のドローンが離陸し、実際の速度で飛び、あなたがデザインした立体の隊形を組み上げます。",
+    "start": "ショーを開始",
+    "openStudio": "スタジオを開く",
+    "hint": "ドラッグで見回す · スクロール／ピンチでズーム · 「見た目」で「歩く」を選ぶとショーの下を歩けます",
+    "backToShow": "ショーに戻る",
     "gallery": {
-      "eyebrow": "Gallery",
-      "title": "Pick a show and fly it",
-      "lead": "Choose a show and the fleet above re-forms into it. Then change anything you like."
+      "eyebrow": "ギャラリー",
+      "title": "ショーを選んで飛ばす",
+      "lead": "ショーを選ぶと、上の機体がその隊形に組み替わります。あとは自由に変更できます。"
     },
     "how": {
-      "eyebrow": "How it works",
-      "title": "Planned like a real show",
-      "lead": "Real drone shows are choreographed before take-off. Skyloom does the same three jobs in your browser.",
+      "eyebrow": "仕組み",
+      "title": "本物のショーのように計画",
+      "lead": "実際のドローンショーは離陸前に振り付けられます。Skyloom はその3つの工程をブラウザで行います。",
       "design": {
-        "title": "Design",
-        "body": "Shapes, words, 3D models and your own pictures are sampled into evenly spaced points — one per drone, coloured from the source."
+        "title": "デザイン",
+        "body": "形、言葉、3Dモデル、あなたの画像を等間隔の点に変換します。1機につき1点、色は元の素材から取ります。"
       },
       "animate": {
-        "title": "Animate",
-        "body": "Each drone is assigned the nearest free point, routes are checked for conflicts, and timing is stretched until nobody exceeds the fleet's top speed."
+        "title": "アニメーション",
+        "body": "各機に最も近い空き位置を割り当て、経路の衝突を確認し、最高速度を超えないよう時間を調整します。"
       },
       "share": {
-        "title": "Share",
-        "body": "The whole show fits in a link. Send it, export a video, or save it as a preset and keep editing."
+        "title": "共有",
+        "body": "ショー全体が1つのリンクに収まります。送る、動画に書き出す、プリセットとして保存して編集を続ける。"
       }
     },
     "facts": {
       "drawCall": {
         "value": "1",
-        "label": "Draw call for the fleet"
+        "label": "全機の描画コール"
       },
       "speed": {
-        "value": "10 m/s",
-        "label": "Default top speed"
+        "value": "16 m/s",
+        "label": "標準の最高速度"
       },
       "gap": {
         "value": "1.5 m",
-        "label": "Planned separation"
+        "label": "計画上の間隔"
       },
       "aircraft": {
         "value": "0",
-        "label": "Real aircraft"
+        "label": "実機"
       }
     }
   },
-  "Fields": {}
+  "Fields": {
+    "shape": "形",
+    "fill": "大きさ",
+    "text": "テキスト",
+    "font": "フォント",
+    "letterSpacing": "文字間隔",
+    "stacked": "単語を縦に並べる",
+    "model": "モデル",
+    "rotation": "回転",
+    "useColors": "元の色を使う",
+    "mode": "配置の基準",
+    "threshold": "しきい値",
+    "invert": "反転",
+    "depth": "奥行き",
+    "saturation": "彩度"
+  },
+  "Studio": {
+    "meta": {
+      "title": "スタジオ",
+      "description": "タイムラインでドローンショーを作成：隊形、タイミング、カメラ、色、書き出し。"
+    },
+    "linkBroken": "このリンクを開けませんでした",
+    "sheetDescription": "スタジオのパネル",
+    "top": {
+      "home": "Skyloom に戻る",
+      "showName": "ショー名",
+      "shows": "ショー",
+      "builtIn": "内蔵ショー",
+      "saved": "保存したショー",
+      "deleteSaved": "{name} を削除",
+      "saveCurrent": "このショーを保存",
+      "savedToast": "「{name}」を保存しました",
+      "newShow": "空のショーを新規作成",
+      "importJson": ".json を読み込む",
+      "exportJson": ".json を書き出す",
+      "imported": "{name} を読み込みました",
+      "importFailed": "このファイルは Skyloom のショーではありません",
+      "undo": "元に戻す",
+      "redo": "やり直す",
+      "toggleLibrary": "隊形パネルの表示切替",
+      "toggleInspector": "インスペクターの表示切替",
+      "shortcuts": "キーボードショートカット",
+      "share": "共有",
+      "export": "書き出し",
+      "shareCopied": "リンクをコピーしました",
+      "shareFailed": "リンクをコピーできませんでした",
+      "shareLong": "リンクをコピーしましたが、長めです",
+      "shareLongBody": "アップロードした画像があるとリンクが長くなります。アプリによっては途中で切れるため、.json の書き出しが確実です。"
+    },
+    "library": {
+      "title": "隊形",
+      "editing": "編集中 · {name}",
+      "preview": "{name} のプレビュー",
+      "addWord": "言葉や形を追加",
+      "wordLabel": "言葉または形の名前",
+      "wordPlaceholder": "ハート、土星、HELLO、桜…",
+      "shapes": "形",
+      "models": "3D モデル",
+      "upload": "自分の素材",
+      "sampling": "変換中…",
+      "dropTitle": "画像・SVG・.glb をアップロード",
+      "dropHint": "またはこのパネルにファイルをドロップ"
+    },
+    "timeline": {
+      "title": "タイムライン",
+      "label": "隊形の順番",
+      "select": "{name} へ飛ぶ",
+      "timing": "飛行 {duration}秒 · 保持 {hold}秒",
+      "duplicate": "複製",
+      "delete": "削除",
+      "reorder": "ドラッグで並べ替え",
+      "play": "再生",
+      "pause": "一時停止",
+      "previous": "前の隊形",
+      "next": "次の隊形",
+      "loop": "ループ",
+      "scrub": "再生位置",
+      "empty": "隊形がまだありません。最初の隊形を追加しましょう。"
+    },
+    "inspector": {
+      "title": "インスペクター",
+      "tabs": {
+        "drones": "機体",
+        "motion": "動き",
+        "scene": "シーン",
+        "camera": "カメラ",
+        "fx": "効果"
+      },
+      "fleet": "編隊",
+      "count": "機体数",
+      "countHint": "この端末では最大 {max} 機まで飛ばせます。",
+      "droneSize": "機体サイズ",
+      "size": "LED サイズ",
+      "glow": "輝き",
+      "twinkle": "きらめき",
+      "trails": "光の軌跡",
+      "color": "色",
+      "colorMode": "カラーモード",
+      "colors": "色",
+      "colorStop": "色 {index}",
+      "addColor": "色を追加",
+      "removeColor": "色を削除",
+      "axis": "方向",
+      "transitionInto": "この隊形への飛行 · {name}",
+      "name": "名前",
+      "curve": "飛び方",
+      "effect": "物理エフェクト",
+      "duration": "飛行時間",
+      "durationHint": "現実の飛行ルールでは、最高速度を守るために長くなることがあります。",
+      "hold": "保持",
+      "stagger": "ずらし",
+      "order": "出発の順番",
+      "spin": "回転",
+      "ownColors": "専用の色",
+      "ownColorsHint": "ショー全体の色ではなく、この隊形だけの色を使います。",
+      "selectKeyframe": "タイムラインで隊形を選ぶと、そこへの飛び方を編集できます。",
+      "realism": "現実の飛行ルール",
+      "realistic": "現実の制限を守る",
+      "realisticHint": "速度を制限し、機体同士が離れる経路を計画します。",
+      "maxSpeed": "最高速度",
+      "separation": "最小間隔",
+      "feel": "質感",
+      "swarm": "群れのゆらぎ",
+      "hoverBob": "ホバリングの揺れ",
+      "physics": "物理演出",
+      "gravity": "重力",
+      "restitution": "弾み",
+      "windDirection": "風向き",
+      "windStrength": "風の強さ",
+      "maxBodies": "物理ボディ数",
+      "environment": "環境",
+      "sky": "空",
+      "ground": "地面",
+      "stars": "星",
+      "fog": "もや",
+      "ambient": "背景の明るさ",
+      "cameraShow": "ショー全体",
+      "cameraPreset": "視点",
+      "autoOrbit": "自動回転",
+      "cameraShot": "表示中 · {name}",
+      "shot": "カメラショット",
+      "inherit": "ショーと同じ",
+      "toys": "遊び",
+      "pushToy": "ポインターでドローンを押す",
+      "pushToyHint": "ポインターを編隊の中で動かすと、近くの機体がよけます。",
+      "bloom": "ブルーム",
+      "strength": "強さ",
+      "radius": "半径",
+      "threshold": "しきい値",
+      "film": "フィルム",
+      "exposure": "露出",
+      "vignette": "周辺減光",
+      "grain": "粒子"
+    },
+    "export": {
+      "title": "書き出し",
+      "description": "現在のフレームを画像で保存、またはショー全体を動画に書き出します。",
+      "pngSize": "画像サイズ",
+      "savePng": "PNG を保存",
+      "frameRate": "フレームレート",
+      "saveVideo": "動画を書き出す",
+      "videoHint": "ブラウザ内で1フレームずつ描画します（MP4、H.264 が使えない場合は WebM）。このタブを開いたままにしてください。",
+      "rendering": "書き出し中 {percent}%",
+      "cancel": "キャンセル",
+      "pngDone": "画像を保存しました",
+      "videoDone": "{format} 動画を保存しました",
+      "notReady": "ショーを読み込み中です",
+      "failed": "書き出しに失敗しました"
+    },
+    "shortcuts": {
+      "title": "キーボードショートカット",
+      "description": "キーボードだけで操作できます。",
+      "toggle": "再生／一時停止",
+      "next": "次の隊形",
+      "previous": "前の隊形",
+      "loop": "ループ切替",
+      "undo": "元に戻す",
+      "redo": "やり直す",
+      "duplicate": "隊形を複製",
+      "delete": "隊形を削除",
+      "share": "共有リンクをコピー",
+      "help": "この一覧を表示",
+      "walk": "歩く（一人称視点）"
+    }
+  },
+  "Viewer": {
+    "meta": {
+      "title": "ショーを見る",
+      "description": "Skyloom で作られたドローンショー。"
+    },
+    "home": "Skyloom ホーム",
+    "play": "再生",
+    "pause": "一時停止",
+    "relaunch": "再離陸",
+    "remix": "リミックス",
+    "brokenTitle": "このリンクは壊れています",
+    "brokenBody": "リンクが不完全か、途中で変わってしまったようです。もう一度送ってもらうか、ギャラリーから選んでください。",
+    "browse": "ギャラリーを見る"
+  },
+  "Guide": {
+    "meta": {
+      "title": "ガイド",
+      "description": "Skyloom でドローンショーをデザインし、飛ばし、共有する方法。"
+    },
+    "eyebrow": "ガイド",
+    "title": "最初のショーを飛ばそう",
+    "lead": "すべてがライブです。何かを変えると、目の前で編隊が組み替わります。",
+    "steps": {
+      "pick": {
+        "title": "ショーを選ぶ",
+        "body": "ギャラリーまたは「ショー」タブから選びます。飛行中の機体がそのまま新しいショーへ飛んでいきます。"
+      },
+      "create": {
+        "title": "隊形を追加",
+        "body": "形や言葉を入力する、形をタップする、画像・SVG・.glb モデルをアップロードする。文字は英語・日本語・ビルマ語に対応しています。"
+      },
+      "look": {
+        "title": "自分好みに",
+        "body": "機体サイズ、LED サイズ、輝きを調整し、単色・虹色・ランダムから色を選び、光が映えるまで背景を暗くします。"
+      },
+      "flight": {
+        "title": "飛行ルールを決める",
+        "body": "機体数、最高速度（m/s）、機体同士の最小間隔を選びます。飛行時間はそれに合わせて伸びます。"
+      },
+      "views": {
+        "title": "好きな場所から見る",
+        "body": "観客席に立つ、プロペラが見えるまで近づく、または「歩く」に切り替えて W A S D や矢印キーでショーの下を歩く。"
+      },
+      "studio": {
+        "title": "スタジオでさらに",
+        "body": "スタジオでは、タイムライン、隊形ごとのタイミングと回転、カメラショット、物理演出、元に戻す／やり直すが使えます。"
+      },
+      "share": {
+        "title": "共有と書き出し",
+        "body": "ショー全体を含むリンクをコピー、PNG を保存、または1フレームずつ動画に書き出します。"
+      }
+    },
+    "keys": {
+      "title": "キー操作",
+      "play": "再生／一時停止",
+      "step": "前／次の隊形",
+      "walk": "一人称で歩く",
+      "undo": "元に戻す",
+      "help": "スタジオの全ショートカット"
+    },
+    "cta": "スタジオを開く"
+  },
+  "About": {
+    "meta": {
+      "title": "概要",
+      "description": "Skyloom のショー計画：サンプリング、割り当て、衝突のない経路、実際の飛行速度。"
+    },
+    "eyebrow": "概要",
+    "title": "ショーはこうして計画される",
+    "lead": "Skyloom はシミュレーターです。1機も離陸する前に本物のショーが踏む工程を取り入れています。",
+    "topics": {
+      "sampling": {
+        "title": "形を点にする",
+        "body": "メッシュ、文字、画像、3Dモデルを1機につき1点へ変換し、すべての機体に安全な間隔ができるまで押し広げます。"
+      },
+      "assignment": {
+        "title": "各機に目標を割り当てる",
+        "body": "機体と目標を空間充填曲線に沿って並べて組にし、移動が短くなる場合は入れ替えます。短い移動はほとんど交差しません。"
+      },
+      "routes": {
+        "title": "離陸前に経路を確認",
+        "body": "各遷移を時間で区切って調べます。近づきすぎる2機は経路を外側に曲げ、問題がなくなるまで確認を繰り返します。"
+      },
+      "speed": {
+        "title": "時間は速度に従う",
+        "body": "遷移の長さは、最も遠くへ飛ぶ機体が最高速度で必要とする時間で決まります。速度制限を下げると、本物同様ショーも遅くなります。"
+      },
+      "rendering": {
+        "title": "全機を1回の描画で",
+        "body": "位置は GPU で計算し、すべての機体を1回のインスタンス描画で表示します。LED の光と、プロペラが回る小さなクアッドコプターです。"
+      },
+      "limits": {
+        "title": "できないこと",
+        "body": "機体は見やすいよう実物より大きく描いています。風やバッテリーは再現しておらず、実機の飛行計画として使うことはできません。"
+      }
+    },
+    "credits": "使用技術",
+    "disclaimer": "バーチャルシミュレーション専用です。同梱の3Dモデルと書体は three.js のサンプル（MIT ライセンス）によるものです。"
+  },
+  "Walk": {
+    "hintKeys": "W A S D または矢印キーで歩く · ドラッグで見回す · Esc で終了",
+    "hintTouch": "画面左側をドラッグして歩く · それ以外をドラッグして見回す",
+    "exit": "歩行を終了"
+  }
 }

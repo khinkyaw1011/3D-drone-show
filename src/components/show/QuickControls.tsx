@@ -278,7 +278,7 @@ export function QuickControls({ className }: { className?: string }) {
               <SegmentedField
                 label={t('drones')}
                 value={String(show.droneCount)}
-                options={[...new Set([...FLEET_SIZES.filter((n) => n <= maxDrones), show.droneCount])].sort((a, b) => a - b).map((n) => ({ value: String(n), label: n.toLocaleString() }))}
+                options={[...new Set([...FLEET_SIZES.filter((n) => n <= maxDrones), show.droneCount])].sort((a, b) => a - b).map((n) => ({ value: String(n), label: n.toLocaleString('en-US') }))}
                 onChange={(count) => run({ type: 'show.setDroneCount', count: Number(count) })}
               />
               <SwitchField

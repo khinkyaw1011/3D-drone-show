@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { FleetStats } from '@/components/show/FleetStats';
 import { LiveShow } from '@/components/show/LiveShow';
 import { QuickControls } from '@/components/show/QuickControls';
+import { WalkOverlay, useWalking } from '@/components/show/WalkOverlay';
 import { ShowGallery } from '@/components/show/ShowGallery';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { SiteHeader } from '@/components/site/SiteHeader';
@@ -35,6 +36,7 @@ export function Landing() {
   const hydrated = useHydrated();
   const stage = useRef<HTMLElement>(null);
   const inView = useInView(stage);
+  const walking = useWalking();
   const [started, setStarted] = useState(false);
   // The headline steps aside once the fleet is up, so it never sits on top of the formation.
   useEffect(() => {
@@ -49,16 +51,23 @@ export function Landing() {
 
   return (
     <>
-      <SiteHeader overlay />
+      {!walking && <SiteHeader overlay />}
       <main>
-        <section ref={stage} id="show" aria-label={t('stageLabel')} className="relative flex h-svh min-h-[620px] flex-col overflow-hidden">
-          {hydrated && <LiveShow paused={!inView} />}
+        {/* Walking takes over the whole screen: the stage is pinned and the page behind cannot scroll. */}
+        <section
+          ref={stage}
+          id="show"
+          aria-label={t('stageLabel')}
+          className={cn('flex flex-col overflow-hidden', walking ? 'fixed inset-0 z-50' : 'relative h-svh min-h-[620px]')}
+        >
+          {hydrated && <LiveShow paused={!inView && !walking} />}
+          {hydrated && <WalkOverlay />}
           <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-ink/80 to-transparent" />
 
           <div
             className={cn(
               'pointer-events-none relative z-10 mx-auto mt-[clamp(72px,13vh,140px)] max-w-3xl px-5 text-center transition-all duration-700 ease-out lg:mr-[420px] xl:mx-auto',
-              started && '-translate-y-3 opacity-0',
+              (started || walking) && '-translate-y-3 opacity-0',
             )}
             aria-hidden={started}
           >
@@ -80,7 +89,7 @@ export function Landing() {
           </div>
 
           {/* Bottom sheet on phones, side panel on wide screens: the sky stays clear either way. */}
-          <div className="relative z-20 mt-auto w-full px-3 pb-3 sm:px-4 sm:pb-4 lg:absolute lg:bottom-auto lg:right-4 lg:top-[4.5rem] lg:mt-0 lg:w-[380px] lg:p-0">
+          <div className={cn('relative z-20 mt-auto w-full px-3 pb-3 sm:px-4 sm:pb-4 lg:absolute lg:bottom-auto lg:right-4 lg:top-[4.5rem] lg:mt-0 lg:w-[380px] lg:p-0', walking && 'hidden')}>
             {hydrated && <QuickControls />}
           </div>
         </section>

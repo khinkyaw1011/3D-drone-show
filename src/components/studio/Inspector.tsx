@@ -1,5 +1,6 @@
 'use client';
 
+import { formatNumber } from '@/lib/utils';
 import { Minus, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { ColorSwatch, FieldGroup, FieldShell, SegmentedField, SelectField, SliderField, SwitchField, TextField } from '@/components/controls/fields';
@@ -13,6 +14,8 @@ import type { InspectorTab } from '@/store/slices/ui';
 
 const TABS: InspectorTab[] = ['drones', 'motion', 'scene', 'camera', 'fx'];
 const INHERIT = '__inherit';
+/** GSAP ease names contain dots and brackets, which message keys may not. */
+const messageKey = (value: string) => value.replace(/[^a-zA-Z0-9]/g, '_');
 
 /** Colour mode + its stops; used for the show look and for a keyframe's override. */
 function ColorControls({ look, onChange }: { look: DroneLook; onChange: (patch: Partial<DroneLook>) => void }) {
@@ -85,9 +88,9 @@ export function Inspector() {
 
   return (
     <Tabs value={tab} onValueChange={(value) => mutate((s) => void (s.ui.inspectorTab = value as InspectorTab))} className="flex h-full min-h-0 flex-col gap-0">
-      <TabsList className="mx-3 mt-3 grid h-9 shrink-0 grid-cols-5">
+      <TabsList className="scrollbar-thin mx-3 mt-3 flex h-9 shrink-0 justify-start overflow-x-auto">
         {TABS.map((value) => (
-          <TabsTrigger key={value} value={value} className="px-1 text-xs">
+          <TabsTrigger key={value} value={value} className="shrink-0 grow px-2.5 text-xs">
             {t(`tabs.${value}`)}
           </TabsTrigger>
         ))}
@@ -101,8 +104,8 @@ export function Inspector() {
               min={100}
               max={maxDrones}
               step={100}
-              format={(v) => v.toLocaleString()}
-              hint={t('countHint', { max: maxDrones })}
+              format={(v) => v.toLocaleString('en-US')}
+              hint={t('countHint', { max: formatNumber(maxDrones) })}
               onChange={(count) => run({ type: 'show.setDroneCount', count })}
             />
             <SliderField label={t('droneSize')} value={look.body} min={0.35} max={1} format={(v) => `${Math.round(v * 100)}%`} onChange={(body) => setLook({ body })} />
@@ -123,7 +126,7 @@ export function Inspector() {
               <SelectField
                 label={t('curve')}
                 value={curve}
-                options={[...SIM_CURVES, ...EASE_CURVES].map((value) => ({ value, label: tOptions(`curve.${value}`) }))}
+                options={[...SIM_CURVES, ...EASE_CURVES].map((value) => ({ value, label: tOptions(`curve.${messageKey(value)}`) }))}
                 onChange={(next) => setKeyframe({ transition: { curve: next, effect: next === 'physics' ? (keyframe.transition.effect ?? 'drop') : undefined } })}
               />
               {curve === 'physics' && (
@@ -178,7 +181,7 @@ export function Inspector() {
             <SliderField label={t('restitution')} value={scene.physics.restitution} min={0} max={1} onChange={(restitution) => setScene({ physics: { restitution } })} />
             <SliderField label={t('windDirection')} value={scene.physics.windDirection} min={0} max={360} step={1} format={(v) => `${v.toFixed(0)}°`} onChange={(windDirection) => setScene({ physics: { windDirection } })} />
             <SliderField label={t('windStrength')} value={scene.physics.windStrength} min={0} max={20} step={0.1} onChange={(windStrength) => setScene({ physics: { windStrength } })} />
-            <SliderField label={t('maxBodies')} value={scene.physics.maxBodies} min={100} max={3000} step={100} format={(v) => v.toLocaleString()} onChange={(maxBodies) => setScene({ physics: { maxBodies } })} />
+            <SliderField label={t('maxBodies')} value={scene.physics.maxBodies} min={100} max={3000} step={100} format={(v) => v.toLocaleString('en-US')} onChange={(maxBodies) => setScene({ physics: { maxBodies } })} />
           </FieldGroup>
         </TabsContent>
 

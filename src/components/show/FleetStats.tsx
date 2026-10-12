@@ -21,7 +21,7 @@ export function FleetStats({ className, compact = false }: { className?: string;
   const realistic = useStudio((s) => s.show.flight.realistic);
   return (
     <div className={cn('flex items-center gap-4', className)} aria-live="off">
-      <Stat value={count.toLocaleString()} label={t('drones')} />
+      <Stat value={count.toLocaleString('en-US')} label={t('drones')} />
       {stats && stats.peakSpeed > 0 && <Stat value={stats.peakSpeed.toFixed(1)} label={t('speed')} />}
       {!compact && realistic && stats && stats.minSeparation > 0 && (
         <Stat value={stats.minSeparation.toFixed(1)} label={t('gap')} warn={stats.conflicts > 0} />
