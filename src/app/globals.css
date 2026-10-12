@@ -1,0 +1,182 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans), var(--font-noto-jp), var(--font-noto-myanmar), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-serif: var(--font-instrument-serif), var(--font-noto-jp), var(--font-noto-myanmar), ui-serif, Georgia, serif;
+  --font-heading: var(--font-serif);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-line: var(--line);
+  --color-paper: var(--paper);
+  --color-glow: var(--glow);
+  --color-cyan: var(--cyan);
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  /* Skyloom tokens: "night sky editorial". Dark-first; there is no light theme. */
+  --ink: #07080d;
+  --ink-2: #0d1018;
+  --line: rgb(255 255 255 / 0.08);
+  --paper: #ece8df;
+  --glow: #ffd27a;
+  --cyan: #7cf7e4;
+
+  /* shadcn roles mapped onto the tokens above. */
+  --background: var(--ink);
+  --foreground: var(--paper);
+  --card: var(--ink-2);
+  --card-foreground: var(--paper);
+  --popover: #10131c;
+  --popover-foreground: var(--paper);
+  --primary: var(--paper);
+  --primary-foreground: var(--ink);
+  --secondary: rgb(255 255 255 / 0.06);
+  --secondary-foreground: var(--paper);
+  --muted: rgb(255 255 255 / 0.05);
+  --muted-foreground: #8a8f9c;
+  --accent: rgb(255 255 255 / 0.08);
+  --accent-foreground: var(--paper);
+  --destructive: #ff6b6b;
+  --border: var(--line);
+  --input: rgb(255 255 255 / 0.12);
+  --ring: var(--cyan);
+  --chart-1: var(--glow);
+  --chart-2: var(--cyan);
+  --chart-3: #ff8fb1;
+  --chart-4: #7c9cff;
+  --chart-5: #8a8f9c;
+  --radius: 0.875rem;
+  --sidebar: var(--ink-2);
+  --sidebar-foreground: var(--paper);
+  --sidebar-primary: var(--paper);
+  --sidebar-primary-foreground: var(--ink);
+  --sidebar-accent: rgb(255 255 255 / 0.08);
+  --sidebar-accent-foreground: var(--paper);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--cyan);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+    color-scheme: dark;
+    background: var(--ink);
+  }
+  body {
+    @apply bg-background text-foreground;
+    overscroll-behavior-y: none;
+  }
+  /* Burmese and Japanese need more leading than Latin to stay legible. */
+  :lang(my) {
+    line-height: 1.9;
+  }
+  :lang(ja) {
+    line-height: 1.75;
+  }
+  :focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: rgb(124 247 228 / 0.28);
+  }
+}
+
+@layer components {
+  /* Near-black glass used by every floating panel. */
+  .glass {
+    background: rgb(13 16 24 / 0.72);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    backdrop-filter: blur(18px) saturate(1.2);
+    -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  }
+  /* Small-caps mono label: panel headings, field names, timecodes. */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+  :lang(my) .eyebrow,
+  :lang(ja) .eyebrow {
+    font-family: var(--font-sans);
+    letter-spacing: 0.04em;
+    font-size: 0.75rem;
+  }
+  .display {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 0.98;
+  }
+  :lang(my) .display,
+  :lang(ja) .display {
+    letter-spacing: 0;
+    line-height: 1.35;
+    font-weight: 500;
+  }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255 255 255 / 0.14) transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

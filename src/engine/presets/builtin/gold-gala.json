@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "id": "gold-gala",
+  "name": "Gold Gala",
+  "droneCount": 1500,
+  "look": {
+    "colorMode": "gradient",
+    "colors": [
+      "#ffb84d",
+      "#ffd27a",
+      "#fff4d6"
+    ],
+    "gradientAxis": "y",
+    "glow": 1.4,
+    "twinkle": 0.4,
+    "swarm": 0.2,
+    "size": 0.3
+  },
+  "scene": {
+    "sky": "midnight",
+    "ground": "water",
+    "stars": 0.5,
+    "fog": 0.18,
+    "autoOrbit": 0.1,
+    "bloom": {
+      "strength": 0.75,
+      "radius": 0.65,
+      "threshold": 0.1
+    }
+  },
+  "keyframes": [
+    {
+      "id": "gg1",
+      "name": "Star",
+      "formation": {
+        "sourceId": "shape",
+        "input": {
+          "shape": "star",
+          "fill": 0.85
+        }
+      },
+      "hold": 3,
+      "transition": {
+        "duration": 4,
+        "curve": "power3.inOut",
+        "stagger": 0.35,
+        "order": "radial"
+      },
+      "spin": 10
+    },
+    {
+      "id": "gg2",
+      "name": "Gala",
+      "formation": {
+        "sourceId": "text",
+        "input": {
+          "text": "GALA",
+          "font": "gentilis",
+          "letterSpacing": 0.06,
+          "stacked": false,
+          "fill": 0.9
+        }
+      },
+      "hold": 3,
+      "transition": {
+        "duration": 3.5,
+        "curve": "expo.inOut",
+        "stagger": 0.35,
+        "order": "top-down"
+      }
+    },
+    {
+      "id": "gg3",
+      "name": "Ring",
+      "formation": {
+        "sourceId": "shape",
+        "input": {
+          "shape": "torus",
+          "fill": 0.8
+        }
+      },
+      "hold": 3,
+      "transition": {
+        "duration": 3.5,
+        "curve": "spring",
+        "stagger": 0.35,
+        "order": "radial"
+      },
+      "spin": 14
+    }
+  ]
+}

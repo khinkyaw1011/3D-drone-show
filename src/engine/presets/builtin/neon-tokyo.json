@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "id": "neon-tokyo",
+  "name": "Neon Tokyo",
+  "droneCount": 2000,
+  "look": {
+    "colorMode": "gradient",
+    "colors": [
+      "#7cf7e4",
+      "#ff4fd8"
+    ],
+    "gradientAxis": "x",
+    "glow": 1.5,
+    "twinkle": 0.15,
+    "swarm": 0.2,
+    "size": 0.3
+  },
+  "scene": {
+    "sky": "midnight",
+    "ground": "city",
+    "stars": 0.35,
+    "fog": 0.3,
+    "autoOrbit": 0.1,
+    "bloom": {
+      "strength": 0.75,
+      "radius": 0.7,
+      "threshold": 0.1
+    }
+  },
+  "keyframes": [
+    {
+      "id": "nt1",
+      "name": "Tokyo",
+      "formation": {
+        "sourceId": "text",
+        "input": {
+          "text": "TOKYO",
+          "font": "helvetiker",
+          "letterSpacing": 0.06,
+          "stacked": false,
+          "fill": 0.9
+        }
+      },
+      "hold": 2.5,
+      "transition": {
+        "duration": 3.5,
+        "curve": "power3.inOut",
+        "stagger": 0.35,
+        "order": "top-down"
+      }
+    },
+    {
+      "id": "nt2",
+      "name": "Grid wall",
+      "formation": {
+        "sourceId": "shape",
+        "input": {
+          "shape": "grid",
+          "fill": 0.9
+        }
+      },
+      "hold": 2,
+      "transition": {
+        "duration": 3,
+        "curve": "power2.inOut",
+        "stagger": 0.35,
+        "order": "random"
+      },
+      "look": {
+        "colorMode": "palette",
+        "colors": [
+          "#7cf7e4",
+          "#ff4fd8",
+          "#ffe66d"
+        ]
+      }
+    },
+    {
+      "id": "nt3",
+      "name": "Spiral",
+      "formation": {
+        "sourceId": "shape",
+        "input": {
+          "shape": "galaxy",
+          "fill": 0.95
+        }
+      },
+      "hold": 3,
+      "transition": {
+        "duration": 4,
+        "curve": "swarm",
+        "stagger": 0.35,
+        "order": "radial"
+      },
+      "look": {
+        "colorMode": "gradient",
+        "colors": [
+          "#ff4fd8",
+          "#7cf7e4"
+        ],
+        "gradientAxis": "y"
+      },
+      "spin": 10
+    }
+  ]
+}

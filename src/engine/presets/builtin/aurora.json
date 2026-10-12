@@ -1,0 +1,94 @@
+{
+  "version": 1,
+  "id": "aurora",
+  "name": "Aurora",
+  "droneCount": 1500,
+  "look": {
+    "colorMode": "gradient",
+    "colors": [
+      "#3dffa8",
+      "#35c9ff",
+      "#8a7dff"
+    ],
+    "gradientAxis": "x",
+    "glow": 1.2,
+    "twinkle": 0.35,
+    "swarm": 0.35,
+    "hoverBob": 0.35,
+    "size": 0.3
+  },
+  "scene": {
+    "sky": "aurora",
+    "ground": "water",
+    "stars": 0.8,
+    "fog": 0.12,
+    "autoOrbit": 0.14,
+    "bloom": {
+      "strength": 0.7
+    }
+  },
+  "keyframes": [
+    {
+      "id": "au1",
+      "name": "Wave",
+      "formation": {
+        "sourceId": "shape",
+        "input": {
+          "shape": "wave",
+          "fill": 0.95
+        }
+      },
+      "hold": 3.5,
+      "transition": {
+        "duration": 4,
+        "curve": "sine.inOut",
+        "stagger": 0.35,
+        "order": "radial"
+      }
+    },
+    {
+      "id": "au2",
+      "name": "Ring",
+      "formation": {
+        "sourceId": "shape",
+        "input": {
+          "shape": "ring",
+          "fill": 0.8
+        }
+      },
+      "hold": 3,
+      "transition": {
+        "duration": 4,
+        "curve": "spring",
+        "stagger": 0.35,
+        "order": "radial"
+      },
+      "look": {
+        "colorMode": "rainbow"
+      },
+      "spin": 12
+    },
+    {
+      "id": "au3",
+      "name": "Helix",
+      "formation": {
+        "sourceId": "shape",
+        "input": {
+          "shape": "helix",
+          "fill": 0.9
+        }
+      },
+      "hold": 3,
+      "transition": {
+        "duration": 3.5,
+        "curve": "power3.inOut",
+        "stagger": 0.35,
+        "order": "top-down"
+      },
+      "look": {
+        "colorMode": "formation"
+      },
+      "spin": 16
+    }
+  ]
+}

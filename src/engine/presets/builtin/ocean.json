@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "id": "ocean",
+  "name": "Ocean",
+  "droneCount": 2000,
+  "look": {
+    "colorMode": "gradient",
+    "colors": [
+      "#0a6cff",
+      "#35c9ff",
+      "#c8f7ff"
+    ],
+    "gradientAxis": "y",
+    "glow": 1.15,
+    "twinkle": 0.3,
+    "swarm": 0.3,
+    "hoverBob": 0.3,
+    "size": 0.3
+  },
+  "scene": {
+    "sky": "midnight",
+    "ground": "water",
+    "stars": 0.6,
+    "fog": 0.2,
+    "autoOrbit": 0.14,
+    "bloom": {
+      "strength": 0.7
+    }
+  },
+  "keyframes": [
+    {
+      "id": "oc1",
+      "name": "Wave",
+      "formation": {
+        "sourceId": "shape",
+        "input": {
+          "shape": "wave",
+          "fill": 0.95
+        }
+      },
+      "hold": 3,
+      "transition": {
+        "duration": 4,
+        "curve": "sine.inOut",
+        "stagger": 0.35,
+        "order": "radial"
+      }
+    },
+    {
+      "id": "oc2",
+      "name": "Flamingo",
+      "formation": {
+        "sourceId": "model",
+        "input": {
+          "model": "flamingo",
+          "rotation": -55,
+          "useColors": true,
+          "fill": 0.85
+        }
+      },
+      "hold": 3.5,
+      "transition": {
+        "duration": 4,
+        "curve": "swarm",
+        "stagger": 0.35,
+        "order": "random"
+      },
+      "look": {
+        "colorMode": "gradient",
+        "colors": [
+          "#35c9ff",
+          "#ffffff"
+        ],
+        "gradientAxis": "y"
+      },
+      "spin": 12
+    },
+    {
+      "id": "oc3",
+      "name": "Sphere",
+      "formation": {
+        "sourceId": "shape",
+        "input": {
+          "shape": "sphere",
+          "fill": 0.8
+        }
+      },
+      "hold": 3,
+      "transition": {
+        "duration": 3.5,
+        "curve": "power3.inOut",
+        "stagger": 0.35,
+        "order": "top-down"
+      },
+      "spin": 14
+    },
+    {
+      "id": "oc4",
+      "name": "Rain",
+      "formation": {
+        "sourceId": "shape",
+        "input": {
+          "shape": "wave",
+          "fill": 0.95
+        }
+      },
+      "hold": 2,
+      "transition": {
+        "duration": 5,
+        "curve": "physics",
+        "stagger": 0.35,
+        "order": "random",
+        "effect": "drop"
+      }
+    }
+  ]
+}

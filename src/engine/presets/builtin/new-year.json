@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "id": "new-year",
+  "name": "New Year",
+  "droneCount": 2000,
+  "look": {
+    "colorMode": "solid",
+    "colors": [
+      "#ffd27a",
+      "#ff6b6b",
+      "#7cf7e4"
+    ],
+    "glow": 1.4,
+    "twinkle": 0.2,
+    "swarm": 0.2,
+    "size": 0.3
+  },
+  "scene": {
+    "sky": "deep-space",
+    "ground": "city",
+    "stars": 0.7,
+    "fog": 0.2,
+    "autoOrbit": 0.08,
+    "bloom": {
+      "strength": 0.75,
+      "radius": 0.7,
+      "threshold": 0.08
+    }
+  },
+  "keyframes": [
+    {
+      "id": "ny3",
+      "name": "Three",
+      "formation": {
+        "sourceId": "text",
+        "input": {
+          "text": "3",
+          "font": "helvetiker",
+          "letterSpacing": 0.06,
+          "stacked": false,
+          "fill": 0.75
+        }
+      },
+      "hold": 0.9,
+      "transition": {
+        "duration": 2.2,
+        "curve": "power3.inOut",
+        "stagger": 0.35,
+        "order": "top-down"
+      }
+    },
+    {
+      "id": "ny2",
+      "name": "Two",
+      "formation": {
+        "sourceId": "text",
+        "input": {
+          "text": "2",
+          "font": "helvetiker",
+          "letterSpacing": 0.06,
+          "stacked": false,
+          "fill": 0.75
+        }
+      },
+      "hold": 0.9,
+      "transition": {
+        "duration": 1.1,
+        "curve": "power2.inOut",
+        "stagger": 0.2,
+        "order": "random"
+      }
+    },
+    {
+      "id": "ny1",
+      "name": "One",
+      "formation": {
+        "sourceId": "text",
+        "input": {
+          "text": "1",
+          "font": "helvetiker",
+          "letterSpacing": 0.06,
+          "stacked": false,
+          "fill": 0.75
+        }
+      },
+      "hold": 0.9,
+      "transition": {
+        "duration": 1.1,
+        "curve": "power2.inOut",
+        "stagger": 0.2,
+        "order": "random"
+      }
+    },
+    {
+      "id": "nyf",
+      "name": "Firework",
+      "formation": {
+        "sourceId": "shape",
+        "input": {
+          "shape": "burst",
+          "fill": 1
+        }
+      },
+      "hold": 1.5,
+      "transition": {
+        "duration": 4.5,
+        "curve": "physics",
+        "stagger": 0.35,
+        "order": "random",
+        "effect": "burst"
+      },
+      "look": {
+        "colorMode": "palette",
+        "colors": [
+          "#ffd27a",
+          "#ff6b6b",
+          "#7cf7e4"
+        ]
+      },
+      "spin": 8
+    },
+    {
+      "id": "nyy",
+      "name": "2027",
+      "formation": {
+        "sourceId": "text",
+        "input": {
+          "text": "2027",
+          "font": "optimer",
+          "letterSpacing": 0.06,
+          "stacked": false,
+          "fill": 0.9
+        }
+      },
+      "hold": 4,
+      "transition": {
+        "duration": 3,
+        "curve": "expo.inOut",
+        "stagger": 0.35,
+        "order": "radial"
+      },
+      "look": {
+        "colorMode": "gradient",
+        "colors": [
+          "#ffd27a",
+          "#fff4d6"
+        ],
+        "gradientAxis": "y"
+      }
+    }
+  ]
+}
