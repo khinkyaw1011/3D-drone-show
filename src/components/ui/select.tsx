@@ -59,7 +59,9 @@ function SelectTrigger({
 function SelectContent({
   className,
   children,
-  position = "item-aligned",
+  // "popper" anchors the list to its trigger. Radix's "item-aligned" mode leaves the list unpositioned
+  // on touch screens (it ended up at the bottom of the page, off screen), so it is not the default here.
+  position = "popper",
   align = "center",
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {

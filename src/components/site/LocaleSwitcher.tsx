@@ -23,7 +23,7 @@ export function LocaleSwitcher({ className, compact = false }: { className?: str
 
   return (
     <Select value={locale} onValueChange={change} disabled={pending}>
-      <SelectTrigger aria-label={t('language')} size="sm" className={cn('gap-1.5 border-line bg-transparent', compact ? 'w-auto px-2' : 'w-auto min-w-28', className)}>
+      <SelectTrigger aria-label={t('language')} size="sm" className={cn('gap-1.5 border-line bg-transparent', compact ? '!h-9 w-auto px-2.5' : 'w-auto min-w-28', className)}>
         <Languages className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
         {compact ? <span className="font-mono text-xs uppercase">{locale}</span> : <SelectValue />}
       </SelectTrigger>
