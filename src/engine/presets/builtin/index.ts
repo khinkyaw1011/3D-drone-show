@@ -13,7 +13,8 @@ import wings from './wings.json';
 /** Shipped shows, validated (and defaulted) by the same schema as user shows. */
 export const BUILTIN_SHOWS: Show[] = [sakuraNight, wings, nippon, neonTokyo, cosmos, aurora, newYear, ocean, goldGala].map((s) => parseShow(s));
 
-export const DEFAULT_SHOW_ID = 'sakura-night';
+/** The show a new visitor gets, and the one the landing page opens on. */
+export const DEFAULT_SHOW_ID = 'wings';
 
 export function getBuiltinShow(id: string): Show | undefined {
   return BUILTIN_SHOWS.find((s) => s.id === id);
