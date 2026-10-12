@@ -1,6 +1,6 @@
 'use client';
 
-import { RotateCcw } from 'lucide-react';
+import { ChevronRight, RotateCcw } from 'lucide-react';
 import { type ReactNode, useId } from 'react';
 import { HexColorInput, HexColorPicker } from 'react-colorful';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -29,7 +29,7 @@ export function FieldShell({ label, htmlFor, value, hint, children, className, i
   return (
     <div className={cn('flex min-w-0 gap-1.5', inline ? 'items-center justify-between' : 'flex-col', className)}>
       <div className="flex min-w-0 items-baseline justify-between gap-2">
-        <label htmlFor={htmlFor} className="truncate text-[0.8125rem] text-foreground/85">
+        <label htmlFor={htmlFor} className="truncate text-sm text-foreground/90">
           {label}
         </label>
         {value !== undefined && <span className="shrink-0 font-mono text-xs tabular-nums text-muted-foreground">{value}</span>}
@@ -194,15 +194,42 @@ export function ColorSwatch({ value, onChange, label }: { value: string; onChang
 }
 
 /** Collapsible-free section: a mono eyebrow heading and a stack of fields. */
-export function FieldGroup({ title, children, action }: { title: string; children: ReactNode; action?: ReactNode }) {
+interface FieldGroupProps {
+  title: string;
+  children: ReactNode;
+  action?: ReactNode;
+  /** One line saying what the group controls. */
+  description?: string;
+  /** Render as a foldable section (long panels); `defaultOpen` picks the starting state. */
+  fold?: boolean;
+  defaultOpen?: boolean;
+}
+
+/** A titled stack of fields. With `fold` it becomes a native disclosure, so long panels stay scannable. */
+export function FieldGroup({ title, children, action, description, fold = false, defaultOpen = false }: FieldGroupProps) {
+  if (!fold)
+    return (
+      <section className="space-y-3.5">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="eyebrow">{title}</h3>
+          {action}
+        </div>
+        {description && <p className="!mt-1 text-xs leading-snug text-muted-foreground">{description}</p>}
+        {children}
+      </section>
+    );
   return (
-    <section className="space-y-3.5">
-      <div className="flex items-center justify-between gap-2">
-        <h3 className="eyebrow">{title}</h3>
-        {action}
-      </div>
-      {children}
-    </section>
+    <details open={defaultOpen} className="group rounded-lg border border-line bg-white/[0.02] open:bg-transparent">
+      <summary className="flex cursor-pointer list-none items-start gap-2 rounded-lg px-3 py-2.5 hover:bg-white/[0.04] [&::-webkit-details-marker]:hidden">
+        <ChevronRight className="mt-0.5 size-4 shrink-0 text-muted-foreground transition-transform duration-150 group-open:rotate-90" aria-hidden="true" />
+        <span className="min-w-0 flex-1">
+          <h3 className="text-sm font-medium leading-tight text-paper">{title}</h3>
+          {description && <span className="mt-0.5 block text-xs leading-snug text-muted-foreground">{description}</span>}
+        </span>
+        <span className="opacity-0 transition-opacity group-open:opacity-100">{action}</span>
+      </summary>
+      <div className="space-y-3.5 px-3 pb-3.5 pt-1">{children}</div>
+    </details>
   );
 }
 

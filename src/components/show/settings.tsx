@@ -5,9 +5,10 @@ import { useTranslations } from 'next-intl';
 import { ColorSwatch, FieldGroup, FieldShell, ResetButton, SegmentedField, SelectField, SliderField, SwitchField } from '@/components/controls/fields';
 import { Button } from '@/components/ui/button';
 import type { ResetScope } from '@/engine/commands/commands';
-import { AXES, COLOR_MODES, FIREWORK_PALETTES, GROUNDS, SKY_PRESETS } from '@/engine/presets/schema';
+import { ENVIRONMENTS, environmentSwatch, matchEnvironment } from '@/engine/presets/environments';
+import { AXES, COLOR_MODES, FIREWORK_PALETTES, FIREWORK_STYLES, GROUNDS, SKY_PRESETS } from '@/engine/presets/schema';
 import type { DroneLook, SceneSettings } from '@/engine/types';
-import { formatNumber } from '@/lib/utils';
+import { cn, formatNumber } from '@/lib/utils';
 import { FLEET } from '@/engine/renderer/capabilities';
 import { useFleetLimits, useStudio } from '@/store';
 import { useShowActions } from './useShowActions';
@@ -18,7 +19,8 @@ import { useShowActions } from './useShowActions';
  * Each section reads its slice of the store and writes through commands.
  */
 
-type ScenePatch = Partial<Omit<SceneSettings, 'bloom' | 'physics' | 'fireworks'>> & {
+type ScenePatch = Partial<Omit<SceneSettings, 'bloom' | 'physics' | 'fireworks' | 'venue'>> & {
+  venue?: Partial<SceneSettings['venue']>;
   bloom?: Partial<SceneSettings['bloom']>;
   physics?: Partial<SceneSettings['physics']>;
   fireworks?: Partial<SceneSettings['fireworks']>;
@@ -39,6 +41,12 @@ export function useSettings() {
 }
 
 const percent = (v: number) => `${Math.round(v * 100)}%`;
+
+/** Sections fold on long panels (the landing deck) and stay open in the roomier inspector. */
+interface SectionProps {
+  fold?: boolean;
+  defaultOpen?: boolean;
+}
 
 /** Colour mode and its stops. Used for the show's look and for one formation's override. */
 export function ColorControls({ look, onChange }: { look: DroneLook; onChange: (patch: Partial<DroneLook>) => void }) {
@@ -79,14 +87,49 @@ export function ColorControls({ look, onChange }: { look: DroneLook; onChange: (
   );
 }
 
+/** One-click environments. Each applies a scene patch through the normal `scene.set` command. */
+export function EnvironmentPicker() {
+  const { t, setScene } = useSettings();
+  const tOptions = useTranslations('Options');
+  const active = useStudio((s) => matchEnvironment(s.show.scene));
+  return (
+    <section className="space-y-2.5">
+      <div>
+        <h3 className="text-sm font-medium text-paper">{t('environmentPresets')}</h3>
+        <p className="mt-0.5 text-xs leading-snug text-muted-foreground">{t('environmentHint')}</p>
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        {Object.keys(ENVIRONMENTS).map((id) => {
+          const swatch = environmentSwatch(id);
+          return (
+            <button
+              key={id}
+              type="button"
+              aria-pressed={active === id}
+              onClick={() => setScene(ENVIRONMENTS[id])}
+              className={cn(
+                'group flex flex-col gap-1.5 rounded-lg border p-1.5 text-left transition-colors duration-150',
+                active === id ? 'border-glow/70 bg-glow/10' : 'border-line hover:border-white/25',
+              )}
+            >
+              <span className="h-9 rounded-md" style={{ background: `linear-gradient(to top, ${swatch.horizon}, ${swatch.top} 75%)` }} />
+              <span className="px-0.5 text-xs leading-tight text-paper/85 group-hover:text-paper">{tOptions(`environment.${id}`)}</span>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 /** How many drones, and how each one looks. */
-export function DroneSection() {
+export function DroneSection(group: SectionProps) {
   const { t, run, setLook, reset } = useSettings();
   const look = useStudio((s) => s.show.look);
   const count = useStudio((s) => s.show.droneCount);
   const { min, max, clamp } = useFleetLimits();
   return (
-    <FieldGroup title={t('fleet')} action={reset('look')}>
+    <FieldGroup title={t('fleet')} description={t('about.fleet')} action={reset('look')} {...group}>
       <SliderField
         label={t('count')}
         value={clamp(count)}
@@ -107,22 +150,22 @@ export function DroneSection() {
 }
 
 /** The show-wide colour scheme. */
-export function ColorSection() {
+export function ColorSection(group: SectionProps) {
   const { t, setLook } = useSettings();
   const look = useStudio((s) => s.show.look);
   return (
-    <FieldGroup title={t('color')}>
+    <FieldGroup title={t('color')} description={t('about.color')} {...group}>
       <ColorControls look={look} onChange={setLook} />
     </FieldGroup>
   );
 }
 
 /** Real-world limits: top speed and the gap drones must keep. */
-export function FlightSection() {
+export function FlightSection(group: SectionProps) {
   const { t, setFlight, reset } = useSettings();
   const flight = useStudio((s) => s.show.flight);
   return (
-    <FieldGroup title={t('realism')} action={reset('flight')}>
+    <FieldGroup title={t('realism')} description={t('about.realism')} action={reset('flight')} {...group}>
       <SwitchField label={t('realistic')} hint={t('realisticHint')} value={flight.realistic} onChange={(realistic) => setFlight({ realistic })} />
       <SliderField label={t('maxSpeed')} value={flight.maxSpeed} min={3} max={25} step={0.5} disabled={!flight.realistic} format={(v) => `${v.toFixed(1)} m/s`} onChange={(maxSpeed) => setFlight({ maxSpeed })} />
       <SliderField label={t('separation')} value={flight.separation} min={0.5} max={4} step={0.1} disabled={!flight.realistic} format={(v) => `${v.toFixed(1)} m`} onChange={(separation) => setFlight({ separation })} />
@@ -131,37 +174,58 @@ export function FlightSection() {
 }
 
 /** Sky, ground, stars and how bright the backdrop is. */
-export function SkySection() {
+export function SkySection(group: SectionProps) {
   const { t, setScene, reset } = useSettings();
   const tOptions = useTranslations('Options');
   const scene = useStudio((s) => s.show.scene);
   return (
-    <FieldGroup title={t('environment')} action={reset('scene')}>
+    <FieldGroup title={t('skyGroup')} description={t('about.sky')} action={reset('scene')} {...group}>
       <SelectField label={t('sky')} value={scene.sky} options={SKY_PRESETS.map((value) => ({ value, label: tOptions(`sky.${value}`) }))} onChange={(sky) => setScene({ sky })} />
       <SegmentedField label={t('ground')} value={scene.ground} options={GROUNDS.map((value) => ({ value, label: tOptions(`ground.${value}`) }))} onChange={(ground) => setScene({ ground })} />
       <SliderField label={t('ambient')} value={scene.ambient} min={0} max={1} onChange={(ambient) => setScene({ ambient })} />
       <SliderField label={t('stars')} value={scene.stars} min={0} max={1} onChange={(stars) => setScene({ stars })} />
       <SliderField label={t('starSize')} value={scene.starSize} min={0} max={1} onChange={(starSize) => setScene({ starSize })} />
+      <SliderField label={t('starTwinkle')} value={scene.starTwinkle} min={0} max={1} onChange={(starTwinkle) => setScene({ starTwinkle })} />
+      <SliderField label={t('milkyWay')} value={scene.milkyWay} min={0} max={1} onChange={(milkyWay) => setScene({ milkyWay })} />
       <SliderField label={t('fog')} value={scene.fog} min={0} max={1} onChange={(fog) => setScene({ fog })} />
     </FieldGroup>
   );
 }
 
-export function FireworksSection() {
+export function FireworksSection(group: SectionProps) {
   const { t, setScene, reset } = useSettings();
   const tOptions = useTranslations('Options');
   const fireworks = useStudio((s) => s.show.scene.fireworks);
   const off = fireworks.intensity === 0;
   return (
-    <FieldGroup title={t('fireworks')} action={reset('fireworks')}>
+    <FieldGroup title={t('fireworks')} description={t('about.fireworks')} action={reset('fireworks')} {...group}>
       <SliderField label={t('fireworksIntensity')} value={fireworks.intensity} min={0} max={1} format={(v) => (v === 0 ? t('off') : percent(v))} onChange={(intensity) => setScene({ fireworks: { intensity } })} />
+      <SelectField
+        label={t('fireworksStyle')}
+        value={fireworks.style}
+        options={FIREWORK_STYLES.map((value) => ({ value, label: tOptions(`fireworkStyle.${value}`) }))}
+        onChange={(style) => setScene({ fireworks: { style } })}
+      />
       <SliderField label={t('fireworksSize')} value={fireworks.size} min={0.5} max={2} disabled={off} onChange={(size) => setScene({ fireworks: { size } })} />
+      <SliderField label={t('fireworksHeight')} value={fireworks.height} min={0.6} max={1.4} disabled={off} onChange={(height) => setScene({ fireworks: { height } })} />
       <SegmentedField
         label={t('fireworksColors')}
         value={fireworks.palette}
         options={FIREWORK_PALETTES.map((value) => ({ value, label: tOptions(`fireworks.${value}`) }))}
         onChange={(palette) => setScene({ fireworks: { palette } })}
       />
+    </FieldGroup>
+  );
+}
+
+/** Searchlights and the light the fleet throws on the ground. */
+export function VenueSection(group: SectionProps) {
+  const { t, setScene } = useSettings();
+  const venue = useStudio((s) => s.show.scene.venue);
+  return (
+    <FieldGroup title={t('venue')} description={t('about.venue')} {...group}>
+      <SliderField label={t('beams')} value={venue.beams} min={0} max={1} format={(v) => (v === 0 ? t('off') : percent(v))} onChange={(beams) => setScene({ venue: { beams } })} />
+      <SliderField label={t('groundGlow')} value={venue.glow} min={0} max={1} format={(v) => (v === 0 ? t('off') : percent(v))} onChange={(glow) => setScene({ venue: { glow } })} />
     </FieldGroup>
   );
 }

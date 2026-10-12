@@ -45,6 +45,8 @@ export function createSkyMaterial() {
     haze: uniform(0.15),
     ambient: uniform(0.3),
     starSize: uniform(0.3),
+    twinkle: uniform(0.5),
+    milkyWay: uniform(0.3),
   };
 
   const dir = normalize(positionLocal);
@@ -60,12 +62,19 @@ export function createSkyMaterial() {
   const cell = floor(p);
   const rnd = mx_cell_noise_float(cell);
   const dist = length(fract(p).sub(0.5));
-  const flicker = sin(time.mul(rnd.mul(3).add(0.6)).add(rnd.mul(40))).mul(0.25).add(0.75);
+  const flicker = float(1).sub(sin(time.mul(rnd.mul(3).add(0.6)).add(rnd.mul(40))).mul(0.5).add(0.5).mul(u.twinkle).mul(0.85));
   const star = smoothstep(u.starSize.mul(0.34).add(0.06), 0.0, dist)
     .mul(step(float(1).sub(u.stars.mul(0.075)), rnd))
     .mul(flicker)
     .mul(smoothstep(0.02, 0.22, dir.y));
   const starColor = mix(vec3(0.75, 0.84, 1), vec3(1, 0.9, 0.78), fract(rnd.mul(17)));
+
+  // Milky Way: a soft, clumpy band along a tilted great circle, with more (faint) stars inside it.
+  const bandAxis = normalize(vec3(0.35, 0.5, -0.8));
+  const inBand = smoothstep(0.42, 0, abs(dir.dot(bandAxis)));
+  const dust = mx_fractal_noise_float(dir.mul(5.5), 4).mul(0.5).add(0.5);
+  const milky = inBand.mul(dust).mul(dust).mul(u.milkyWay).mul(smoothstep(0, 0.25, dir.y));
+  const milkyColor = mix(vec3(0.32, 0.36, 0.55), vec3(0.6, 0.5, 0.48), dust);
 
   // Aurora: slow vertical curtains from fractal noise, confined to a band of elevation.
   const curtain = mx_fractal_noise_float(vec3(dir.x.mul(2.2).add(time.mul(0.02)), dir.y.mul(0.6), dir.z.mul(2.2)), 3);
@@ -80,9 +89,13 @@ export function createSkyMaterial() {
   const material = new MeshBasicNodeMaterial({ side: BackSide, depthWrite: false, fog: false });
   // `ambient` dims the backdrop (never the stars' count) so drone LEDs stay the brightest thing in frame.
   const dim = u.ambient.mul(1.4).add(0.12);
-  material.colorNode = base.mul(dim).add(starColor.mul(star).mul(0.55)).add(auroraColor.mul(aurora).mul(0.42).mul(dim));
+  material.colorNode = base
+    .mul(dim)
+    .add(starColor.mul(star).mul(milky.mul(2).add(0.55)))
+    .add(milkyColor.mul(milky).mul(0.2))
+    .add(auroraColor.mul(aurora).mul(0.42).mul(dim));
 
-  const apply = (scene: Pick<SceneSettings, 'sky' | 'stars' | 'fog' | 'ambient' | 'starSize'>) => {
+  const apply = (scene: Pick<SceneSettings, 'sky' | 'stars' | 'fog' | 'ambient' | 'starSize' | 'starTwinkle' | 'milkyWay'>) => {
     const preset = SKY[scene.sky];
     u.top.value.set(preset.top);
     u.horizon.value.set(preset.horizon);
@@ -92,6 +105,8 @@ export function createSkyMaterial() {
     u.haze.value = scene.fog;
     u.ambient.value = scene.ambient;
     u.starSize.value = scene.starSize;
+    u.twinkle.value = scene.starTwinkle;
+    u.milkyWay.value = scene.milkyWay;
   };
   return { material, uniforms: u, apply };
 }

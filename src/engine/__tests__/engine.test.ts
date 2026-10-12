@@ -7,7 +7,8 @@ import { generateFormation, listSources } from '../formations/registry';
 import { bake } from '../formations/sources/baked';
 import { ShowPlayer } from '../playback/ShowPlayer';
 import { BUILTIN_SHOWS } from '../presets/builtin';
-import { SHOW_VERSION, parseShow, showSchema } from '../presets/schema';
+import { ENVIRONMENTS, matchEnvironment } from '../presets/environments';
+import { SHOW_VERSION, parseShow, sceneSettingsSchema, showSchema } from '../presets/schema';
 import { FLEET, TIERS, fleetLimits, reducedFleet } from '../renderer/capabilities';
 import { defaultSimParams } from '../sim/Simulator';
 import { compileShow } from '../timeline/compile';
@@ -211,5 +212,16 @@ describe('fleet limits', () => {
     expect(fleetLimits(device('high'), 10).max).toBe(FLEET.min);
     expect(reducedFleet(1500)).toBe(900);
     expect(reducedFleet(100)).toBe(FLEET.min);
+  });
+});
+
+describe('environment presets', () => {
+  it('are valid scene patches and are recognised once applied', () => {
+    const base = parseShow({ id: 'e', name: 'E', keyframes: [] }).scene;
+    for (const [id, patch] of Object.entries(ENVIRONMENTS)) {
+      const scene = sceneSettingsSchema.parse({ ...base, ...patch, fireworks: { ...base.fireworks, ...patch.fireworks } });
+      expect(matchEnvironment(scene), id).toBe(id);
+    }
+    expect(matchEnvironment({ ...base, ambient: 0.777 })).toBeNull();
   });
 });

@@ -96,7 +96,8 @@ describe('shows saved before a setting existed', () => {
     delete old.look.body;
     delete old.flight;
     const { show } = migratePersisted({ show: old });
-    expect(show.scene.fireworks).toEqual({ intensity: 0, size: 1, palette: 'show' });
+    expect(show.scene.fireworks).toEqual({ intensity: 0, size: 1, palette: 'show', style: 'mixed', height: 1 });
+    expect(show.scene.venue.beams).toBeGreaterThan(0);
     expect(show.flight.realistic).toBe(true);
     expect(show.look.body).toBeGreaterThan(0);
     expect(show.scene.starSize).toBeGreaterThan(0);

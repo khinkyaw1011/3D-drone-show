@@ -9,9 +9,9 @@ import { rendererCapabilities } from '@/engine/renderer/createRenderer';
 import { createSimulator } from '@/engine/sim/createSimulator';
 import type { Capabilities, Show } from '@/engine/types';
 import { useCompiledShow } from '@/hooks/useCompiledShow';
-import { CameraRig } from './CameraRig';
+import { CameraRig, ViewOffset } from './CameraRig';
 import { Drones } from './Drones';
-import { Fireworks, Ground, LaunchPad, Sky } from './Environment';
+import { Fireworks, Ground, LaunchPad, Sky, VenueLights } from './Environment';
 import { PostFX } from './PostFX';
 import { WalkControls } from './WalkControls';
 
@@ -35,6 +35,8 @@ export interface StageProps {
   seek?: { t?: number; keyframe?: number; nonce: number } | null;
   interactive?: boolean;
   pushToy?: boolean;
+  /** Shift the picture left by this many pixels to clear a panel on the right. */
+  offsetX?: number;
   /** A lower fleet ceiling than the device tier's (found by the frame-rate watchdog). */
   maxDrones?: number | null;
   /** The device could not hold a smooth frame rate with `count` drones. */
@@ -58,6 +60,7 @@ export function Stage({
   seek = null,
   interactive = true,
   pushToy = false,
+  offsetX = 0,
   maxDrones = null,
   onOverload,
   onTime,
@@ -133,11 +136,15 @@ export function Stage({
   const handledSeek = useRef(seek?.nonce ?? 0);
   useEffect(() => {
     if (!player || !loaded || !seek || seek.nonce === handledSeek.current) return;
+    if (seek.keyframe !== undefined) {
+      // A freshly added formation is still being generated: wait for the compile that contains it,
+      // then fly there live from the fleet's current positions.
+      const target = show.keyframes[seek.keyframe];
+      if (!target || compiledShow?.keyframes[seek.keyframe]?.id !== target.id) return;
+      player.flyTo(seek.keyframe);
+    } else if (seek.t !== undefined) player.seek(seek.t); // a time is scrubbed to, like film
     handledSeek.current = seek.nonce;
-    // A formation is flown to live from the fleet's current positions; a time is scrubbed to.
-    if (seek.keyframe !== undefined) player.flyTo(seek.keyframe);
-    else if (seek.t !== undefined) player.seek(seek.t);
-  }, [player, loaded, seek]);
+  }, [player, loaded, seek, show.keyframes, compiledShow]);
 
   const watchdog = useRef({ frames: 0, time: 0, reported: 0 });
   useFrame((_, dt) => {
@@ -164,6 +171,7 @@ export function Stage({
       <Ground scene={scene} tier={capabilities.tier} />
       {scene.ground !== 'none' && <LaunchPad count={count} />}
       <Fireworks scene={scene} colors={look.colors} />
+      <VenueLights scene={scene} colors={look.colors} />
       {player && (
         <Drones
           player={player}
@@ -188,6 +196,7 @@ export function Stage({
       ) : (
         <CameraRig preset={cameraPreset} autoOrbit={scene.autoOrbit} interactive={interactive} reducedMotion={reducedMotion} />
       )}
+      <ViewOffset pixels={offsetX} />
       <PostFX scene={scene} bloomScale={capabilities.tier.bloomScale} />
     </>
   );

@@ -15,13 +15,15 @@ interface LiveShowProps {
   interactive?: boolean;
   /** Stop rendering (e.g. scrolled off screen). */
   paused?: boolean;
+  /** Shift the picture left by this many pixels to clear a panel on the right. */
+  offsetX?: number;
 }
 
 /**
  * The studio store's show, live. The landing page and the studio both render this, so a
  * show customised on one is the show you find on the other.
  */
-export function LiveShow({ className, interactive = true, paused = false }: LiveShowProps) {
+export function LiveShow({ className, interactive = true, paused = false, offsetX = 0 }: LiveShowProps) {
   const show = useStudio((s) => s.show);
   const playing = useStudio((s) => s.playback.playing);
   const loop = useStudio((s) => s.playback.loop);
@@ -75,6 +77,7 @@ export function LiveShow({ className, interactive = true, paused = false }: Live
       onReady={onReady}
       onStatus={onStatus}
       onEnd={onEnd}
+      offsetX={offsetX}
       maxDrones={deviceMax}
       onOverload={onOverload}
     />

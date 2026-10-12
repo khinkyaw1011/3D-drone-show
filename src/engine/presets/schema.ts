@@ -40,12 +40,23 @@ export const physicsSettingsSchema = z.object({
 });
 
 export const FIREWORK_PALETTES = ['show', 'rainbow', 'gold'] as const;
+export const FIREWORK_STYLES = ['mixed', 'peony', 'willow', 'ring'] as const;
 
 /** Fireworks behind the show. Intensity 0 switches them off. */
 export const fireworksSchema = z.object({
   intensity: z.number().min(0).max(1).default(0),
   size: z.number().min(0.5).max(2).default(1),
   palette: z.enum(FIREWORK_PALETTES).default('show'),
+  style: z.enum(FIREWORK_STYLES).default('mixed'),
+  height: z.number().min(0.6).max(1.4).default(1),
+});
+
+/** Lighting on the ground, as at a real show site. */
+export const venueSchema = z.object({
+  /** Searchlight beams sweeping the sky from beside the launch pad. */
+  beams: z.number().min(0).max(1).default(0.35),
+  /** Pool of coloured light the fleet throws on the ground beneath it. */
+  glow: z.number().min(0).max(1).default(0.5),
 });
 
 export const sceneSettingsSchema = z.object({
@@ -71,6 +82,10 @@ export const sceneSettingsSchema = z.object({
   fireworks: fireworksSchema.prefault({}),
   /** Apparent size of the stars. */
   starSize: z.number().min(0).max(1).default(0.3),
+  starTwinkle: z.number().min(0).max(1).default(0.5),
+  /** Strength of the Milky Way band across the sky. */
+  milkyWay: z.number().min(0).max(1).default(0.3),
+  venue: venueSchema.prefault({}),
 });
 
 /** How faithfully the fleet obeys real-world limits. Speeds and distances are in metres. */

@@ -13,6 +13,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { Button } from '@/components/ui/button';
 import { useHydrated } from '@/hooks/useHydrated';
 import { useInView } from '@/hooks/useInView';
+import { useIsDesktop } from '@/hooks/useMediaQuery';
 import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { dispatch } from '@/store/dispatch';
@@ -37,6 +38,7 @@ export function Landing() {
   const stage = useRef<HTMLElement>(null);
   const inView = useInView(stage);
   const walking = useWalking();
+  const isDesktop = useIsDesktop();
   const [started, setStarted] = useState(false);
   // The headline steps aside once the fleet is up, so it never sits on top of the formation.
   useEffect(() => {
@@ -60,13 +62,14 @@ export function Landing() {
           aria-label={t('stageLabel')}
           className={cn('flex flex-col overflow-hidden', walking ? 'fixed inset-0 z-50' : 'relative h-svh min-h-[620px]')}
         >
-          {hydrated && <LiveShow paused={!inView && !walking} />}
+          {/* On wide screens the deck sits on the right, so the show is centred in the space left of it. */}
+          {hydrated && <LiveShow paused={!inView && !walking} offsetX={isDesktop && !walking ? 210 : 0} />}
           {hydrated && <WalkOverlay />}
           <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-ink/80 to-transparent" />
 
           <div
             className={cn(
-              'pointer-events-none relative z-10 mx-auto mt-[clamp(72px,13vh,140px)] max-w-3xl px-5 text-center transition-all duration-700 ease-out lg:mr-[420px] xl:mx-auto',
+              'pointer-events-none relative z-10 mx-auto mt-[clamp(72px,13vh,140px)] max-w-3xl px-5 text-center transition-all duration-700 ease-out lg:mr-[460px] xl:mx-auto',
               (started || walking) && '-translate-y-3 opacity-0',
             )}
             aria-hidden={started}
@@ -89,7 +92,7 @@ export function Landing() {
           </div>
 
           {/* Bottom sheet on phones, side panel on wide screens: the sky stays clear either way. */}
-          <div className={cn('relative z-20 mt-auto w-full px-3 pb-3 sm:px-4 sm:pb-4 lg:absolute lg:bottom-auto lg:right-4 lg:top-[4.5rem] lg:mt-0 lg:w-[380px] lg:p-0', walking && 'hidden')}>
+          <div className={cn('relative z-20 mt-auto w-full px-3 pb-3 sm:px-4 sm:pb-4 lg:absolute lg:bottom-auto lg:right-4 lg:top-[4.5rem] lg:mt-0 lg:w-[420px] lg:p-0', walking && 'hidden')}>
             {hydrated && <QuickControls />}
           </div>
         </section>

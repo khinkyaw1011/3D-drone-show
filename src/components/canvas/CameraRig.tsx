@@ -3,7 +3,7 @@
 import { CameraControls } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
-import { Box3, Vector3 } from 'three';
+import { Box3, type PerspectiveCamera, Vector3 } from 'three';
 import type { SceneSettings, Vec3 } from '@/engine/types';
 
 type Preset = Exclude<SceneSettings['cameraPreset'], 'walk'>;
@@ -34,6 +34,21 @@ interface CameraRigProps {
   /** Allow the user to orbit / zoom. */
   interactive: boolean;
   reducedMotion: boolean;
+}
+
+/**
+ * Slide the rendered picture sideways by `pixels` (positive = show moves left) so the show sits
+ * in the part of the screen a side panel leaves free. A lens shift: perspective is unchanged.
+ */
+export function ViewOffset({ pixels }: { pixels: number }) {
+  const camera = useThree((s) => s.camera) as PerspectiveCamera;
+  const size = useThree((s) => s.size);
+  useEffect(() => {
+    if (pixels) camera.setViewOffset(size.width, size.height, pixels, 0, size.width, size.height);
+    else camera.clearViewOffset();
+    return () => camera.clearViewOffset();
+  }, [camera, size, pixels]);
+  return null;
 }
 
 /**

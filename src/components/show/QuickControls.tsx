@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, ImageUp, Pause, Play, Repeat, Rocket, SkipBack, SkipForward, Sparkles } from 'lucide-react';
+import { ChevronDown, Clapperboard, ImageUp, Palette, Pause, Play, Repeat, Rocket, SkipBack, SkipForward, Sparkles, Wand2, Wind } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type FormEvent, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -16,10 +16,18 @@ import { IMAGE_ACCEPT } from '@/lib/image';
 import { cn } from '@/lib/utils';
 import { useStudio } from '@/store';
 import { FleetStats } from './FleetStats';
-import { DroneSection, FireworksSection, FlightSection, SkySection } from './settings';
+import { ColorSection, DroneSection, EnvironmentPicker, FireworksSection, FlightSection, SkySection, VenueSection } from './settings';
 import { useShowActions } from './useShowActions';
 
 export const FLEET_COLORS = ['#ff5ca8', '#ff4d4d', '#ff9f43', '#ffd27a', '#5dff9b', '#7cf7e4', '#4d8dff', '#a46bff', '#ffffff'] as const;
+
+const DECK_TABS = [
+  { id: 'show', icon: Clapperboard },
+  { id: 'create', icon: Wand2 },
+  { id: 'look', icon: Palette },
+  { id: 'flight', icon: Wind },
+] as const;
+type DeckTab = (typeof DECK_TABS)[number]['id'];
 
 /** Pill button used for formations, shapes and presets. */
 function Chip({ active, className, ...props }: React.ComponentProps<'button'> & { active?: boolean }) {
@@ -28,7 +36,7 @@ function Chip({ active, className, ...props }: React.ComponentProps<'button'> & 
       type="button"
       aria-pressed={active}
       className={cn(
-        'shrink-0 rounded-full border border-line bg-white/[0.04] px-3 py-1.5 text-xs text-paper/75 transition-colors duration-150 hover:text-paper',
+        'shrink-0 rounded-full border border-line bg-white/[0.04] px-3 py-1.5 text-[0.8125rem] text-paper/80 transition-colors duration-150 hover:text-paper',
         active && 'border-glow/70 bg-glow/15 text-paper',
         className,
       )}
@@ -52,6 +60,7 @@ export function QuickControls({ className }: { className?: string }) {
   // Open beside the show on wide screens; collapsed to the transport bar on phones so the sky stays visible.
   const [openChoice, setOpen] = useState<boolean | null>(null);
   const open = openChoice ?? isDesktop;
+  const [tab, setTab] = useState<DeckTab>('show');
   const [prompt, setPrompt] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -142,14 +151,20 @@ export function QuickControls({ className }: { className?: string }) {
       </div>
 
       {open && (
-        <Tabs defaultValue="show" className="gap-0 border-t border-line">
-          <TabsList className="mx-3.5 mt-3 grid h-9 grid-cols-4 sm:mx-4">
-            {(['show', 'create', 'look', 'flight'] as const).map((tab) => (
-              <TabsTrigger key={tab} value={tab} className="text-xs">
-                {t(`tabs.${tab}`)}
+        <Tabs value={tab} onValueChange={(value) => setTab(value as DeckTab)} className="gap-0 border-t border-line">
+          <TabsList className="mx-3.5 mt-3 grid !h-auto grid-cols-4 gap-1 bg-transparent p-0 sm:mx-4">
+            {DECK_TABS.map(({ id, icon: Icon }) => (
+              <TabsTrigger
+                key={id}
+                value={id}
+                className="!h-auto flex-col gap-1 rounded-lg border border-transparent py-2 text-xs data-[state=active]:border-line data-[state=active]:bg-white/10 data-[state=active]:text-cyan"
+              >
+                <Icon className="size-4" aria-hidden="true" />
+                {t(`tabs.${id}`)}
               </TabsTrigger>
             ))}
           </TabsList>
+          <p className="mx-3.5 mt-2.5 text-xs leading-snug text-muted-foreground sm:mx-4">{t(`about.${tab}`)}</p>
 
           <div className="scrollbar-thin max-h-[38svh] overflow-y-auto px-3.5 pb-4 pt-3.5 sm:px-4 lg:max-h-[calc(100svh-19rem)]">
             <TabsContent value="show" className="space-y-4">
@@ -193,39 +208,55 @@ export function QuickControls({ className }: { className?: string }) {
             </TabsContent>
 
             <TabsContent value="create" className="space-y-4">
-              <form onSubmit={submitPrompt} className="flex flex-wrap gap-2">
-                <label htmlFor="quick-prompt" className="sr-only">
-                  {t('promptLabel')}
-                </label>
-                <input
-                  id="quick-prompt"
-                  value={prompt}
-                  maxLength={40}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  placeholder={t('promptPlaceholder')}
-                  autoComplete="off"
-                  className="min-w-0 flex-1 basis-52 rounded-full border border-input bg-black/30 px-4 py-2 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-cyan"
-                />
-                <Button type="submit" size="sm" className="h-9 rounded-full px-4" disabled={!prompt.trim()}>
-                  <Sparkles />
-                  {t('create')}
-                </Button>
-                <Button type="button" variant="outline" size="sm" className="h-9 rounded-full px-4" disabled={busy} onClick={openFilePicker}>
-                  <ImageUp />
-                  {busy ? t('sampling') : t('upload')}
-                </Button>
-              </form>
-              <p className="text-xs text-muted-foreground">{t('uploadHint')}</p>
-              <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('shapes')}>
-                {SHAPES.map((shape) => (
-                  <Chip key={shape} onClick={() => addFormation('shape', { shape })}>
-                    {tOptions.has(`shape.${shape}`) ? tOptions(`shape.${shape}`) : shape}
-                  </Chip>
-                ))}
-              </div>
+              <section className="space-y-2">
+                <h3 className="text-sm font-medium text-paper">{t('typeIt')}</h3>
+                <form onSubmit={submitPrompt} className="flex gap-2">
+                  <label htmlFor="quick-prompt" className="sr-only">
+                    {t('promptLabel')}
+                  </label>
+                  <input
+                    id="quick-prompt"
+                    value={prompt}
+                    maxLength={40}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    placeholder={t('promptPlaceholder')}
+                    autoComplete="off"
+                    className="h-10 min-w-0 flex-1 rounded-lg border border-input bg-black/30 px-3.5 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-cyan"
+                  />
+                  <Button type="submit" className="h-10 rounded-lg px-4" disabled={!prompt.trim()}>
+                    <Sparkles />
+                    {t('create')}
+                  </Button>
+                </form>
+                <p className="text-xs leading-snug text-muted-foreground">{t('typeHint')}</p>
+              </section>
+              <section className="space-y-2">
+                <h3 className="text-sm font-medium text-paper">{t('pickShape')}</h3>
+                <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('pickShape')}>
+                  {SHAPES.map((shape) => (
+                    <Chip key={shape} onClick={() => addFormation('shape', { shape })}>
+                      {tOptions.has(`shape.${shape}`) ? tOptions(`shape.${shape}`) : shape}
+                    </Chip>
+                  ))}
+                </div>
+              </section>
+              <section className="space-y-2">
+                <h3 className="text-sm font-medium text-paper">{t('uploadIt')}</h3>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={openFilePicker}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-white/25 px-4 py-4 text-sm text-paper transition-colors duration-150 hover:border-cyan/60 hover:bg-cyan/[0.05] disabled:opacity-60"
+                >
+                  <ImageUp className="size-4" />
+                  {busy ? t('sampling') : t('uploadButton')}
+                </button>
+                <p className="text-xs leading-snug text-muted-foreground">{t('uploadHint')}</p>
+              </section>
             </TabsContent>
 
-            <TabsContent value="look" className="space-y-6">
+            <TabsContent value="look" className="space-y-5">
+              <EnvironmentPicker />
               <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t('droneColor')}>
                 <span className="mr-1 text-[0.8125rem] text-foreground/85">{t('droneColor')}</span>
                 <Chip active={show.look.colorMode === 'formation'} onClick={() => setFleetColor('formation')}>
@@ -253,9 +284,13 @@ export function QuickControls({ className }: { className?: string }) {
                 ))}
                 <ColorSwatch label={t('customColor')} value={fleetColor ?? show.look.colors[0]} onChange={(color) => setFleetColor('solid', color)} />
               </div>
-              <DroneSection />
-              <SkySection />
-              <FireworksSection />
+              <div className="space-y-2">
+                <DroneSection fold defaultOpen />
+                <ColorSection fold />
+                <SkySection fold />
+                <FireworksSection fold />
+                <VenueSection fold />
+              </div>
             </TabsContent>
 
             <TabsContent value="flight" className="space-y-6">

@@ -79,7 +79,18 @@
     "studioPitch": "タイムライン、隊形ごとのタイミング、カメラショット、書き出しが必要ですか？",
     "openStudio": "スタジオを開く",
     "resetAll": "すべての設定をリセット",
-    "autosaved": "この端末に自動保存されます"
+    "autosaved": "この端末に自動保存されます",
+    "about": {
+      "show": "ショーと視点を選び、隊形を切り替えます。",
+      "create": "自分の隊形を追加します。ドローンがそのまま飛んでいきます。",
+      "look": "ドローンと夜空の見た目。",
+      "flight": "飛行ルール：速さと機体同士の間隔。"
+    },
+    "typeIt": "1 · 入力する",
+    "typeHint": "形の名前はその形に、それ以外は空に文字として描かれます。",
+    "pickShape": "2 · 形を選ぶ",
+    "uploadIt": "3 · 自分のファイルを使う",
+    "uploadButton": "画像・SVG・.glb を選ぶ"
   },
   "Options": {
     "shape": {
@@ -193,6 +204,20 @@
       "wave": "さざ波",
       "pulse": "呼吸",
       "sway": "ゆらぎ"
+    },
+    "fireworkStyle": {
+      "mixed": "ミックス",
+      "peony": "牡丹",
+      "willow": "柳",
+      "ring": "リング"
+    },
+    "environment": {
+      "lakeside": "湖畔の夕暮れ",
+      "city": "都会の屋上",
+      "festival": "フェスティバル",
+      "aurora": "オーロラの夜",
+      "deep-space": "深宇宙",
+      "blackout": "ブラックアウト"
     }
   },
   "Gallery": {
@@ -608,6 +633,24 @@
     "fireworksSize": "開花の大きさ",
     "fireworksColors": "色",
     "off": "オフ",
-    "reset": "リセット"
+    "reset": "リセット",
+    "starTwinkle": "星のまたたき",
+    "milkyWay": "天の川",
+    "fireworksStyle": "開き方",
+    "fireworksHeight": "打ち上げの高さ",
+    "venue": "会場の照明",
+    "beams": "サーチライト",
+    "groundGlow": "地面の光",
+    "skyGroup": "空と星",
+    "environmentPresets": "環境",
+    "environmentHint": "ワンクリックで空・地面・照明・花火を設定。下で微調整できます。",
+    "about": {
+      "fleet": "機体数と、機体・ライトの大きさ。",
+      "color": "単色、グラデーション、または隊形ごとの色。",
+      "realism": "本物のショーと同じ最高速度と安全間隔。",
+      "sky": "空、地面、星、夜の暗さ。",
+      "fireworks": "ショーの後ろの花火：数、種類、色。",
+      "venue": "サーチライトと地面の光。"
+    }
   }
 }

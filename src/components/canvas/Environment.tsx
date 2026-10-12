@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
-import { BoxGeometry, type InstancedMesh, MeshBasicNodeMaterial, Object3D, PlaneGeometry } from 'three/webgpu';
+import { useFrame } from '@react-three/fiber';
+import { useEffect, useMemo, useRef } from 'react';
+import { BoxGeometry, CircleGeometry, CylinderGeometry, type Group, type InstancedMesh, MeshBasicNodeMaterial, Object3D, PlaneGeometry } from 'three/webgpu';
 import { floor, mx_cell_noise_float, normalLocal, positionWorld, smoothstep, step, uniform, uv, vec3 } from 'three/tsl';
 import { padLayout } from '@/engine/formations/fit';
 import { seededRng } from '@/engine/formations/sample';
-import { FIREWORK_COUNT, FIREWORK_SHELLS, createFireworksMaterial } from '@/engine/materials/fireworks';
+import { FIREWORK_COUNT, FIREWORK_SHELLS, FIREWORK_STYLE, createFireworksMaterial } from '@/engine/materials/fireworks';
 import { createSkyMaterial, horizonColor } from '@/engine/materials/sky';
+import { createBeamMaterial, createGroundGlowMaterial } from '@/engine/materials/venue';
 import { createWaterMaterial } from '@/engine/materials/water';
 import type { QualityTier, SceneSettings } from '@/engine/types';
 
@@ -88,17 +90,19 @@ const GOLD = ['#ffd27a', '#fff4d6', '#ffb84d'];
 export function Fireworks({ scene, colors }: { scene: SceneSettings; colors: string[] }) {
   const fireworks = useMemo(() => createFireworksMaterial(), []);
   const geometry = useMemo(() => new PlaneGeometry(1, 1), []);
-  const { intensity, size, palette } = scene.fireworks;
+  const { intensity, size, palette, style, height } = scene.fireworks;
   useEffect(() => {
     const u = fireworks.uniforms;
     u.active.value = Math.ceil(intensity * FIREWORK_SHELLS);
     u.scale.value = size;
+    u.height.value = height;
+    u.style.value = FIREWORK_STYLE[style];
     u.rainbow.value = palette === 'rainbow' ? 1 : 0;
     const stops = palette === 'gold' ? GOLD : colors;
     u.colorA.value.set(stops[0]);
     u.colorB.value.set(stops[1] ?? stops[0]);
     u.colorC.value.set(stops[2] ?? stops[0]);
-  }, [fireworks, intensity, size, palette, colors]);
+  }, [fireworks, intensity, size, palette, style, height, colors]);
   useEffect(
     () => () => {
       fireworks.material.dispose();
@@ -108,6 +112,75 @@ export function Fireworks({ scene, colors }: { scene: SceneSettings; colors: str
   );
   if (intensity <= 0) return null;
   return <mesh geometry={geometry} material={fireworks.material} count={FIREWORK_COUNT} frustumCulled={false} renderOrder={1} />;
+}
+
+/** Where the searchlights stand: either side of the launch pad, a few rows deep. [x, z, lean, phase] */
+const BEAMS: [number, number, number, number][] = [
+  [-30, 10, 0.5, 0],
+  [-22, -4, 0.3, 1.7],
+  [22, -4, -0.3, 3.1],
+  [30, 10, -0.5, 4.4],
+  [-38, -16, 0.6, 2.3],
+  [38, -16, -0.6, 5.2],
+];
+
+/**
+ * Show-site lighting: searchlights sweeping slowly from beside the pad, and the pool of
+ * coloured light the fleet throws on the ground. Both take the show's colours.
+ */
+export function VenueLights({ scene, colors }: { scene: SceneSettings; colors: string[] }) {
+  const group = useRef<Group>(null);
+  const { beams, glow } = scene.venue;
+  const lights = useMemo(
+    () => ({
+      beams: BEAMS.map(() => createBeamMaterial()),
+      glow: createGroundGlowMaterial(),
+      cone: new CylinderGeometry(2.1, 0.1, 70, 20, 1, true).translate(0, 35, 0),
+      disc: new CircleGeometry(36, 48).rotateX(-Math.PI / 2),
+    }),
+    [],
+  );
+  useEffect(() => {
+    lights.beams.forEach((beam, i) => {
+      beam.uniforms.color.value.set(colors[i % colors.length]);
+      beam.uniforms.intensity.value = beams;
+    });
+    lights.glow.uniforms.color.value.set(colors[0]);
+    lights.glow.uniforms.intensity.value = glow;
+  }, [lights, beams, glow, colors]);
+  useEffect(
+    () => () => {
+      lights.beams.forEach((beam) => beam.material.dispose());
+      lights.glow.material.dispose();
+      lights.cone.dispose();
+      lights.disc.dispose();
+    },
+    [lights],
+  );
+
+  // Each beam leans away from the pad and sweeps on its own slow rhythm.
+  useFrame(({ clock }) => {
+    group.current?.children.forEach((beam, i) => {
+      const [, , lean, phase] = BEAMS[i];
+      beam.rotation.z = lean + Math.sin(clock.elapsedTime * 0.22 + phase) * 0.28;
+      beam.rotation.x = Math.sin(clock.elapsedTime * 0.17 + phase * 1.3) * 0.22 - 0.1;
+    });
+  });
+
+  return (
+    <>
+      {beams > 0 && (
+        <group ref={group}>
+          {BEAMS.map(([x, z], i) => (
+            <mesh key={i} geometry={lights.cone} material={lights.beams[i].material} position={[x, 0.3, z]} frustumCulled={false} renderOrder={1} />
+          ))}
+        </group>
+      )}
+      {glow > 0 && scene.ground !== 'none' && (
+        <mesh geometry={lights.disc} material={lights.glow.material} position={[0, 0.08, 3]} renderOrder={1} />
+      )}
+    </>
+  );
 }
 
 /** The barge the fleet lifts off from: a dark deck with a thin lit rim, sized to the fleet. */

@@ -79,7 +79,18 @@
     "random": "Random",
     "view": "View",
     "resetAll": "Reset all settings",
-    "autosaved": "Saved on this device automatically"
+    "autosaved": "Saved on this device automatically",
+    "about": {
+      "show": "Pick a show and a viewpoint, then jump between its formations.",
+      "create": "Add your own formation. The drones fly straight into it.",
+      "look": "How the drones and the night around them look.",
+      "flight": "The rules of flight: how fast, and how far apart."
+    },
+    "typeIt": "1 · Type it",
+    "typeHint": "A shape name becomes that shape. Anything else is written in the sky.",
+    "pickShape": "2 · Or pick a shape",
+    "uploadIt": "3 · Or use your own file",
+    "uploadButton": "Choose a picture, SVG or .glb"
   },
   "Options": {
     "shape": {
@@ -193,6 +204,20 @@
       "wave": "Ripple",
       "pulse": "Breathe",
       "sway": "Sway"
+    },
+    "fireworkStyle": {
+      "mixed": "Mixed",
+      "peony": "Peony",
+      "willow": "Willow",
+      "ring": "Ring"
+    },
+    "environment": {
+      "lakeside": "Lakeside dusk",
+      "city": "City rooftop",
+      "festival": "Festival",
+      "aurora": "Aurora night",
+      "deep-space": "Deep space",
+      "blackout": "Blackout"
     }
   },
   "Gallery": {
@@ -608,6 +633,24 @@
     "fireworksSize": "Burst size",
     "fireworksColors": "Colours",
     "off": "Off",
-    "reset": "Reset"
+    "reset": "Reset",
+    "starTwinkle": "Star twinkle",
+    "milkyWay": "Milky Way",
+    "fireworksStyle": "Burst type",
+    "fireworksHeight": "Burst height",
+    "venue": "Venue lighting",
+    "beams": "Searchlights",
+    "groundGlow": "Light on the ground",
+    "skyGroup": "Sky and stars",
+    "environmentPresets": "Environment",
+    "environmentHint": "One click sets the sky, ground, lighting and fireworks. Fine-tune below.",
+    "about": {
+      "fleet": "How many drones, and how big they and their lights are.",
+      "color": "One colour, a gradient, or each formation's own colours.",
+      "realism": "Top speed and safety gap, as on a real show.",
+      "sky": "Sky, ground, stars and how dark the night is.",
+      "fireworks": "Bursts behind the show: how many, what kind, what colour.",
+      "venue": "Searchlights and the glow on the ground."
+    }
   }
 }

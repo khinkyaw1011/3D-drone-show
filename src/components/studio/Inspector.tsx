@@ -6,7 +6,7 @@ import type { z } from 'zod';
 import { FieldGroup, SegmentedField, SelectField, SliderField, SwitchField, TextField } from '@/components/controls/fields';
 import { SchemaForm } from '@/components/controls/SchemaForm';
 import { FormationThumb } from '@/components/show/FormationThumb';
-import { ColorControls, ColorSection, DroneSection, FireworksSection, FlightSection, SkySection, useSettings } from '@/components/show/settings';
+import { ColorControls, ColorSection, DroneSection, EnvironmentPicker, FireworksSection, FlightSection, SkySection, VenueSection, useSettings } from '@/components/show/settings';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getSource } from '@/engine/formations/registry';
 import { CAMERA_PRESETS, EASE_CURVES, EFFECTS, MOTIONS, ORDERS, SIM_CURVES } from '@/engine/presets/schema';
@@ -149,11 +149,11 @@ export function Inspector() {
 
   return (
     <Tabs value={tab} onValueChange={(value) => run({ type: 'ui.set', patch: { inspectorTab: value } })} className="flex h-full min-h-0 flex-col gap-0">
-      <TabsList className="mx-2 mt-2 grid h-auto shrink-0 grid-cols-6 gap-0.5 bg-transparent p-0">
+      <TabsList className="mx-2 mt-2 grid !h-auto shrink-0 grid-cols-6 gap-0.5 bg-transparent p-0">
         {INSPECTOR_TABS.map((value) => {
           const Icon = TAB_ICONS[value];
           return (
-            <TabsTrigger key={value} value={value} className="h-auto min-w-0 flex-col gap-1 rounded-lg px-0.5 py-2 text-[0.625rem] leading-none data-[state=active]:bg-white/10 data-[state=active]:text-cyan">
+            <TabsTrigger key={value} value={value} className="!h-auto min-w-0 flex-col gap-1 rounded-lg px-0.5 py-2 text-[0.625rem] leading-none data-[state=active]:bg-white/10 data-[state=active]:text-cyan">
               <Icon className="size-4" aria-hidden="true" />
               <span className="w-full truncate">{t(`tabs.${value}`)}</span>
             </TabsTrigger>
@@ -188,8 +188,10 @@ export function Inspector() {
         </TabsContent>
 
         <TabsContent value="scene" className="space-y-6">
+          <EnvironmentPicker />
           <SkySection />
           <FireworksSection />
+          <VenueSection />
         </TabsContent>
 
         <TabsContent value="camera" className="space-y-6">

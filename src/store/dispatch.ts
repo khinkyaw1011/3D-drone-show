@@ -131,6 +131,7 @@ const handlers: CommandHandlers = {
         bloom: { ...s.show.scene.bloom, ...p.bloom },
         physics: { ...s.show.scene.physics, ...p.physics },
         fireworks: { ...s.show.scene.fireworks, ...p.fireworks },
+        venue: { ...s.show.scene.venue, ...p.venue },
       });
     }),
   'ui.set': ({ patch }) =>
