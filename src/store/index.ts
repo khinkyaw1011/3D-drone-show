@@ -12,7 +12,7 @@ import { type UiSlice, initialUiSlice } from './slices/ui';
 export type StudioState = ShowSlice & PlaybackSlice & UiSlice & PresetsSlice;
 
 /** Bump with any change to the persisted shape, and extend `migratePersisted` (+ its test). */
-export const PERSIST_VERSION = 1;
+export const PERSIST_VERSION = 2;
 export const PERSIST_KEY = 'skyloom';
 
 type Persisted = Pick<StudioState, 'show' | 'userPresets'> & { ui: StudioState['ui'] };
@@ -64,6 +64,9 @@ export const useStudio = create<StudioState>()(
       storage: createJSONStorage(() => localStorage),
       partialize: (state): Persisted => ({ show: state.show, userPresets: state.userPresets, ui: state.ui }),
       migrate: migratePersisted,
+      // Always re-validate what comes out of storage, even at the current version: the schema fills in
+      // settings added since the show was saved, so a stored show can never be missing a field.
+      merge: (persisted, current) => ({ ...current, ...migratePersisted(persisted) }),
     },
   ),
 );

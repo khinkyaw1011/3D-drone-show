@@ -82,3 +82,21 @@ describe('reset to defaults', () => {
     expect(show.keyframes).toHaveLength(formations);
   });
 });
+
+describe('shows saved before a setting existed', () => {
+  it('gain the new settings with their defaults when loaded', async () => {
+    const { migratePersisted } = await import('@/store');
+    // A show as an older build stored it: no fireworks, flight rules, drone size or star size.
+    const old = structuredClone(BUILTIN_SHOWS[0]) as unknown as { scene: Record<string, unknown>; look: Record<string, unknown>; flight?: unknown };
+    delete old.scene.fireworks;
+    delete old.scene.starSize;
+    delete old.scene.ambient;
+    delete old.look.body;
+    delete old.flight;
+    const { show } = migratePersisted({ show: old });
+    expect(show.scene.fireworks).toEqual({ intensity: 0, size: 1, palette: 'show' });
+    expect(show.flight.realistic).toBe(true);
+    expect(show.look.body).toBeGreaterThan(0);
+    expect(show.scene.starSize).toBeGreaterThan(0);
+  });
+});

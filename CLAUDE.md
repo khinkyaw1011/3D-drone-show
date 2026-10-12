@@ -19,7 +19,7 @@ Skyloom is a virtual drone-show studio (Next.js App Router, three.js WebGPU/TSL,
 - New formation types are a `FormationSource` registered in `engine/formations/registry.ts`. Their settings UI is generated from the zod `inputSchema` by `SchemaForm`; add labels under `Fields.*` / `Options.*` in all three message files.
 - All formations go through `toFormation` (fit to the show volume, then the spacing pass). Do not bypass it: drone and LED sizes assume that spacing.
 - Persistence only through zustand `persist` (`partialize`, `version`, `migrate`). Undo/redo only through zundo. Timing and easing only through GSAP.
-- Schema changes: bump `SHOW_VERSION` / `PERSIST_VERSION`, extend `migrateShow` / `migratePersisted`, add a test.
+- Schema changes: bump `SHOW_VERSION` / `PERSIST_VERSION`, extend `migrateShow` / `migratePersisted`, add a test. New fields must have a schema default: stored state is re-parsed on every load (`merge` in `src/store/index.ts`), which is what fills them in for shows saved earlier.
 - The path function in `engine/sim/path.ts` is implemented three times (TSL in `GpuSimulator`, JS in `CpuSimulator`, and the planner). Change all three together or the pre-flight separation guarantee is void.
 - WebGPU allows 8 storage buffers per shader stage; `SimBuffers` is at that limit.
 - Heavy work (sampling, model parsing) runs in the comlink worker (`src/workers/sampler.worker.ts`). Keep `./worker-shim` as its first import.
