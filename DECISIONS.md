@@ -31,6 +31,10 @@ Where the build departs from, or sharpens, the original spec, and why.
 - **Reset to defaults** (`settings.reset`) re-parses the zod schemas with empty input, so defaults are defined in exactly one place.
 - **Seeded sampling** so a show regenerates identically on every device.
 
+- **Every drone is a 3D airframe; the LED is a lamp on it.** There is no light-only mode. That makes drawing, not simulation, the limit, so fleet size is capped per device tier in one config (`FLEET` / `TIERS` in `engine/renderer/capabilities.ts`: 600 / 1,500 / 3,000) with a minimum of 100. A frame-rate watchdog lowers the ceiling at runtime (to 60 % of the current fleet) if the device averages under 24 fps. The schema still accepts up to 20,000 so older saved shows load; the count is clamped when flown.
+- **Paused means still.** The simulator and the shaders run on the player's show clock, which only advances while playing, and planned routes carry no noise. A paused fleet holds position exactly; only propellers and LED twinkle keep going.
+- **Formation movement** (flap, wave, pulse, sway) is a smooth displacement field applied in the vertex shader while a formation holds. Neighbours move together, but it is not part of route planning, so the separation figure does not cover it.
+
 ## Product
 
 - `/` is the live show with a control deck (requested), not the scroll-driven hero in the spec. `/studio` is the full editor on the same persisted show.
@@ -42,4 +46,5 @@ Where the build departs from, or sharpens, the original spec, and why.
 
 - Formation and preset *names* inside shows are data, not translated.
 - Checked in headless Chrome during the build: every route in all three locales, WebGPU rendering, live fly-to, fireworks, and that the WebGL2 fallback (`?webgl`) loads without errors. **Not** exercised end to end: video export, Rapier physics moments in motion, the touch joystick, and frame rate on real phones or with 10k+ drones.
-- Path planning runs on the main thread (about 0.2–0.4 s for a 1,200-drone show). Large fleets get fewer planner iterations.
+- Path planning runs on the main thread (about 0.2–0.4 s for a 1,200-drone show).
+- State: every user action goes through `dispatch`, including interface state (`ui.set`). The one exception is `LiveShow`, which mirrors what the player reports (time, capabilities, device ceiling) into the store with `mutate`. Large fleets get fewer planner iterations.

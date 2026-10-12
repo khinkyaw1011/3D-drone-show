@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, Download, FilePlus2, FolderOpen, HelpCircle, Link2, PanelLeft, PanelRight, Redo2, RotateCcw, Save, Trash2, Undo2, Upload } from 'lucide-react';
+import { ChevronDown, Download, FilePlus2, FolderOpen, HelpCircle, Keyboard, Link2, PanelLeft, PanelRight, Redo2, RotateCcw, Save, Trash2, Undo2, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRef } from 'react';
 import { toast } from 'sonner';
@@ -23,7 +23,7 @@ import { parseShow } from '@/engine/presets/schema';
 import { Link } from '@/i18n/navigation';
 import { downloadBlob, safeFilename } from '@/lib/export';
 import { SHARE_SOFT_LIMIT, shareHash } from '@/lib/share';
-import { mutate, useStudio } from '@/store';
+import { useStudio } from '@/store';
 
 function IconButton({ label, children, ...props }: React.ComponentProps<typeof Button> & { label: string }) {
   return (
@@ -58,9 +58,10 @@ export function useShareLink() {
 interface TopBarProps {
   onExport: () => void;
   onHelp: () => void;
+  onTour: () => void;
 }
 
-export function TopBar({ onExport, onHelp }: TopBarProps) {
+export function TopBar({ onExport, onHelp, onTour }: TopBarProps) {
   const t = useTranslations('Studio.top');
   const { run } = useShowActions();
   const share = useShareLink();
@@ -171,15 +172,19 @@ export function TopBar({ onExport, onHelp }: TopBarProps) {
           <Redo2 />
         </IconButton>
         <span className="mx-1 hidden h-5 w-px bg-line lg:block" />
-        <IconButton label={t('toggleLibrary')} className="hidden lg:inline-flex" onClick={() => mutate((s) => void (s.ui.leftOpen = !s.ui.leftOpen))}>
+        <IconButton label={t('toggleLibrary')} className="hidden lg:inline-flex" onClick={() => run({ type: 'ui.set', patch: { leftOpen: !useStudio.getState().ui.leftOpen } })}>
           <PanelLeft />
         </IconButton>
-        <IconButton label={t('toggleInspector')} className="hidden lg:inline-flex" onClick={() => mutate((s) => void (s.ui.rightOpen = !s.ui.rightOpen))}>
+        <IconButton label={t('toggleInspector')} className="hidden lg:inline-flex" onClick={() => run({ type: 'ui.set', patch: { rightOpen: !useStudio.getState().ui.rightOpen } })}>
           <PanelRight />
         </IconButton>
         <IconButton label={t('shortcuts')} className="hidden sm:inline-flex" onClick={onHelp}>
-          <HelpCircle />
+          <Keyboard />
         </IconButton>
+        <Button variant="ghost" size="sm" onClick={onTour}>
+          <HelpCircle />
+          <span className="hidden md:inline">{t('guide')}</span>
+        </Button>
         <LocaleSwitcher compact className="hidden md:flex" />
         <Button variant="outline" size="sm" onClick={share}>
           <Link2 />

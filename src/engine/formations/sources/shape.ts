@@ -36,6 +36,7 @@ export const SHAPES = [
   'diamond',
   'pyramid',
   'tornado',
+  'butterfly',
 ] as const;
 export type ShapeName = (typeof SHAPES)[number];
 
@@ -82,6 +83,19 @@ function starShape(points = 5, inner = 0.42): Shape {
   return s;
 }
 
+/** One side of a butterfly: a large upper wing and a smaller lower wing, as closed curves from the body. */
+function butterflyWings(side: 1 | -1): Shape[] {
+  const upper = new Shape();
+  upper.moveTo(0.04 * side, 0.1);
+  upper.bezierCurveTo(0.35 * side, 0.95, 1.25 * side, 1.05, 1.15 * side, 0.35);
+  upper.bezierCurveTo(1.1 * side, -0.05, 0.45 * side, -0.05, 0.04 * side, 0.02);
+  const lower = new Shape();
+  lower.moveTo(0.04 * side, -0.02);
+  lower.bezierCurveTo(0.6 * side, -0.02, 0.95 * side, -0.35, 0.72 * side, -0.78);
+  lower.bezierCurveTo(0.5 * side, -1.05, 0.12 * side, -0.6, 0.04 * side, -0.12);
+  return [upper, lower];
+}
+
 /** Five notched petals: the cherry blossom silhouette. */
 function blossomShape(): Shape {
   return polarShape((t) => {
@@ -108,6 +122,13 @@ const GEOMETRY: Partial<Record<ShapeName, () => BufferGeometry>> = {
     for (let i = 0; i < pos.count; i++) pos.setZ(i, Math.hypot(pos.getX(i), pos.getY(i)) ** 2 * 0.62 - 0.2);
     // Tilt it back like a flower facing the crowd, so the bowl has real depth from every side.
     return g.rotateX(-0.5);
+  },
+  // Wings raised in a shallow V, so the flap movement has something to beat.
+  butterfly: () => {
+    const g = new ShapeGeometry([...butterflyWings(1), ...butterflyWings(-1)], 32);
+    const pos = g.attributes.position;
+    for (let i = 0; i < pos.count; i++) pos.setZ(i, Math.abs(pos.getX(i)) * 0.35);
+    return g.rotateX(-0.9);
   },
   diamond: () => new OctahedronGeometry(1, 0).scale(0.8, 1.15, 0.8),
   pyramid: () => new ConeGeometry(1, 1.35, 4, 6).rotateY(Math.PI / 4),

@@ -40,4 +40,4 @@ Append `?webgl` to a URL to force the WebGL2 fallback.
 
 ## Requirements
 
-A browser with WebGPU gives the full experience (up to 20,000 drones). Without it the show runs on WebGL2 with a smaller fleet. Video export needs WebCodecs.
+A browser with WebGPU gives the full experience (up to 3,000 drones, each a 3D quadcopter). Without it the show runs on WebGL2 with a smaller fleet, and any device that cannot hold a smooth frame rate gets its fleet reduced automatically. Video export needs WebCodecs.

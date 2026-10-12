@@ -1,179 +1,179 @@
 'use client';
 
-import { formatNumber } from '@/lib/utils';
-import { Minus, Plus } from 'lucide-react';
+import { Camera, MoonStar, MousePointerClick, Shapes, Sparkles, Wand2, Wind } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { ColorSwatch, FieldGroup, FieldShell, ResetButton, SegmentedField, SelectField, SliderField, SwitchField, TextField } from '@/components/controls/fields';
-import { Button } from '@/components/ui/button';
+import type { z } from 'zod';
+import { FieldGroup, SegmentedField, SelectField, SliderField, SwitchField, TextField } from '@/components/controls/fields';
+import { SchemaForm } from '@/components/controls/SchemaForm';
+import { FormationThumb } from '@/components/show/FormationThumb';
+import { ColorControls, ColorSection, DroneSection, FireworksSection, FlightSection, SkySection, useSettings } from '@/components/show/settings';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AXES, CAMERA_PRESETS, FIREWORK_PALETTES, COLOR_MODES, EASE_CURVES, EFFECTS, GROUNDS, ORDERS, SIM_CURVES, SKY_PRESETS } from '@/engine/presets/schema';
-import type { ResetScope } from '@/engine/commands/commands';
-import type { DroneLook, Keyframe, SceneSettings } from '@/engine/types';
-import { useShowActions } from '@/components/show/useShowActions';
-import { mutate, useStudio } from '@/store';
-import type { InspectorTab } from '@/store/slices/ui';
+import { getSource } from '@/engine/formations/registry';
+import { CAMERA_PRESETS, EASE_CURVES, EFFECTS, MOTIONS, ORDERS, SIM_CURVES } from '@/engine/presets/schema';
+import type { Keyframe } from '@/engine/types';
+import { useStudio } from '@/store';
+import { INSPECTOR_TABS, type InspectorTab } from '@/store/slices/ui';
 
-const TABS: InspectorTab[] = ['drones', 'motion', 'scene', 'camera', 'fx'];
+const TAB_ICONS: Record<InspectorTab, typeof Shapes> = { formation: Shapes, drones: Sparkles, flight: Wind, scene: MoonStar, camera: Camera, fx: Wand2 };
 const INHERIT = '__inherit';
+/** Inputs owned by upload UI or baked data, never shown as form fields. */
+const HIDDEN_FIELDS = ['src', 'name', 'svg', 'p', 'c', 'label'];
 /** GSAP ease names contain dots and brackets, which message keys may not. */
 const messageKey = (value: string) => value.replace(/[^a-zA-Z0-9]/g, '_');
+const seconds = (v: number) => `${v.toFixed(1)} s`;
 
-/** Colour mode + its stops; used for the show look and for a keyframe's override. */
-function ColorControls({ look, onChange }: { look: DroneLook; onChange: (patch: Partial<DroneLook>) => void }) {
+type KeyframePatch = Partial<Omit<Keyframe, 'transition' | 'look'>> & { transition?: Partial<Keyframe['transition']>; look?: Keyframe['look'] | null };
+
+/** Everything about the selected formation: its shape, and how the fleet flies into it. */
+function FormationTab() {
   const t = useTranslations('Studio.inspector');
   const tOptions = useTranslations('Options');
-  const stops = look.colorMode === 'solid' ? 1 : look.colors.length;
-  const usesStops = ['solid', 'gradient', 'palette'].includes(look.colorMode);
+  const { run } = useSettings();
+  const keyframe = useStudio((s) => s.show.keyframes.find((k) => k.id === s.selectedKeyframeId));
+  const look = useStudio((s) => s.show.look);
+  const realistic = useStudio((s) => s.show.flight.realistic);
+
+  if (!keyframe)
+    return (
+      <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-line px-4 py-10 text-center">
+        <MousePointerClick className="size-6 text-muted-foreground" aria-hidden="true" />
+        <p className="text-sm text-paper/80">{t('selectKeyframe')}</p>
+      </div>
+    );
+
+  const source = getSource(keyframe.formation.sourceId);
+  const set = (patch: KeyframePatch) => run({ type: 'keyframe.update', id: keyframe.id, patch });
+  const curve = keyframe.transition.curve;
+
   return (
     <>
-      <SelectField
-        label={t('colorMode')}
-        value={look.colorMode}
-        options={COLOR_MODES.map((value) => ({ value, label: tOptions(`colorMode.${value}`) }))}
-        onChange={(colorMode) => onChange({ colorMode, colors: colorMode !== 'solid' && look.colors.length < 2 ? [...look.colors, '#7cf7e4'] : look.colors })}
-      />
-      {usesStops && (
-        <FieldShell label={t('colors')}>
-          <div className="flex items-center gap-2">
-            {look.colors.slice(0, stops).map((color, i) => (
-              <ColorSwatch
-                key={i}
-                label={t('colorStop', { index: i + 1 })}
-                value={color}
-                onChange={(hex) => onChange({ colors: look.colors.map((c, j) => (j === i ? hex : c)) })}
-              />
-            ))}
-            {look.colorMode !== 'solid' && (
-              <>
-                <Button variant="outline" size="icon-sm" aria-label={t('addColor')} disabled={look.colors.length >= 3} onClick={() => onChange({ colors: [...look.colors, '#ffffff'] })}>
-                  <Plus />
-                </Button>
-                <Button variant="outline" size="icon-sm" aria-label={t('removeColor')} disabled={look.colors.length <= 2} onClick={() => onChange({ colors: look.colors.slice(0, -1) })}>
-                  <Minus />
-                </Button>
-              </>
-            )}
-          </div>
-        </FieldShell>
-      )}
-      {look.colorMode === 'gradient' && (
-        <SegmentedField
-          label={t('axis')}
-          value={look.gradientAxis}
-          options={AXES.map((value) => ({ value, label: value.toUpperCase() }))}
-          onChange={(gradientAxis) => onChange({ gradientAxis })}
+      <FieldGroup title={t('shapeGroup')}>
+        <FormationThumb
+          sourceId={keyframe.formation.sourceId}
+          input={keyframe.formation.input}
+          look={{ ...look, ...keyframe.look }}
+          points={1400}
+          debounceMs={140}
+          label={keyframe.name}
+          className="aspect-[16/10] border border-line"
         />
-      )}
+        <TextField label={t('name')} value={keyframe.name} maxLength={40} onChange={(name) => name.trim() && set({ name })} />
+        <SchemaForm
+          key={`${keyframe.id}:${source.id}`}
+          schema={source.inputSchema as unknown as z.ZodObject}
+          value={keyframe.formation.input as Record<string, unknown>}
+          hidden={HIDDEN_FIELDS}
+          onChange={(input) => run({ type: 'formation.update', id: keyframe.id, input })}
+        />
+        <SliderField label={t('spin')} value={keyframe.spin} min={-60} max={60} step={1} format={(v) => `${v.toFixed(0)}°/s`} onChange={(spin) => set({ spin })} />
+      </FieldGroup>
+
+      <FieldGroup title={t('motionGroup')}>
+        <SelectField
+          label={t('motion')}
+          value={keyframe.motion}
+          options={MOTIONS.map((value) => ({ value, label: tOptions(`motion.${value}`) }))}
+          onChange={(motion) => set({ motion })}
+        />
+        {keyframe.motion !== 'none' && (
+          <SliderField label={t('motionAmount')} value={keyframe.motionAmount} min={0} max={1} onChange={(motionAmount) => set({ motionAmount })} />
+        )}
+      </FieldGroup>
+
+      <FieldGroup title={t('flightGroup')}>
+        <SelectField
+          label={t('curve')}
+          value={curve}
+          options={[...EASE_CURVES, ...SIM_CURVES].map((value) => ({ value, label: tOptions(`curve.${messageKey(value)}`) }))}
+          onChange={(next) => set({ transition: { curve: next, effect: next === 'physics' ? (keyframe.transition.effect ?? 'drop') : undefined } })}
+        />
+        {curve === 'physics' && (
+          <SegmentedField
+            label={t('effect')}
+            value={keyframe.transition.effect ?? 'drop'}
+            options={EFFECTS.map((value) => ({ value, label: tOptions(`effect.${value}`) }))}
+            onChange={(effect) => set({ transition: { effect } })}
+          />
+        )}
+        <SliderField
+          label={t('duration')}
+          value={keyframe.transition.duration}
+          min={0.2}
+          max={20}
+          step={0.1}
+          format={seconds}
+          hint={realistic ? t('durationHint') : undefined}
+          onChange={(duration) => set({ transition: { duration } })}
+        />
+        <SliderField label={t('hold')} value={keyframe.hold} min={0} max={30} step={0.1} format={seconds} onChange={(hold) => set({ hold })} />
+        <SliderField label={t('stagger')} value={keyframe.transition.stagger} min={0} max={1} onChange={(stagger) => set({ transition: { stagger } })} />
+        <SelectField
+          label={t('order')}
+          value={keyframe.transition.order}
+          options={ORDERS.map((value) => ({ value, label: tOptions(`order.${value}`) }))}
+          onChange={(order) => set({ transition: { order } })}
+        />
+      </FieldGroup>
+
+      <FieldGroup title={t('colorGroup')}>
+        <SwitchField
+          label={t('ownColors')}
+          hint={t('ownColorsHint')}
+          value={!!keyframe.look}
+          onChange={(on) => set({ look: on ? { colorMode: look.colorMode, colors: look.colors, gradientAxis: look.gradientAxis } : null })}
+        />
+        {keyframe.look && <ColorControls look={{ ...look, ...keyframe.look }} onChange={(patch) => set({ look: patch })} />}
+      </FieldGroup>
+
+      <FieldGroup title={t('cameraShot', { name: keyframe.name })}>
+        <SelectField
+          label={t('shot')}
+          value={keyframe.camera?.preset ?? INHERIT}
+          options={[{ value: INHERIT, label: t('inherit') }, ...CAMERA_PRESETS.map((value) => ({ value: value as string, label: tOptions(`camera.${value}`) }))]}
+          onChange={(preset) => set({ camera: preset === INHERIT ? undefined : { preset: preset as (typeof CAMERA_PRESETS)[number] } })}
+        />
+      </FieldGroup>
     </>
   );
 }
 
-/** Right rail: everything about how the show looks and moves. Every change is a command. */
+/** Right rail: the selected formation first, then everything show-wide. Every change is a command. */
 export function Inspector() {
   const t = useTranslations('Studio.inspector');
   const tOptions = useTranslations('Options');
-  const { run } = useShowActions();
-  const show = useStudio((s) => s.show);
+  const { run, setLook, setScene } = useSettings();
   const tab = useStudio((s) => s.ui.inspectorTab);
   const pushToy = useStudio((s) => s.ui.pushToy);
-  const maxDrones = useStudio((s) => s.runtime.capabilities?.tier.maxDrones ?? 20000);
-  const keyframe = useStudio((s) => s.show.keyframes.find((k) => k.id === s.selectedKeyframeId));
-
-  const { look, scene, flight } = show;
-  const setLook = (patch: Partial<DroneLook>) => run({ type: 'look.set', patch });
-  const setScene = (patch: Partial<Omit<SceneSettings, 'bloom' | 'physics' | 'fireworks'>> & { bloom?: Partial<SceneSettings['bloom']>; physics?: Partial<SceneSettings['physics']>; fireworks?: Partial<SceneSettings['fireworks']> }) =>
-    run({ type: 'scene.set', patch });
-  const setKeyframe = (patch: Partial<Omit<Keyframe, 'transition'>> & { transition?: Partial<Keyframe['transition']> }) =>
-    keyframe && run({ type: 'keyframe.update', id: keyframe.id, patch });
-  const curve = keyframe?.transition.curve ?? 'power3.inOut';
-  const reset = (scope: ResetScope) => <ResetButton label={t('reset')} onClick={() => run({ type: 'settings.reset', scope })} />;
+  const look = useStudio((s) => s.show.look);
+  const scene = useStudio((s) => s.show.scene);
 
   return (
-    <Tabs value={tab} onValueChange={(value) => mutate((s) => void (s.ui.inspectorTab = value as InspectorTab))} className="flex h-full min-h-0 flex-col gap-0">
-      <TabsList className="scrollbar-thin mx-3 mt-3 flex h-9 shrink-0 justify-start overflow-x-auto">
-        {TABS.map((value) => (
-          <TabsTrigger key={value} value={value} className="shrink-0 grow px-2.5 text-xs">
-            {t(`tabs.${value}`)}
-          </TabsTrigger>
-        ))}
+    <Tabs value={tab} onValueChange={(value) => run({ type: 'ui.set', patch: { inspectorTab: value } })} className="flex h-full min-h-0 flex-col gap-0">
+      <TabsList className="mx-2 mt-2 grid h-auto shrink-0 grid-cols-6 gap-0.5 bg-transparent p-0">
+        {INSPECTOR_TABS.map((value) => {
+          const Icon = TAB_ICONS[value];
+          return (
+            <TabsTrigger key={value} value={value} className="h-auto min-w-0 flex-col gap-1 rounded-lg px-0.5 py-2 text-[0.625rem] leading-none data-[state=active]:bg-white/10 data-[state=active]:text-cyan">
+              <Icon className="size-4" aria-hidden="true" />
+              <span className="w-full truncate">{t(`tabs.${value}`)}</span>
+            </TabsTrigger>
+          );
+        })}
       </TabsList>
+      <p className="mx-4 mt-2 border-t border-line pt-3 text-xs leading-snug text-muted-foreground">{t(`about.${tab}`)}</p>
+
       <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto p-4">
-        <TabsContent value="drones" className="space-y-6">
-          <FieldGroup title={t('fleet')} action={reset('look')}>
-            <SliderField
-              label={t('count')}
-              value={Math.min(show.droneCount, maxDrones)}
-              min={100}
-              max={maxDrones}
-              step={100}
-              format={(v) => v.toLocaleString('en-US')}
-              hint={t('countHint', { max: formatNumber(maxDrones) })}
-              onChange={(count) => run({ type: 'show.setDroneCount', count })}
-            />
-            <SliderField label={t('droneSize')} value={look.body} min={0.35} max={1} format={(v) => `${Math.round(v * 100)}%`} onChange={(body) => setLook({ body })} />
-            <SliderField label={t('size')} value={look.size} min={0.08} max={0.8} onChange={(size) => setLook({ size })} />
-            <SliderField label={t('glow')} value={look.glow} min={0} max={3} onChange={(glow) => setLook({ glow })} />
-            <SliderField label={t('twinkle')} value={look.twinkle} min={0} max={1} onChange={(twinkle) => setLook({ twinkle })} />
-            <SwitchField label={t('trails')} value={look.trails} onChange={(trails) => setLook({ trails })} />
-          </FieldGroup>
-          <FieldGroup title={t('color')}>
-            <ColorControls look={look} onChange={setLook} />
-          </FieldGroup>
+        <TabsContent value="formation" className="space-y-6">
+          <FormationTab />
         </TabsContent>
 
-        <TabsContent value="motion" className="space-y-6">
-          {keyframe ? (
-            <FieldGroup title={t('transitionInto', { name: keyframe.name })}>
-              <TextField label={t('name')} value={keyframe.name} maxLength={40} onChange={(name) => name.trim() && setKeyframe({ name })} />
-              <SelectField
-                label={t('curve')}
-                value={curve}
-                options={[...SIM_CURVES, ...EASE_CURVES].map((value) => ({ value, label: tOptions(`curve.${messageKey(value)}`) }))}
-                onChange={(next) => setKeyframe({ transition: { curve: next, effect: next === 'physics' ? (keyframe.transition.effect ?? 'drop') : undefined } })}
-              />
-              {curve === 'physics' && (
-                <SegmentedField
-                  label={t('effect')}
-                  value={keyframe.transition.effect ?? 'drop'}
-                  options={EFFECTS.map((value) => ({ value, label: tOptions(`effect.${value}`) }))}
-                  onChange={(effect) => setKeyframe({ transition: { effect } })}
-                />
-              )}
-              <SliderField
-                label={t('duration')}
-                value={keyframe.transition.duration}
-                min={0.2}
-                max={20}
-                step={0.1}
-                format={(v) => `${v.toFixed(1)} s`}
-                hint={flight.realistic ? t('durationHint') : undefined}
-                onChange={(duration) => setKeyframe({ transition: { duration } })}
-              />
-              <SliderField label={t('hold')} value={keyframe.hold} min={0} max={30} step={0.1} format={(v) => `${v.toFixed(1)} s`} onChange={(hold) => setKeyframe({ hold })} />
-              <SliderField label={t('stagger')} value={keyframe.transition.stagger} min={0} max={1} onChange={(stagger) => setKeyframe({ transition: { stagger } })} />
-              <SelectField
-                label={t('order')}
-                value={keyframe.transition.order}
-                options={ORDERS.map((value) => ({ value, label: tOptions(`order.${value}`) }))}
-                onChange={(order) => setKeyframe({ transition: { order } })}
-              />
-              <SliderField label={t('spin')} value={keyframe.spin} min={-60} max={60} step={1} format={(v) => `${v.toFixed(0)}°/s`} onChange={(spin) => setKeyframe({ spin })} />
-              <SwitchField
-                label={t('ownColors')}
-                hint={t('ownColorsHint')}
-                value={!!keyframe.look}
-                onChange={(on) => setKeyframe({ look: on ? { colorMode: look.colorMode, colors: look.colors, gradientAxis: look.gradientAxis } : null } as never)}
-              />
-              {keyframe.look && <ColorControls look={{ ...look, ...keyframe.look }} onChange={(patch) => setKeyframe({ look: patch })} />}
-            </FieldGroup>
-          ) : (
-            <p className="rounded-lg border border-dashed border-line p-4 text-sm text-muted-foreground">{t('selectKeyframe')}</p>
-          )}
-          <FieldGroup title={t('realism')} action={reset('flight')}>
-            <SwitchField label={t('realistic')} hint={t('realisticHint')} value={flight.realistic} onChange={(realistic) => run({ type: 'flight.set', patch: { realistic } })} />
-            <SliderField label={t('maxSpeed')} value={flight.maxSpeed} min={3} max={25} step={0.5} disabled={!flight.realistic} format={(v) => `${v.toFixed(1)} m/s`} onChange={(maxSpeed) => run({ type: 'flight.set', patch: { maxSpeed } })} />
-            <SliderField label={t('separation')} value={flight.separation} min={0.5} max={4} step={0.1} disabled={!flight.realistic} format={(v) => `${v.toFixed(1)} m`} onChange={(separation) => run({ type: 'flight.set', patch: { separation } })} />
-          </FieldGroup>
+        <TabsContent value="drones" className="space-y-6">
+          <DroneSection />
+          <ColorSection />
+        </TabsContent>
+
+        <TabsContent value="flight" className="space-y-6">
+          <FlightSection />
           <FieldGroup title={t('feel')}>
             <SliderField label={t('swarm')} value={look.swarm} min={0} max={1} onChange={(swarm) => setLook({ swarm })} />
             <SliderField label={t('hoverBob')} value={look.hoverBob} min={0} max={1} onChange={(hoverBob) => setLook({ hoverBob })} />
@@ -183,55 +183,27 @@ export function Inspector() {
             <SliderField label={t('restitution')} value={scene.physics.restitution} min={0} max={1} onChange={(restitution) => setScene({ physics: { restitution } })} />
             <SliderField label={t('windDirection')} value={scene.physics.windDirection} min={0} max={360} step={1} format={(v) => `${v.toFixed(0)}°`} onChange={(windDirection) => setScene({ physics: { windDirection } })} />
             <SliderField label={t('windStrength')} value={scene.physics.windStrength} min={0} max={20} step={0.1} onChange={(windStrength) => setScene({ physics: { windStrength } })} />
-            <SliderField label={t('maxBodies')} value={scene.physics.maxBodies} min={100} max={3000} step={100} format={(v) => v.toLocaleString('en-US')} onChange={(maxBodies) => setScene({ physics: { maxBodies } })} />
+            <SliderField label={t('maxBodies')} value={scene.physics.maxBodies} min={100} max={3000} step={100} onChange={(maxBodies) => setScene({ physics: { maxBodies } })} />
           </FieldGroup>
         </TabsContent>
 
         <TabsContent value="scene" className="space-y-6">
-          <FieldGroup title={t('environment')} action={reset('scene')}>
-            <SelectField label={t('sky')} value={scene.sky} options={SKY_PRESETS.map((value) => ({ value, label: tOptions(`sky.${value}`) }))} onChange={(sky) => setScene({ sky })} />
-            <SegmentedField label={t('ground')} value={scene.ground} options={GROUNDS.map((value) => ({ value, label: tOptions(`ground.${value}`) }))} onChange={(ground) => setScene({ ground })} />
-            <SliderField label={t('stars')} value={scene.stars} min={0} max={1} onChange={(stars) => setScene({ stars })} />
-            <SliderField label={t('starSize')} value={scene.starSize} min={0} max={1} onChange={(starSize) => setScene({ starSize })} />
-            <SliderField label={t('ambient')} value={scene.ambient} min={0} max={1} onChange={(ambient) => setScene({ ambient })} />
-            <SliderField label={t('fog')} value={scene.fog} min={0} max={1} onChange={(fog) => setScene({ fog })} />
-          </FieldGroup>
-          <FieldGroup title={t('fireworks')} action={reset('fireworks')}>
-            <SliderField
-              label={t('fireworksIntensity')}
-              value={scene.fireworks.intensity}
-              min={0}
-              max={1}
-              format={(v) => (v === 0 ? t('off') : `${Math.round(v * 100)}%`)}
-              onChange={(intensity) => setScene({ fireworks: { intensity } })}
-            />
-            <SliderField label={t('fireworksSize')} value={scene.fireworks.size} min={0.5} max={2} disabled={scene.fireworks.intensity === 0} onChange={(size) => setScene({ fireworks: { size } })} />
-            <SegmentedField
-              label={t('fireworksColors')}
-              value={scene.fireworks.palette}
-              options={FIREWORK_PALETTES.map((value) => ({ value, label: tOptions(`fireworks.${value}`) }))}
-              onChange={(palette) => setScene({ fireworks: { palette } })}
-            />
-          </FieldGroup>
+          <SkySection />
+          <FireworksSection />
         </TabsContent>
 
         <TabsContent value="camera" className="space-y-6">
           <FieldGroup title={t('cameraShow')}>
-            <SelectField label={t('cameraPreset')} value={scene.cameraPreset} options={CAMERA_PRESETS.map((value) => ({ value, label: tOptions(`camera.${value}`) }))} onChange={(cameraPreset) => setScene({ cameraPreset })} />
+            <SelectField
+              label={t('cameraPreset')}
+              value={scene.cameraPreset}
+              options={CAMERA_PRESETS.map((value) => ({ value, label: tOptions(`camera.${value}`) }))}
+              onChange={(cameraPreset) => setScene({ cameraPreset })}
+            />
             <SliderField label={t('autoOrbit')} value={scene.autoOrbit} min={0} max={1} onChange={(autoOrbit) => setScene({ autoOrbit })} />
           </FieldGroup>
-          {keyframe && (
-            <FieldGroup title={t('cameraShot', { name: keyframe.name })}>
-              <SelectField
-                label={t('shot')}
-                value={keyframe.camera?.preset ?? INHERIT}
-                options={[{ value: INHERIT, label: t('inherit') }, ...CAMERA_PRESETS.map((value) => ({ value: value as string, label: tOptions(`camera.${value}`) }))]}
-                onChange={(preset) => setKeyframe({ camera: preset === INHERIT ? undefined : { preset: preset as (typeof CAMERA_PRESETS)[number] } })}
-              />
-            </FieldGroup>
-          )}
           <FieldGroup title={t('toys')}>
-            <SwitchField label={t('pushToy')} hint={t('pushToyHint')} value={pushToy} onChange={(on) => mutate((s) => void (s.ui.pushToy = on))} />
+            <SwitchField label={t('pushToy')} hint={t('pushToyHint')} value={pushToy} onChange={(on) => run({ type: 'ui.set', patch: { pushToy: on } })} />
           </FieldGroup>
         </TabsContent>
 

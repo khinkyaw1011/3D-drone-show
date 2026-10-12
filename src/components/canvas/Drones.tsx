@@ -4,16 +4,17 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import { Box3, type Mesh, type PerspectiveCamera, Plane, PlaneGeometry, Vector3 } from 'three/webgpu';
 import { SHOW_VOLUME } from '@/engine/formations/fit';
-import { createDroneMaterial, createDroneUniforms } from '@/engine/materials/droneSprite';
+import { MOTION_ID, createDroneMaterial, createDroneUniforms } from '@/engine/materials/droneSprite';
 import { AIRFRAME_FADE, createQuadcopterGeometry, createQuadcopterMaterial } from '@/engine/materials/quadcopter';
-import type { Simulator } from '@/engine/sim/Simulator';
+import type { ShowPlayer } from '@/engine/playback/ShowPlayer';
 import type { DroneLook } from '@/engine/types';
 
 const VOLUME = new Box3().setFromCenterAndSize(new Vector3(...SHOW_VOLUME.center), new Vector3(...SHOW_VOLUME.size));
 const CENTER = new Vector3(...SHOW_VOLUME.center);
 
 interface DronesProps {
-  sim: Simulator;
+  /** Owns the simulator and the show clock the drones animate on. */
+  player: ShowPlayer;
   look: DroneLook;
   /** 0..1 LED power (dimmed while drones "power off" and fall). */
   power: number;
@@ -21,12 +22,11 @@ interface DronesProps {
   pushToy?: boolean;
   /** Tightest spacing between neighbouring drones; airframes and LEDs are sized to stay inside it. */
   spacing: number;
-  /** Draw the 3D quadcopter airframes (off on the low tier / very large fleets). */
-  airframes?: boolean;
 }
 
-/** All drones in one draw call: an instanced quad whose material reads the simulator's buffers. */
-export function Drones({ sim, look, power, spacing, pushToy = false, airframes = true }: DronesProps) {
+/** The fleet in two instanced draws that read the simulator's buffers: the 3D airframes, and the LED each one carries. */
+export function Drones({ player, look, power, spacing, pushToy = false }: DronesProps) {
+  const sim = player.sim;
   const size = useThree((s) => s.size);
   const quadRef = useRef<Mesh>(null);
   const uniforms = useMemo(() => createDroneUniforms(), []);
@@ -35,8 +35,8 @@ export function Drones({ sim, look, power, spacing, pushToy = false, airframes =
     return { material, geometry: new PlaneGeometry(1, 1) };
   }, [sim, uniforms]);
   const quad = useMemo(
-    () => (airframes ? { material: createQuadcopterMaterial(sim.buffers, uniforms), geometry: createQuadcopterGeometry() } : null),
-    [sim, uniforms, airframes],
+    () => ({ material: createQuadcopterMaterial(sim.buffers, uniforms), geometry: createQuadcopterGeometry() }),
+    [sim, uniforms],
   );
 
   useEffect(
@@ -48,16 +48,17 @@ export function Drones({ sim, look, power, spacing, pushToy = false, airframes =
   );
   useEffect(
     () => () => {
-      quad?.material.dispose();
-      quad?.geometry.dispose();
+      quad.material.dispose();
+      quad.geometry.dispose();
     },
     [quad],
   );
 
   useEffect(() => {
     // Never draw a drone wider than the gap to its neighbour: real fleets do not touch.
-    uniforms.body.value = Math.min(0.9, Math.max(0.08, spacing * 0.8 * look.body));
-    uniforms.size.value = Math.min(look.size, Math.max(0.06, spacing * 0.75));
+    uniforms.body.value = Math.min(1.1, Math.max(0.1, spacing * 0.95 * look.body));
+    // The LED is a lamp on the airframe, never bigger than the drone carrying it (when airframes are drawn).
+    uniforms.size.value = Math.min(look.size, uniforms.body.value * 0.55);
     uniforms.glow.value = look.glow;
     uniforms.twinkle.value = look.twinkle;
     uniforms.trail.value = look.trails ? 1 : 0;
@@ -70,6 +71,11 @@ export function Drones({ sim, look, power, spacing, pushToy = false, airframes =
     const cam = camera as PerspectiveCamera;
     uniforms.pixelScale.value = (2 * Math.tan((cam.fov * Math.PI) / 360)) / size.height;
     uniforms.power.value += (power - uniforms.power.value) * Math.min(1, dt * 4);
+    // Show clock + the movement of the formation on stage (flap, wave...), eased so it never pops.
+    const motion = player.motion;
+    uniforms.clock.value = player.motionTime;
+    if (motion.kind !== 'none') uniforms.motion.value = MOTION_ID[motion.kind];
+    uniforms.motionAmount.value += ((motion.kind === 'none' ? 0 : motion.amount) - uniforms.motionAmount.value) * Math.min(1, dt * 2.5);
 
     // Cursor push: intersect the pointer ray with a camera-facing plane through the show.
     let strength = 0;
@@ -89,9 +95,7 @@ export function Drones({ sim, look, power, spacing, pushToy = false, airframes =
   return (
     <>
       <mesh geometry={sprite.geometry} material={sprite.material} count={sim.count} frustumCulled={false} renderOrder={2} />
-      {quad && (
-        <mesh ref={quadRef} geometry={quad.geometry} material={quad.material} count={sim.count} frustumCulled={false} visible={false} />
-      )}
+      <mesh ref={quadRef} geometry={quad.geometry} material={quad.material} count={sim.count} frustumCulled={false} />
     </>
   );
 }

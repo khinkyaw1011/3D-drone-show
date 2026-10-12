@@ -1,6 +1,10 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
+import { toast } from 'sonner';
+import { reducedFleet } from '@/engine/renderer/capabilities';
+import { formatNumber } from '@/lib/utils';
 import type { ShowHandle } from '@/components/canvas/ShowCanvas';
 import { getShowHandle, setShowHandle } from '@/lib/showHandle';
 import { mutate, useStudio } from '@/store';
@@ -24,6 +28,8 @@ export function LiveShow({ className, interactive = true, paused = false }: Live
   const speed = useStudio((s) => s.playback.speed);
   const seek = useStudio((s) => s.playback.seek);
   const pushToy = useStudio((s) => s.ui.pushToy);
+  const deviceMax = useStudio((s) => s.runtime.deviceMax);
+  const t = useTranslations('Stage');
 
   const onTime = useCallback((time: number, index: number, duration: number) => {
     mutate((s) => {
@@ -43,6 +49,15 @@ export function LiveShow({ className, interactive = true, paused = false }: Live
       s.runtime.error = error;
     });
   }, []);
+  const onOverload = useCallback(
+    (count: number) => {
+      const next = reducedFleet(count);
+      if (next >= count) return;
+      mutate((s) => void (s.runtime.deviceMax = next));
+      toast(t('overloadTitle'), { description: t('overloadBody', { count: formatNumber(next) }), duration: 9000 });
+    },
+    [t],
+  );
   const onEnd = useCallback(() => mutate((s) => void (s.playback.playing = false)), []);
 
   return (
@@ -60,6 +75,8 @@ export function LiveShow({ className, interactive = true, paused = false }: Live
       onReady={onReady}
       onStatus={onStatus}
       onEnd={onEnd}
+      maxDrones={deviceMax}
+      onOverload={onOverload}
     />
   );
 }

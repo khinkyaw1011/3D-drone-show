@@ -10,10 +10,10 @@ type Preset = Exclude<SceneSettings['cameraPreset'], 'walk'>;
 
 export const CAMERA_SHOTS: Record<Preset, { position: Vec3; target: Vec3; orbit: number }> = {
   // Standing in the crowd, looking up at the show.
-  spectator: { position: [0, 1.7, 46], target: [0, 16, 0], orbit: 0.6 },
+  spectator: { position: [0, 1.7, 40], target: [0, 17, 0], orbit: 0.6 },
   // In among the fleet: close enough to see airframes, skids and spinning propellers.
   'close-up': { position: [5, 18.5, 13], target: [0, 17, 0], orbit: 1 },
-  front: { position: [0, 12, 44], target: [0, 16, 0], orbit: 1 },
+  front: { position: [0, 14, 36], target: [0, 17, 0], orbit: 1 },
   'low-hero': { position: [-20, 2, 34], target: [0, 17, 0], orbit: 1 },
   'top-down': { position: [0, 70, 20], target: [0, 12, 0], orbit: 0.5 },
   'fly-around': { position: [34, 20, 34], target: [0, 16, 0], orbit: 5 },

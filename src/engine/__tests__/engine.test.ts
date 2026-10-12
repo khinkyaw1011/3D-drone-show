@@ -5,8 +5,12 @@ import { SHOW_VOLUME, fitToVolume, groundGrid } from '../formations/fit';
 import { launchDelays } from '../formations/order';
 import { generateFormation, listSources } from '../formations/registry';
 import { bake } from '../formations/sources/baked';
+import { ShowPlayer } from '../playback/ShowPlayer';
 import { BUILTIN_SHOWS } from '../presets/builtin';
 import { SHOW_VERSION, parseShow, showSchema } from '../presets/schema';
+import { FLEET, TIERS, fleetLimits, reducedFleet } from '../renderer/capabilities';
+import { defaultSimParams } from '../sim/Simulator';
+import { compileShow } from '../timeline/compile';
 import { buildTimeline, formatTimecode, locate, planSegments } from '../timeline/buildTimeline';
 
 describe('fit', () => {
@@ -69,8 +73,8 @@ describe('formation sources', () => {
 });
 
 describe('show schema', () => {
-  it('ships six valid built-in shows at the current version', () => {
-    expect(BUILTIN_SHOWS).toHaveLength(6);
+  it('ships eight valid built-in shows at the current version', () => {
+    expect(BUILTIN_SHOWS).toHaveLength(8);
     for (const show of BUILTIN_SHOWS) {
       expect(showSchema.safeParse(show).success, show.name).toBe(true);
       expect(show.version).toBe(SHOW_VERSION);
@@ -128,5 +132,84 @@ describe('commands', () => {
     const catalogue = describeCommands();
     expect(catalogue).toHaveLength(Object.keys(COMMANDS).length);
     expect(catalogue.every((c) => c.description.length > 3 && typeof c.parameters === 'object')).toBe(true);
+  });
+});
+
+describe('player', () => {
+  /** A simulator that only records what it was asked to do. */
+  function stubPlayer() {
+    const steps: { dt: number; time: number }[] = [];
+    const sim = {
+      kind: 'cpu' as const,
+      count: 200,
+      buffers: {} as never,
+      params: defaultSimParams(),
+      setFrame: () => {},
+      kick: () => {},
+      setOverride: () => {},
+      step: (_renderer: unknown, dt: number, time: number) => void steps.push({ dt, time }),
+      dispose: () => {},
+    };
+    return { player: new ShowPlayer(sim), steps };
+  }
+
+  it('holds the fleet dead still while paused, and resumes where it left off', async () => {
+    const show = parseShow({
+      id: 'p',
+      name: 'P',
+      droneCount: 200,
+      keyframes: [{ id: 'a', motion: 'flap', formation: { sourceId: 'shape', input: { shape: 'sphere' } } }],
+    });
+    const formations = [await generateFormation('shape', { shape: 'sphere' }, { count: 200 })];
+    const { player, steps } = stubPlayer();
+    player.load(show, compileShow(show, formations));
+
+    player.play();
+    player.update(null as never, 0.016);
+    player.update(null as never, 0.016);
+    const flying = player.motionTime;
+    expect(flying).toBeCloseTo(0.032);
+
+    player.pause();
+    player.update(null as never, 0.016);
+    player.update(null as never, 0.016);
+    expect(player.motionTime).toBe(flying);
+    expect(steps.slice(-2).map((s) => s.dt)).toEqual([0, 0]);
+
+    player.play();
+    player.update(null as never, 0.016);
+    expect(player.motionTime).toBeGreaterThan(flying);
+    player.dispose();
+  });
+
+  it('fades formation movement in only once the formation has assembled', async () => {
+    const show = parseShow({ id: 'm', name: 'M', droneCount: 200, keyframes: [{ id: 'a', motion: 'flap', motionAmount: 0.8, formation: { sourceId: 'shape', input: { shape: 'sphere' } } }] });
+    const { player } = stubPlayer();
+    player.load(show, compileShow(show, [await generateFormation('shape', { shape: 'sphere' }, { count: 200 })]));
+    player.update(null as never, 0);
+    expect(player.motion).toEqual({ kind: 'flap', amount: 0 });
+    player.seek(player.duration - 0.01);
+    player.update(null as never, 0);
+    expect(player.motion.amount).toBeCloseTo(0.8);
+    player.dispose();
+  });
+});
+
+describe('fleet limits', () => {
+  const device = (tier: keyof typeof TIERS) => ({ webgpu: true, compute: true, mobile: false, tier: TIERS[tier] });
+
+  it('clamps any requested fleet into the device range, on the step', () => {
+    const limits = fleetLimits(device('medium'));
+    expect([limits.min, limits.max]).toEqual([FLEET.min, TIERS.medium.maxDrones]);
+    expect(limits.clamp(5)).toBe(FLEET.min);
+    expect(limits.clamp(99999)).toBe(TIERS.medium.maxDrones);
+    expect(limits.clamp(1234)).toBe(1200);
+  });
+
+  it('lowers the ceiling when the device struggled, but never below the minimum', () => {
+    expect(fleetLimits(device('high'), 900).max).toBe(900);
+    expect(fleetLimits(device('high'), 10).max).toBe(FLEET.min);
+    expect(reducedFleet(1500)).toBe(900);
+    expect(reducedFleet(100)).toBe(FLEET.min);
   });
 });

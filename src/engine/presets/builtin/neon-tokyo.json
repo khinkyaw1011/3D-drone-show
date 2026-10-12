@@ -2,7 +2,7 @@
   "version": 1,
   "id": "neon-tokyo",
   "name": "Neon Tokyo",
-  "droneCount": 1200,
+  "droneCount": 800,
   "look": {
     "colorMode": "gradient",
     "colors": [
@@ -12,8 +12,7 @@
     "gradientAxis": "x",
     "glow": 1.5,
     "twinkle": 0.15,
-    "swarm": 0.2,
-    "size": 0.34
+    "swarm": 0.2
   },
   "scene": {
     "sky": "midnight",
@@ -21,7 +20,7 @@
     "fog": 0.15,
     "autoOrbit": 0,
     "bloom": {
-      "strength": 0.75,
+      "strength": 0.5,
       "radius": 0.7,
       "threshold": 0.1
     }
@@ -100,7 +99,9 @@
         ],
         "gradientAxis": "y"
       },
-      "spin": 10
+      "spin": 10,
+      "motion": "pulse",
+      "motionAmount": 0.3
     }
   ]
 }

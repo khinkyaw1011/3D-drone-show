@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
-import { useStudio } from '@/store';
+import { useFleetLimits, useStudio } from '@/store';
 
 function Stat({ value, label, warn }: { value: string; label: string; warn?: boolean }) {
   return (
@@ -16,7 +16,8 @@ function Stat({ value, label, warn }: { value: string; label: string; warn?: boo
 /** Live flight telemetry: fleet size, peak speed and closest approach of the transition on stage. */
 export function FleetStats({ className, compact = false }: { className?: string; compact?: boolean }) {
   const t = useTranslations('Stats');
-  const count = useStudio((s) => Math.min(s.show.droneCount, s.runtime.capabilities?.tier.maxDrones ?? s.show.droneCount));
+  const { clamp } = useFleetLimits();
+  const count = clamp(useStudio((s) => s.show.droneCount));
   const stats = useStudio((s) => s.playback.stats);
   const realistic = useStudio((s) => s.show.flight.realistic);
   return (

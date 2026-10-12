@@ -39,6 +39,7 @@ export const COMMANDS = {
     schema: z.object({ scope: z.enum(RESET_SCOPES) }),
   },
   'scene.set': { description: 'Change sky, ground, camera, post-FX or physics settings.', schema: z.object({ patch }) },
+  'ui.set': { description: 'Change studio interface state: open panels, inspector tab, pointer toy, walkthrough seen.', schema: z.object({ patch }) },
   'playback.play': { description: 'Play the show.', schema: z.object({}) },
   'playback.pause': { description: 'Pause the show.', schema: z.object({}) },
   'playback.toggle': { description: 'Toggle play / pause.', schema: z.object({}) },

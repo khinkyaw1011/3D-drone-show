@@ -2,7 +2,7 @@
   "version": 1,
   "id": "gold-gala",
   "name": "Gold Gala",
-  "droneCount": 1000,
+  "droneCount": 800,
   "look": {
     "colorMode": "gradient",
     "colors": [
@@ -13,8 +13,7 @@
     "gradientAxis": "y",
     "glow": 1.4,
     "twinkle": 0.4,
-    "swarm": 0.2,
-    "size": 0.34
+    "swarm": 0.2
   },
   "scene": {
     "sky": "midnight",
@@ -22,7 +21,7 @@
     "fog": 0.15,
     "autoOrbit": 0,
     "bloom": {
-      "strength": 0.75,
+      "strength": 0.5,
       "radius": 0.65,
       "threshold": 0.1
     },
@@ -90,7 +89,9 @@
         "stagger": 0.35,
         "order": "radial"
       },
-      "spin": 14
+      "spin": 14,
+      "motion": "pulse",
+      "motionAmount": 0.4
     }
   ]
 }

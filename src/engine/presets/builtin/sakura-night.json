@@ -2,7 +2,7 @@
   "version": 1,
   "id": "sakura-night",
   "name": "Sakura Night",
-  "droneCount": 1200,
+  "droneCount": 800,
   "look": {
     "colorMode": "formation",
     "colors": [
@@ -12,8 +12,7 @@
     ],
     "glow": 1.3,
     "twinkle": 0.3,
-    "swarm": 0.3,
-    "size": 0.34
+    "swarm": 0.3
   },
   "scene": {
     "sky": "dusk",
@@ -21,7 +20,7 @@
     "fog": 0.15,
     "autoOrbit": 0,
     "bloom": {
-      "strength": 0.75,
+      "strength": 0.5,
       "radius": 0.65,
       "threshold": 0.08
     },
@@ -76,7 +75,9 @@
         ],
         "gradientAxis": "y"
       },
-      "spin": 14
+      "spin": 14,
+      "motion": "pulse",
+      "motionAmount": 0.7
     },
     {
       "id": "sk3",

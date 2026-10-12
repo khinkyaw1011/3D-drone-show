@@ -4,21 +4,14 @@ import { Box, ImageUp, Sparkles, Type } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type FormEvent, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import type { z } from 'zod';
 import { FieldGroup } from '@/components/controls/fields';
-import { SchemaForm } from '@/components/controls/SchemaForm';
 import { FormationThumb } from '@/components/show/FormationThumb';
 import { useShowActions } from '@/components/show/useShowActions';
 import { Button } from '@/components/ui/button';
-import { getSource } from '@/engine/formations/registry';
 import { MODELS, type ModelName } from '@/engine/formations/sources/model';
 import { SHAPES } from '@/engine/formations/sources/shape';
 import { IMAGE_ACCEPT } from '@/lib/image';
 import { cn } from '@/lib/utils';
-import { useStudio } from '@/store';
-
-/** Inputs owned by upload UI or baked data, never shown as form fields. */
-const HIDDEN_FIELDS = ['src', 'name', 'svg', 'p', 'c', 'label'];
 
 function Tile({ label, onClick, children }: { label: string; onClick: () => void; children: React.ReactNode }) {
   return (
@@ -33,13 +26,11 @@ function Tile({ label, onClick, children }: { label: string; onClick: () => void
   );
 }
 
-/** Left rail: add formations (shapes, words, pictures, models) and edit the selected one. */
+/** Left rail: everything you can add to the show. Each choice appends a formation and flies the fleet to it. */
 export function FormationPanel() {
   const t = useTranslations('Studio.library');
   const tOptions = useTranslations('Options');
-  const { run, addFormation, addFromPrompt, addFromFile } = useShowActions();
-  const selected = useStudio((s) => s.show.keyframes.find((k) => k.id === s.selectedKeyframeId));
-  const look = useStudio((s) => s.show.look);
+  const { addFormation, addFromPrompt, addFromFile } = useShowActions();
   const [word, setWord] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -60,32 +51,9 @@ export function FormationPanel() {
     if (await addFromPrompt(word)) setWord('');
   };
 
-  const source = selected ? getSource(selected.formation.sourceId) : null;
-
   return (
     <div {...getRootProps()} className={cn('scrollbar-thin h-full space-y-6 overflow-y-auto p-4 outline-none', isDragActive && 'ring-2 ring-inset ring-cyan/50')}>
       <input {...getInputProps()} />
-
-      {selected && source && (
-        <FieldGroup title={t('editing', { name: selected.name })}>
-          <FormationThumb
-            sourceId={selected.formation.sourceId}
-            input={selected.formation.input}
-            look={{ ...look, ...selected.look }}
-            points={1400}
-            debounceMs={140}
-            label={t('preview', { name: selected.name })}
-            className="aspect-[16/10] border border-line"
-          />
-          <SchemaForm
-            key={`${selected.id}:${source.id}`}
-            schema={source.inputSchema as unknown as z.ZodObject}
-            value={selected.formation.input as Record<string, unknown>}
-            hidden={HIDDEN_FIELDS}
-            onChange={(input) => run({ type: 'formation.update', id: selected.id, input })}
-          />
-        </FieldGroup>
-      )}
 
       <FieldGroup title={t('addWord')}>
         <form onSubmit={submit} className="flex gap-2">

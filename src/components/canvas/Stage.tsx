@@ -4,7 +4,7 @@ import { type RootState, useFrame, useThree } from '@react-three/fiber';
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import type { WebGPURenderer } from 'three/webgpu';
 import { type PhysicsMoment, ShowPlayer } from '@/engine/playback/ShowPlayer';
-import { prefersReducedMotion } from '@/engine/renderer/capabilities';
+import { fleetLimits, prefersReducedMotion } from '@/engine/renderer/capabilities';
 import { rendererCapabilities } from '@/engine/renderer/createRenderer';
 import { createSimulator } from '@/engine/sim/createSimulator';
 import type { Capabilities, Show } from '@/engine/types';
@@ -35,8 +35,10 @@ export interface StageProps {
   seek?: { t?: number; keyframe?: number; nonce: number } | null;
   interactive?: boolean;
   pushToy?: boolean;
-  /** Cap below the device tier (thumbnails, hero on phones). */
-  maxDrones?: number;
+  /** A lower fleet ceiling than the device tier's (found by the frame-rate watchdog). */
+  maxDrones?: number | null;
+  /** The device could not hold a smooth frame rate with `count` drones. */
+  onOverload?: (count: number) => void;
   onTime?: (time: number, index: number, duration: number) => void;
   onStatus?: (status: 'loading' | 'ready' | 'error', error: string | null) => void;
   onReady?: (handle: ShowHandle | null) => void;
@@ -44,8 +46,8 @@ export interface StageProps {
 }
 
 const UI_TICK_MS = 100;
-/** Above this fleet size the airframes are sub-pixel anyway; skip them and draw LEDs only. */
-const AIRFRAME_LIMIT = 6000;
+/** Frame-rate watchdog: average over this window once the show is flying; below the floor, ask for a smaller fleet. */
+const WATCHDOG = { seconds: 4, minFps: 24 };
 
 /** Everything inside the canvas: environment, drones, camera, post-FX, and the player that drives them. */
 export function Stage({
@@ -56,7 +58,8 @@ export function Stage({
   seek = null,
   interactive = true,
   pushToy = false,
-  maxDrones = Infinity,
+  maxDrones = null,
+  onOverload,
   onTime,
   onStatus,
   onReady,
@@ -66,17 +69,17 @@ export function Stage({
   const getState = useThree((s) => s.get);
   const capabilities = useMemo(() => rendererCapabilities(gl), [gl]);
   const reducedMotion = useMemo(() => prefersReducedMotion(), []);
-  const count = Math.min(show.droneCount, capabilities.tier.maxDrones, maxDrones);
+  const count = fleetLimits(capabilities, maxDrones).clamp(show.droneCount);
   const { compiled, show: compiledShow, status, error } = useCompiledShow(show, count);
 
   const [player, setPlayer] = useState<ShowPlayer | null>(null);
   const [index, setIndex] = useState(0);
   const [physics, setPhysics] = useState<PhysicsMoment | null>(null);
-  const callbacks = useRef({ onTime, onEnd });
+  const callbacks = useRef({ onTime, onEnd, onOverload });
   const lastTick = useRef({ at: 0, index: -1 });
 
   useEffect(() => {
-    callbacks.current = { onTime, onEnd };
+    callbacks.current = { onTime, onEnd, onOverload };
   });
 
   useEffect(() => {
@@ -136,7 +139,18 @@ export function Stage({
     else if (seek.t !== undefined) player.seek(seek.t);
   }, [player, loaded, seek]);
 
-  useFrame((state, dt) => player?.update(gl, dt, state.clock.elapsedTime));
+  const watchdog = useRef({ frames: 0, time: 0, reported: 0 });
+  useFrame((_, dt) => {
+    player?.update(gl, dt);
+    // Measure only while the show is actually flying; report once per fleet size.
+    const w = watchdog.current;
+    if (!loaded || !playing || w.reported === count || dt > 0.5) return;
+    w.frames++;
+    w.time += dt;
+    if (w.time < WATCHDOG.seconds) return;
+    if (w.frames / w.time < WATCHDOG.minFps) callbacks.current.onOverload?.(count);
+    watchdog.current = { frames: 0, time: 0, reported: count };
+  });
 
   const scene = show.scene;
   const keyframe = show.keyframes[index];
@@ -152,12 +166,11 @@ export function Stage({
       <Fireworks scene={scene} colors={look.colors} />
       {player && (
         <Drones
-          sim={player.sim}
+          player={player}
           look={look}
           spacing={compiled?.spacing ?? 0.5}
           power={physics?.effect === 'drop' ? 0.3 : 1}
           pushToy={pushToy}
-          airframes={capabilities.tier.name !== 'low' && count <= AIRFRAME_LIMIT}
         />
       )}
       {player && compiled && hasPhysics && (

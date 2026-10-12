@@ -93,12 +93,9 @@ export class GpuSimulator implements Simulator {
 
       If(u.mode.equal(SIM_MODE.ease), () => {
         // Scrubbable: pose is a pure function of progress, with a noise arc mid-flight.
-        // Planned route: eased path + the de-conflicting detour, with only a breath of noise
-        // so the separation worked out before take-off still holds.
-        const bulge = sin(local.mul(Math.PI));
-        const next = flightPath(from, to, local)
-          .add(b.override.element(instanceIndex).xyz.mul(bulge))
-          .add(noise.mul(bulge).mul(u.swarm).mul(0.12));
+        // Planned route: exactly the eased path plus its de-conflicting detour. No noise, so the
+        // separation worked out before take-off holds and a paused fleet does not jitter.
+        const next = flightPath(from, to, local).add(b.override.element(instanceIndex).xyz.mul(sin(local.mul(Math.PI))));
         V.assign(clamp(next.sub(P).div(dt), vec3(-60), vec3(60)));
         P.assign(next);
       })

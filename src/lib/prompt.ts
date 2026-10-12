@@ -13,6 +13,7 @@ const ALIASES: Record<string, ShapeName> = {
   ocean: 'wave', sea: 'wave', 波: 'wave', ウェーブ: 'wave', လှိုင်း: 'wave',
   sakura: 'blossom', cherry: 'blossom', flower: 'blossom', 桜: 'blossom', さくら: 'blossom', サクラ: 'blossom', 花: 'blossom', ဆာကူရာ: 'blossom', ချယ်ရီ: 'blossom', ပန်း: 'blossom',
   firework: 'burst', fireworks: 'burst', explosion: 'burst', 花火: 'burst', 爆発: 'burst', မီးပန်း: 'burst',
+  蝶: 'butterfly', バタフライ: 'butterfly', လိပ်ပြာ: 'butterfly',
   wall: 'grid', block: 'grid', グリッド: 'grid',
   planet: 'saturn', 土星: 'saturn', စနေဂြိုဟ်: 'saturn',
   gem: 'diamond', ダイヤ: 'diamond', ダイヤモンド: 'diamond', စိန်: 'diamond',

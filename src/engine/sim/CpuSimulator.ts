@@ -107,7 +107,7 @@ export class CpuSimulator implements Simulator {
           P[a] = pose[k];
           V[a] = 0;
         } else if (mode === SIM_MODE.ease) {
-          const next = pose[k] + noise[k] * bulge * swarm * 0.12;
+          const next = pose[k]; // planned route: no noise, see GpuSimulator
           V[a] = clamp(-60, 60, (next - P[a]) / dt);
           P[a] = next;
         } else if (mode === SIM_MODE.spring) {

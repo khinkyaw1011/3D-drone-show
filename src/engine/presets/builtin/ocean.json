@@ -2,7 +2,7 @@
   "version": 1,
   "id": "ocean",
   "name": "Ocean",
-  "droneCount": 1200,
+  "droneCount": 800,
   "look": {
     "colorMode": "gradient",
     "colors": [
@@ -13,9 +13,7 @@
     "gradientAxis": "y",
     "glow": 1.15,
     "twinkle": 0.3,
-    "swarm": 0.3,
-    "hoverBob": 0.3,
-    "size": 0.34
+    "swarm": 0.3
   },
   "scene": {
     "sky": "midnight",
@@ -23,7 +21,7 @@
     "fog": 0.15,
     "autoOrbit": 0,
     "bloom": {
-      "strength": 0.7
+      "strength": 0.5
     }
   },
   "keyframes": [
@@ -44,7 +42,9 @@
         "stagger": 0.35,
         "order": "radial"
       },
-      "spin": 8
+      "spin": 8,
+      "motion": "wave",
+      "motionAmount": 0.6
     },
     {
       "id": "oc2",
@@ -73,7 +73,9 @@
         ],
         "gradientAxis": "y"
       },
-      "spin": 12
+      "spin": 12,
+      "motion": "flap",
+      "motionAmount": 0.7
     },
     {
       "id": "oc3",

@@ -22,7 +22,9 @@
     "launching": "機体を準備中…",
     "errorTitle": "ショーを読み込めませんでした",
     "fallbackTitle": "互換モードで実行中",
-    "fallbackBody": "このブラウザは WebGPU に対応していないため、WebGL2 で最大 {count} 機まで表示します。"
+    "fallbackBody": "このブラウザは WebGPU に対応していないため、WebGL2 で最大 {count} 機まで表示します。",
+    "overloadTitle": "この端末に合わせて機体数を減らしました",
+    "overloadBody": "動作が重かったため、この端末では最大 {count} 機に制限します。"
   },
   "Actions": {
     "failed": "うまくいきませんでした",
@@ -72,28 +74,10 @@
     "rainbow": "虹色",
     "random": "ランダム",
     "customColor": "カスタム色",
-    "droneSize": "機体サイズ",
-    "ledSize": "LED サイズ",
-    "glow": "輝き",
-    "sky": "空",
-    "ground": "地面",
-    "ambient": "背景の明るさ",
     "view": "視点",
-    "drones": "機体数",
-    "realistic": "現実の飛行ルール",
-    "realisticHint": "下の最高速度を超えず、機体同士が離れる経路を計画します。",
-    "maxSpeed": "最高速度",
-    "separation": "最小間隔",
     "spin": "隊形の回転",
     "studioPitch": "タイムライン、隊形ごとのタイミング、カメラショット、書き出しが必要ですか？",
     "openStudio": "スタジオを開く",
-    "stars": "星",
-    "fireworks": "花火",
-    "fireworkColors": "花火の色",
-    "off": "オフ",
-    "resetDrones": "機体をリセット",
-    "resetSky": "空をリセット",
-    "resetFlight": "飛行をリセット",
     "resetAll": "すべての設定をリセット",
     "autosaved": "この端末に自動保存されます"
   },
@@ -114,7 +98,8 @@
       "saturn": "土星",
       "diamond": "ダイヤモンド",
       "pyramid": "ピラミッド",
-      "tornado": "竜巻"
+      "tornado": "竜巻",
+      "butterfly": "蝶"
     },
     "sky": {
       "midnight": "真夜中",
@@ -201,15 +186,22 @@
       "show": "ショーの色",
       "rainbow": "虹色",
       "gold": "金色"
+    },
+    "motion": {
+      "none": "静止",
+      "flap": "羽ばたき",
+      "wave": "さざ波",
+      "pulse": "呼吸",
+      "sway": "ゆらぎ"
     }
   },
   "Gallery": {
     "meta": {
       "title": "ギャラリー",
-      "description": "すぐに見られる、リミックスできる6つのドローンショー。"
+      "description": "すぐに見られる、リミックスできる8つのドローンショー。"
     },
     "eyebrow": "ギャラリー",
-    "title": "すぐに飛ばせる6つのショー",
+    "title": "すぐに飛ばせる8つのショー",
     "lead": "プレビューは、ドローンが実際に飛ぶ隊形データから描いています。鑑賞するか、スタジオでリミックスしてください。",
     "previewOf": "{name} のプレビュー",
     "summary": "隊形 {formations} 個 · ドローン {drones} 機",
@@ -222,7 +214,9 @@
       "aurora": "オーロラの下で、ゆるやかな波、環を持つ惑星、二重らせん。",
       "new-year": "3、2、1 — 花火、そして金色の新年。",
       "ocean": "涼やかな青の波、フラミンゴ、地球。最後は水の竜巻。",
-      "gold-gala": "あたたかな金色のダイヤモンド、言葉、リング。"
+      "gold-gala": "あたたかな金色のダイヤモンド、言葉、リング。",
+      "wings": "フラミンゴ、オウム、蝶が回りながら羽ばたきます。",
+      "cosmos": "環を持つ惑星、渦巻銀河、光の竜巻。"
     }
   },
   "Landing": {
@@ -323,12 +317,11 @@
       "shareFailed": "リンクをコピーできませんでした",
       "shareLong": "リンクをコピーしましたが、長めです",
       "shareLongBody": "アップロードした画像があるとリンクが長くなります。アプリによっては途中で切れるため、.json の書き出しが確実です。",
-      "resetAll": "すべての設定をリセット"
+      "resetAll": "すべての設定をリセット",
+      "guide": "ガイド"
     },
     "library": {
       "title": "隊形",
-      "editing": "編集中 · {name}",
-      "preview": "{name} のプレビュー",
       "addWord": "言葉や形を追加",
       "wordLabel": "言葉または形の名前",
       "wordPlaceholder": "ハート、土星、HELLO、桜…",
@@ -337,7 +330,8 @@
       "upload": "自分の素材",
       "sampling": "変換中…",
       "dropTitle": "画像・SVG・.glb をアップロード",
-      "dropHint": "またはこのパネルにファイルをドロップ"
+      "dropHint": "またはこのパネルにファイルをドロップ",
+      "hint": "クリックするとショーに追加されます。"
     },
     "timeline": {
       "title": "タイムライン",
@@ -353,33 +347,20 @@
       "next": "次の隊形",
       "loop": "ループ",
       "scrub": "再生位置",
-      "empty": "隊形がまだありません。最初の隊形を追加しましょう。"
+      "empty": "隊形がまだありません。最初の隊形を追加しましょう。",
+      "hint": "カードをクリックするとその隊形へ飛び、編集できます。ドラッグで並べ替え。",
+      "add": "隊形を追加"
     },
     "inspector": {
       "title": "インスペクター",
       "tabs": {
+        "formation": "隊形",
         "drones": "機体",
-        "motion": "動き",
+        "flight": "飛行",
         "scene": "シーン",
         "camera": "カメラ",
         "fx": "効果"
       },
-      "fleet": "編隊",
-      "count": "機体数",
-      "countHint": "この端末では最大 {max} 機まで飛ばせます。",
-      "droneSize": "機体サイズ",
-      "size": "LED サイズ",
-      "glow": "輝き",
-      "twinkle": "きらめき",
-      "trails": "光の軌跡",
-      "color": "色",
-      "colorMode": "カラーモード",
-      "colors": "色",
-      "colorStop": "色 {index}",
-      "addColor": "色を追加",
-      "removeColor": "色を削除",
-      "axis": "方向",
-      "transitionInto": "この隊形への飛行 · {name}",
       "name": "名前",
       "curve": "飛び方",
       "effect": "物理エフェクト",
@@ -391,12 +372,7 @@
       "spin": "回転",
       "ownColors": "専用の色",
       "ownColorsHint": "ショー全体の色ではなく、この隊形だけの色を使います。",
-      "selectKeyframe": "タイムラインで隊形を選ぶと、そこへの飛び方を編集できます。",
-      "realism": "現実の飛行ルール",
-      "realistic": "現実の制限を守る",
-      "realisticHint": "速度を制限し、機体同士が離れる経路を計画します。",
-      "maxSpeed": "最高速度",
-      "separation": "最小間隔",
+      "selectKeyframe": "タイムラインの隊形をクリックすると、ここで編集できます。",
       "feel": "質感",
       "swarm": "群れのゆらぎ",
       "hoverBob": "ホバリングの揺れ",
@@ -406,12 +382,6 @@
       "windDirection": "風向き",
       "windStrength": "風の強さ",
       "maxBodies": "物理ボディ数",
-      "environment": "環境",
-      "sky": "空",
-      "ground": "地面",
-      "stars": "星",
-      "fog": "もや",
-      "ambient": "背景の明るさ",
       "cameraShow": "ショー全体",
       "cameraPreset": "視点",
       "autoOrbit": "自動回転",
@@ -429,13 +399,21 @@
       "exposure": "露出",
       "vignette": "周辺減光",
       "grain": "粒子",
-      "starSize": "星の大きさ",
-      "fireworks": "花火",
-      "fireworksIntensity": "量",
-      "fireworksSize": "開花の大きさ",
-      "fireworksColors": "色",
-      "off": "オフ",
-      "reset": "リセット"
+      "about": {
+        "formation": "タイムラインで選んだ隊形の形と、そこへの飛び方を編集します。",
+        "drones": "編隊全体：機体数、大きさ、光、色。",
+        "flight": "全機が守るルール：最高速度、安全な間隔、物理演出の動き。",
+        "scene": "ショーを取り巻く世界：空、地面、星、花火。",
+        "camera": "観客がどこから見るか。",
+        "fx": "画の仕上げ：ブルーム、露出、フィルム粒子。"
+      },
+      "hint": "選んだ隊形、またはショー全体を変更します。",
+      "shapeGroup": "形",
+      "flightGroup": "この隊形への飛行",
+      "colorGroup": "この隊形の色",
+      "motionGroup": "保持中の動き",
+      "motion": "動き",
+      "motionAmount": "強さ"
     },
     "export": {
       "title": "書き出し",
@@ -466,6 +444,30 @@
       "share": "共有リンクをコピー",
       "help": "この一覧を表示",
       "walk": "歩く（一人称視点）"
+    },
+    "tour": {
+      "label": "スタジオの使い方",
+      "progress": "ステップ {step} / {total}",
+      "skip": "スキップ",
+      "back": "戻る",
+      "next": "次へ",
+      "done": "作成を始める",
+      "library": {
+        "title": "1 · 隊形を追加",
+        "body": "形や3Dモデルを選ぶ、言葉を入力する、画像をアップロードする。追加するとドローンがその隊形へ飛びます。"
+      },
+      "timeline": {
+        "title": "2 · ショーを並べる",
+        "body": "隊形は左から右へ再生されます。カードをクリックしてそこへ飛び、ドラッグで並べ替え、カード上のボタンで複製・削除します。"
+      },
+      "inspector": {
+        "title": "3 · 形とスタイル",
+        "body": "最初のタブは選んだ隊形を編集します。他のタブはショー全体（機体、飛行ルール、シーン、カメラ、効果）を変更します。"
+      },
+      "share": {
+        "title": "4 · 保存と共有",
+        "body": "作業は自動で保存されます。「ショー」でプリセットの読み込み・保存、「共有」でリンクをコピー、「書き出し」で画像や動画を保存。いつでも元に戻せます。"
+      }
     }
   },
   "Viewer": {
@@ -572,5 +574,40 @@
     "hintTouch": "ジョイスティックで歩く · ドラッグで見回す",
     "exit": "歩行を終了",
     "joystick": "歩行ジョイスティック"
+  },
+  "Settings": {
+    "fleet": "編隊",
+    "count": "機体数",
+    "countHint": "この端末では {min}〜{max} 機を飛ばせます。",
+    "droneSize": "機体サイズ",
+    "ledSize": "LED サイズ",
+    "glow": "輝き",
+    "twinkle": "きらめき",
+    "trails": "光の軌跡",
+    "color": "色",
+    "colorMode": "カラーモード",
+    "colors": "色",
+    "colorStop": "色 {index}",
+    "addColor": "色を追加",
+    "removeColor": "色を削除",
+    "axis": "方向",
+    "realism": "現実の飛行ルール",
+    "realistic": "現実の制限を守る",
+    "realisticHint": "速度を制限し、機体同士が離れる経路を計画します。",
+    "maxSpeed": "最高速度",
+    "separation": "最小間隔",
+    "environment": "環境",
+    "sky": "空",
+    "ground": "地面",
+    "stars": "星",
+    "starSize": "星の大きさ",
+    "fog": "もや",
+    "ambient": "背景の明るさ",
+    "fireworks": "花火",
+    "fireworksIntensity": "量",
+    "fireworksSize": "開花の大きさ",
+    "fireworksColors": "色",
+    "off": "オフ",
+    "reset": "リセット"
   }
 }

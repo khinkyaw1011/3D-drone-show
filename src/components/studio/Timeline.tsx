@@ -3,7 +3,7 @@
 import { DndContext, type DragEndEvent, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy, sortableKeyboardCoordinates, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Copy, GripVertical, Pause, Play, Repeat, SkipBack, SkipForward, Trash2 } from 'lucide-react';
+import { Copy, GripVertical, Pause, Plus, Play, Repeat, SkipBack, SkipForward, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { FormationThumb } from '@/components/show/FormationThumb';
 import { useShowActions } from '@/components/show/useShowActions';
@@ -36,7 +36,7 @@ function KeyframeCard({ keyframe, index, look, selected, onStage }: CardProps) {
         isDragging && 'z-10 opacity-80 shadow-xl',
       )}
     >
-      <button type="button" className="text-left" aria-pressed={selected} aria-label={t('select', { name: keyframe.name })} onClick={() => run({ type: 'playback.goTo', id: keyframe.id })}>
+      <button type="button" className="text-left" aria-pressed={selected} aria-label={t('select', { name: keyframe.name })} onClick={() => run({ type: 'playback.goTo', id: keyframe.id }, { type: 'ui.set', patch: { inspectorTab: 'formation', rightOpen: true } })}>
         <FormationThumb
           sourceId={keyframe.formation.sourceId}
           input={keyframe.formation.input}
@@ -136,6 +136,16 @@ export function Timeline({ onAdd }: { onAdd?: () => void }) {
               {keyframes.map((keyframe, index) => (
                 <KeyframeCard key={keyframe.id} keyframe={keyframe} index={index} look={look} selected={keyframe.id === selectedId} onStage={index === playback.index} />
               ))}
+              <li className="flex shrink-0">
+                <button
+                  type="button"
+                  onClick={onAdd}
+                  className="flex w-28 flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-white/15 text-xs text-muted-foreground transition-colors duration-150 hover:border-cyan/60 hover:text-paper"
+                >
+                  <Plus className="size-5" aria-hidden="true" />
+                  {t('add')}
+                </button>
+              </li>
             </ol>
           </SortableContext>
         </DndContext>

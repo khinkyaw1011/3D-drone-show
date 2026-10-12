@@ -22,7 +22,9 @@
     "launching": "Preparing the fleet…",
     "errorTitle": "The show could not load",
     "fallbackTitle": "Running in compatibility mode",
-    "fallbackBody": "This browser has no WebGPU, so the show runs on WebGL2 with up to {count} drones."
+    "fallbackBody": "This browser has no WebGPU, so the show runs on WebGL2 with up to {count} drones.",
+    "overloadTitle": "Fleet reduced for this device",
+    "overloadBody": "The show was running slowly, so the fleet is now limited to {count} drones here."
   },
   "Actions": {
     "failed": "That did not work",
@@ -71,29 +73,11 @@
     "original": "Original",
     "rainbow": "Rainbow",
     "customColor": "Custom colour",
-    "ledSize": "LED size",
-    "glow": "Glow",
-    "sky": "Sky",
-    "ground": "Ground",
-    "drones": "Fleet size",
-    "realistic": "Real-world flight",
-    "realisticHint": "Limits every drone to the top speed below and plans routes that keep them apart.",
-    "maxSpeed": "Top speed",
-    "separation": "Minimum separation",
     "spin": "Formation spin",
     "studioPitch": "Want a timeline, per-formation timing, camera shots and export?",
     "openStudio": "Open the full studio",
-    "droneSize": "Drone size",
     "random": "Random",
-    "ambient": "Background brightness",
     "view": "View",
-    "stars": "Stars",
-    "fireworks": "Fireworks",
-    "fireworkColors": "Firework colours",
-    "off": "Off",
-    "resetDrones": "Reset drones",
-    "resetSky": "Reset sky",
-    "resetFlight": "Reset flight",
     "resetAll": "Reset all settings",
     "autosaved": "Saved on this device automatically"
   },
@@ -114,7 +98,8 @@
       "saturn": "Saturn",
       "diamond": "Diamond",
       "pyramid": "Pyramid",
-      "tornado": "Tornado"
+      "tornado": "Tornado",
+      "butterfly": "Butterfly"
     },
     "sky": {
       "midnight": "Midnight",
@@ -201,16 +186,23 @@
       "show": "Show colours",
       "rainbow": "Rainbow",
       "gold": "Gold"
+    },
+    "motion": {
+      "none": "Still",
+      "flap": "Flap wings",
+      "wave": "Ripple",
+      "pulse": "Breathe",
+      "sway": "Sway"
     }
   },
   "Gallery": {
     "eyebrow": "Gallery",
-    "title": "Six shows, ready to fly",
+    "title": "Eight shows, ready to fly",
     "lead": "Every preview is drawn from the same formation data the drones fly. Watch one, or remix it in the studio.",
     "previewOf": "Preview of {name}",
     "meta": {
       "title": "Gallery",
-      "description": "Six ready-made drone shows to watch or remix."
+      "description": "Eight ready-made drone shows to watch or remix."
     },
     "fly": "Fly it here",
     "watch": "Watch",
@@ -221,7 +213,9 @@
       "aurora": "Slow waves, a ringed planet and a double helix under northern lights.",
       "new-year": "Three, two, one — a firework, then the new year in gold.",
       "ocean": "Waves, a flamingo and a globe in cool blues, ending in a waterspout.",
-      "gold-gala": "A diamond, a word and a ring in warm gold."
+      "gold-gala": "A diamond, a word and a ring in warm gold.",
+      "wings": "A flamingo, a parrot and a butterfly that beat their wings as they turn.",
+      "cosmos": "A ringed planet, a spiral galaxy and a tornado of light."
     },
     "summary": "{formations, plural, one {# formation} other {# formations}} · {drones} drones"
   },
@@ -323,12 +317,11 @@
       "shareFailed": "Could not copy the link",
       "shareLong": "Link copied, but it is long",
       "shareLongBody": "Uploaded pictures make links long. Some apps may cut it short; export a .json file to be safe.",
-      "resetAll": "Reset all settings"
+      "resetAll": "Reset all settings",
+      "guide": "Guide"
     },
     "library": {
       "title": "Formations",
-      "editing": "Editing · {name}",
-      "preview": "Preview of {name}",
       "addWord": "Add a word or shape",
       "wordLabel": "Word or shape name",
       "wordPlaceholder": "heart, saturn, HELLO, 桜…",
@@ -337,7 +330,8 @@
       "upload": "Your own",
       "sampling": "Sampling…",
       "dropTitle": "Upload a picture, SVG or .glb",
-      "dropHint": "Or drop a file anywhere on this panel"
+      "dropHint": "Or drop a file anywhere on this panel",
+      "hint": "Click anything to add it to the show."
     },
     "timeline": {
       "title": "Timeline",
@@ -353,33 +347,20 @@
       "next": "Next formation",
       "loop": "Loop",
       "scrub": "Playhead",
-      "empty": "No formations yet. Add your first one."
+      "empty": "No formations yet. Add your first one.",
+      "hint": "Click a card to fly there and edit it. Drag to reorder.",
+      "add": "Add formation"
     },
     "inspector": {
       "title": "Inspector",
       "tabs": {
+        "formation": "Shape",
         "drones": "Drones",
-        "motion": "Motion",
+        "flight": "Flight",
         "scene": "Scene",
         "camera": "Camera",
         "fx": "FX"
       },
-      "fleet": "Fleet",
-      "count": "Drones",
-      "countHint": "This device can fly up to {max}.",
-      "droneSize": "Drone size",
-      "size": "LED size",
-      "glow": "Glow",
-      "twinkle": "Twinkle",
-      "trails": "Light trails",
-      "color": "Colour",
-      "colorMode": "Colour mode",
-      "colors": "Colours",
-      "colorStop": "Colour {index}",
-      "addColor": "Add a colour",
-      "removeColor": "Remove a colour",
-      "axis": "Direction",
-      "transitionInto": "Flying into · {name}",
       "name": "Name",
       "curve": "Flight style",
       "effect": "Physics effect",
@@ -391,12 +372,7 @@
       "spin": "Spin",
       "ownColors": "Own colours",
       "ownColorsHint": "Give this formation its own colours instead of the show's.",
-      "selectKeyframe": "Select a formation on the timeline to edit how the fleet flies into it.",
-      "realism": "Real-world flight",
-      "realistic": "Obey real limits",
-      "realisticHint": "Caps speed and plans routes that keep drones apart.",
-      "maxSpeed": "Top speed",
-      "separation": "Minimum separation",
+      "selectKeyframe": "Click a formation on the timeline to edit it here.",
       "feel": "Feel",
       "swarm": "Swarm wobble",
       "hoverBob": "Hover drift",
@@ -406,12 +382,6 @@
       "windDirection": "Wind direction",
       "windStrength": "Wind strength",
       "maxBodies": "Physics bodies",
-      "environment": "Environment",
-      "sky": "Sky",
-      "ground": "Ground",
-      "stars": "Stars",
-      "fog": "Haze",
-      "ambient": "Background brightness",
       "cameraShow": "Whole show",
       "cameraPreset": "View",
       "autoOrbit": "Auto-rotate",
@@ -429,13 +399,21 @@
       "exposure": "Exposure",
       "vignette": "Vignette",
       "grain": "Grain",
-      "starSize": "Star size",
-      "fireworks": "Fireworks",
-      "fireworksIntensity": "Amount",
-      "fireworksSize": "Burst size",
-      "fireworksColors": "Colours",
-      "off": "Off",
-      "reset": "Reset"
+      "about": {
+        "formation": "The formation selected on the timeline: its shape, and how the fleet flies into it.",
+        "drones": "The whole fleet: how many drones, their size, light and colours.",
+        "flight": "Rules every drone obeys: top speed, safety gap, and how physics moments behave.",
+        "scene": "The world around the show: sky, ground, stars and fireworks.",
+        "camera": "Where the audience watches from.",
+        "fx": "Finishing touches on the picture: bloom, exposure and film grain."
+      },
+      "hint": "Change the selected formation, or the whole show.",
+      "shapeGroup": "Shape",
+      "flightGroup": "Flying into it",
+      "colorGroup": "Colours for this formation",
+      "motionGroup": "Movement while it holds",
+      "motion": "Movement",
+      "motionAmount": "Amount"
     },
     "export": {
       "title": "Export",
@@ -466,6 +444,30 @@
       "share": "Copy share link",
       "help": "Show this list",
       "walk": "Walk (first-person view)"
+    },
+    "tour": {
+      "label": "Studio walkthrough",
+      "progress": "Step {step} of {total}",
+      "skip": "Skip",
+      "back": "Back",
+      "next": "Next",
+      "done": "Start creating",
+      "library": {
+        "title": "1 · Add formations",
+        "body": "Pick a shape or 3D model, type a word, or upload a picture. Each one is added to your show and the drones fly into it."
+      },
+      "timeline": {
+        "title": "2 · Arrange the show",
+        "body": "Formations play left to right. Click a card to fly there, drag to reorder, and use the buttons on a card to duplicate or delete it."
+      },
+      "inspector": {
+        "title": "3 · Shape and style",
+        "body": "The first tab edits the selected formation. The others change the whole show: drones, flight rules, scene, camera and effects."
+      },
+      "share": {
+        "title": "4 · Save and share",
+        "body": "Your work saves automatically. Use Shows to load or save presets, Share to copy a link, and Export for a picture or video. Undo is always there."
+      }
     }
   },
   "Viewer": {
@@ -572,5 +574,40 @@
     "hintTouch": "Use the joystick to walk · drag to look around",
     "exit": "Exit walk",
     "joystick": "Walk joystick"
+  },
+  "Settings": {
+    "fleet": "Fleet",
+    "count": "Drones",
+    "countHint": "This device can fly {min} to {max} drones.",
+    "droneSize": "Drone size",
+    "ledSize": "LED size",
+    "glow": "Glow",
+    "twinkle": "Twinkle",
+    "trails": "Light trails",
+    "color": "Colour",
+    "colorMode": "Colour mode",
+    "colors": "Colours",
+    "colorStop": "Colour {index}",
+    "addColor": "Add a colour",
+    "removeColor": "Remove a colour",
+    "axis": "Direction",
+    "realism": "Real-world flight",
+    "realistic": "Obey real limits",
+    "realisticHint": "Caps speed and plans routes that keep drones apart.",
+    "maxSpeed": "Top speed",
+    "separation": "Minimum separation",
+    "environment": "Environment",
+    "sky": "Sky",
+    "ground": "Ground",
+    "stars": "Stars",
+    "starSize": "Star size",
+    "fog": "Haze",
+    "ambient": "Background brightness",
+    "fireworks": "Fireworks",
+    "fireworksIntensity": "Amount",
+    "fireworksSize": "Burst size",
+    "fireworksColors": "Colours",
+    "off": "Off",
+    "reset": "Reset"
   }
 }

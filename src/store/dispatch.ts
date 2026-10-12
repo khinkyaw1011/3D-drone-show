@@ -2,9 +2,9 @@ import { nanoid } from 'nanoid';
 import { type CommandHandlers, createDispatcher } from '@/engine/commands/commands';
 import { getSource } from '@/engine/formations/registry';
 import { BUILTIN_SHOWS } from '@/engine/presets/builtin';
-import { flightSchema, droneLookSchema, keyframeSchema, sceneSettingsSchema } from '@/engine/presets/schema';
+import { flightSchema, showSchema, droneLookSchema, keyframeSchema, sceneSettingsSchema } from '@/engine/presets/schema';
 import type { Keyframe, SceneSettings } from '@/engine/types';
-import { history, mutate, useStudio } from './index';
+import { currentFleetLimits, history, mutate, useStudio } from './index';
 import { initialPlaybackSlice } from './slices/playback';
 import { cloneShow, emptyShow } from './slices/show';
 
@@ -113,6 +113,8 @@ const handlers: CommandHandlers = {
       const all = scope === 'all';
       if (all || scope === 'look') {
         s.show.look = droneLookSchema.parse({});
+        // Fleet size is part of "the drones" for anyone using the panel, so it resets with them.
+        s.show.droneCount = currentFleetLimits().clamp(showSchema.shape.droneCount.parse(undefined));
         for (const kf of s.show.keyframes) delete kf.look;
       }
       if (all || scope === 'flight') s.show.flight = flightSchema.parse({});
@@ -130,6 +132,13 @@ const handlers: CommandHandlers = {
         physics: { ...s.show.scene.physics, ...p.physics },
         fireworks: { ...s.show.scene.fireworks, ...p.fireworks },
       });
+    }),
+  'ui.set': ({ patch }) =>
+    mutate((s) => {
+      // Only known UI keys are accepted, so a stray patch can never add state.
+      for (const key of Object.keys(s.ui) as (keyof typeof s.ui)[]) {
+        if (key in patch) (s.ui as Record<string, unknown>)[key] = patch[key];
+      }
     }),
   'playback.play': () => mutate((s) => void (s.playback.playing = true)),
   'playback.pause': () => mutate((s) => void (s.playback.playing = false)),
@@ -180,8 +189,9 @@ const handlers: CommandHandlers = {
   'show.new': () => loadShow(emptyShow()),
   'show.rename': ({ name }) => mutate((s) => void (s.show.name = name)),
   'show.setDroneCount': ({ count }) => {
-    const max = useStudio.getState().runtime.capabilities?.tier.maxDrones ?? 20000;
-    mutate((s) => void (s.show.droneCount = Math.min(count, max)));
+    // Only fleet sizes inside this device's limits are accepted.
+    const limits = currentFleetLimits();
+    mutate((s) => void (s.show.droneCount = limits.clamp(count)));
   },
   'history.undo': () => history().undo(),
   'history.redo': () => history().redo(),

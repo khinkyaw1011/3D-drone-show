@@ -2,7 +2,7 @@
   "version": 1,
   "id": "aurora",
   "name": "Aurora",
-  "droneCount": 1000,
+  "droneCount": 800,
   "look": {
     "colorMode": "gradient",
     "colors": [
@@ -13,9 +13,7 @@
     "gradientAxis": "x",
     "glow": 1.2,
     "twinkle": 0.35,
-    "swarm": 0.35,
-    "hoverBob": 0.35,
-    "size": 0.34
+    "swarm": 0.35
   },
   "scene": {
     "sky": "aurora",
@@ -23,7 +21,7 @@
     "fog": 0.12,
     "autoOrbit": 0,
     "bloom": {
-      "strength": 0.7
+      "strength": 0.5
     }
   },
   "keyframes": [
@@ -44,7 +42,9 @@
         "stagger": 0.35,
         "order": "radial"
       },
-      "spin": 8
+      "spin": 8,
+      "motion": "wave",
+      "motionAmount": 0.7
     },
     {
       "id": "au2",

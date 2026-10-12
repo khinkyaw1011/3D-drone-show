@@ -65,11 +65,13 @@ describe('reset to defaults', () => {
     const formations = useStudio.getState().show.keyframes.length;
 
     await dispatch({ type: 'look.set', patch: { glow: 2.5, colorMode: 'random' } });
+    await dispatch({ type: 'show.setDroneCount', count: 3000 });
     await dispatch({ type: 'scene.set', patch: { stars: 1, fireworks: { intensity: 0.9 } } });
     await dispatch({ type: 'flight.set', patch: { maxSpeed: 5 } });
 
     await dispatch({ type: 'settings.reset', scope: 'look' });
     expect(useStudio.getState().show.look).toEqual(defaults.look);
+    expect(useStudio.getState().show.droneCount).toBe(defaults.droneCount);
     expect(useStudio.getState().show.flight.maxSpeed).toBe(5);
 
     await dispatch({ type: 'settings.reset', scope: 'scene' });

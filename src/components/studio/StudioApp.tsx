@@ -16,11 +16,13 @@ import { useHydrated } from '@/hooks/useHydrated';
 import { useIsDesktop } from '@/hooks/useMediaQuery';
 import { useShowFromUrl } from '@/hooks/useShowFromUrl';
 import { cn } from '@/lib/utils';
-import { mutate, useStudio } from '@/store';
+import { useStudio } from '@/store';
 import type { MobilePanel } from '@/store/slices/ui';
 import { ExportDialog } from './ExportDialog';
 import { FormationPanel } from './FormationPanel';
 import { Inspector } from './Inspector';
+import { Panel } from './Panel';
+import { StudioTour, TOUR_STEPS } from './StudioTour';
 import { SHORTCUTS, type ShortcutId } from './shortcuts';
 import { Timeline } from './Timeline';
 import { TopBar, useShareLink } from './TopBar';
@@ -66,6 +68,14 @@ export function StudioApp() {
   const capabilities = useStudio((s) => s.runtime.capabilities);
   const [exportOpen, setExportOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  // The walkthrough opens by itself on a first visit; `undefined` = not touched yet this session.
+  const [tourChoice, setTourStep] = useState<number | null | undefined>(undefined);
+  const tourStep = tourChoice !== undefined ? tourChoice : hydrated && !ui.tourSeen ? 0 : null;
+  const onTourStep = (step: number | null) => {
+    setTourStep(step);
+    if (step === null && !ui.tourSeen) void run({ type: 'ui.set', patch: { tourSeen: true } });
+  };
+  const touring = tourStep === null ? null : TOUR_STEPS[tourStep];
   const fromUrl = useShowFromUrl();
   useStudioHotkeys(() => setHelpOpen(true));
 
@@ -80,7 +90,7 @@ export function StudioApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- once per URL read
   }, [fromUrl.ready]);
 
-  const setMobilePanel = (panel: MobilePanel) => mutate((s) => void (s.ui.mobilePanel = panel));
+  const setMobilePanel = (panel: MobilePanel) => void run({ type: 'ui.set', patch: { mobilePanel: panel } });
   if (!hydrated) return <div className="fixed inset-0 bg-ink" />;
 
   return (
@@ -89,38 +99,40 @@ export function StudioApp() {
       <WalkOverlay />
 
       <div className="pointer-events-none absolute inset-0 flex flex-col gap-2 p-2 sm:gap-3 sm:p-3 [&>*]:pointer-events-auto">
-        <TopBar onExport={() => setExportOpen(true)} onHelp={() => setHelpOpen(true)} />
+        <div className={cn('rounded-[14px] transition-shadow duration-200', touring === 'share' && 'shadow-[0_0_0_3px_rgb(124_247_228/0.3)]')}>
+          <TopBar onExport={() => setExportOpen(true)} onHelp={() => setHelpOpen(true)} onTour={() => setTourStep(0)} />
+        </div>
 
         <div className="pointer-events-none flex min-h-0 flex-1 justify-between gap-3 [&>*]:pointer-events-auto">
           {isDesktop && ui.leftOpen && (
-            <aside aria-label={t('library.title')} className="glass w-[300px] shrink-0 overflow-hidden">
+            <Panel as="aside" step={1} title={t('library.title')} hint={t('library.hint')} highlight={touring === 'library'} className="w-[300px] shrink-0">
               <FormationPanel />
-            </aside>
+            </Panel>
           )}
           <span className="pointer-events-none flex-1" />
           {isDesktop && ui.rightOpen && (
-            <aside aria-label={t('inspector.title')} className="glass w-[320px] shrink-0 overflow-hidden">
+            <Panel as="aside" step={3} title={t('inspector.title')} hint={t('inspector.hint')} highlight={touring === 'inspector'} className="w-[330px] shrink-0">
               <Inspector />
-            </aside>
+            </Panel>
           )}
         </div>
 
         {!isDesktop && (
           <div className="flex gap-2">
-            <Button variant="outline" className="glass h-10 flex-1 rounded-[14px]" onClick={() => setMobilePanel('library')}>
+            <Button variant="outline" className={cn('glass h-10 flex-1 rounded-[14px]', touring === 'library' && 'border-cyan/70')} onClick={() => setMobilePanel('library')}>
               <Layers />
               {t('library.title')}
             </Button>
-            <Button variant="outline" className="glass h-10 flex-1 rounded-[14px]" onClick={() => setMobilePanel('inspector')}>
+            <Button variant="outline" className={cn('glass h-10 flex-1 rounded-[14px]', touring === 'inspector' && 'border-cyan/70')} onClick={() => setMobilePanel('inspector')}>
               <SlidersHorizontal />
               {t('inspector.title')}
             </Button>
           </div>
         )}
 
-        <section aria-label={t('timeline.title')} className="glass h-[184px] shrink-0 sm:h-[196px]">
-          <Timeline onAdd={() => (isDesktop ? mutate((s) => void (s.ui.leftOpen = true)) : setMobilePanel('library'))} />
-        </section>
+        <Panel step={2} title={t('timeline.title')} hint={t('timeline.hint')} highlight={touring === 'timeline'} className="h-[244px] shrink-0 sm:h-[262px]">
+          <Timeline onAdd={() => (isDesktop ? void run({ type: 'ui.set', patch: { leftOpen: true } }) : setMobilePanel('library'))} />
+        </Panel>
 
         <footer className="flex items-center justify-between gap-3 px-1">
           <FleetStats />
@@ -141,6 +153,7 @@ export function StudioApp() {
         </DrawerContent>
       </Drawer>
 
+      <StudioTour step={tourStep} onStep={onTourStep} />
       <ExportDialog open={exportOpen} onOpenChange={setExportOpen} />
       <Dialog open={helpOpen} onOpenChange={setHelpOpen}>
         <DialogContent className="sm:max-w-md">

@@ -56,6 +56,10 @@ export class ShowPlayer {
   private live: LiveFlight | null = null;
   private wantsPlay = false;
   private timeScale = 1;
+  /** Frame-by-frame export keeps the simulation integrating while the GSAP clock is paused. */
+  private stepping = false;
+  /** Seconds of show time: advances only while playing. Drives noise, hover drift and formation movement. */
+  motionTime = 0;
   duration = 0;
   loop = true;
 
@@ -76,6 +80,12 @@ export class ShowPlayer {
   /** Flight statistics of the transition on stage (peak speed in m/s, closest approach in m). */
   get stats() {
     return this.live?.stats ?? this.compiled?.frames[Math.max(this.index, 0)]?.stats ?? null;
+  }
+  /** Movement of the formation on stage, with a 0..1 strength that fades in as it finishes assembling. */
+  get motion() {
+    const kf = this.show?.keyframes[this.live?.index ?? Math.max(this.index, 0)];
+    const formed = Math.min(1, Math.max(0, (this.sim.params.progress - 0.85) / 0.15));
+    return { kind: kf?.motion ?? 'none', amount: (kf?.motionAmount ?? 0) * formed };
   }
   get segmentTimes() {
     return this.segments.map(({ start, transitionEnd, end }) => ({ start, transitionEnd, end }));
@@ -130,6 +140,7 @@ export class ShowPlayer {
   }
 
   play() {
+    this.stepping = false;
     this.wantsPlay = true;
     if (this.live) return void this.live.tween.resume();
     if (!this.clock) return;
@@ -143,6 +154,7 @@ export class ShowPlayer {
   }
   /** Scrub like film: drones jump to where the timeline says they are at `t`. */
   seek(t: number) {
+    this.stepping = false;
     this.endLiveFlight();
     this.clock?.time(Math.min(Math.max(t, 0), this.duration));
     this.forceSnap = true;
@@ -151,6 +163,7 @@ export class ShowPlayer {
   }
   /** Move the playhead without teleporting drones: for frame-by-frame export, where the simulation must keep integrating. */
   scrubTo(t: number) {
+    this.stepping = true;
     this.endLiveFlight();
     this.clock?.pause();
     this.clock?.time(Math.min(Math.max(t, 0), this.duration));
@@ -276,9 +289,13 @@ export class ShowPlayer {
   }
 
   /** Advance the simulation one frame. Call from the render loop (or a fixed-step exporter). */
-  update(renderer: Renderer, dt: number, elapsed: number) {
+  update(renderer: Renderer, frameDt: number) {
     const { sim, show, compiled } = this;
     if (!show || !compiled) return;
+    // Paused means paused: no integration and a frozen clock, so drones hold position like real ones.
+    const dt = this.stepping ? frameDt : this.playing ? frameDt * this.timeScale : 0;
+    this.motionTime += dt;
+    const elapsed = this.motionTime;
     const p = sim.params;
     p.swarm = show.look.swarm;
     p.wind = [0, 0, 0];

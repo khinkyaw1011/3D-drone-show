@@ -18,9 +18,9 @@ export const SIM_CURVES = ['spring', 'swarm', 'physics'] as const;
 export const EASE_CURVES = ['power2.inOut', 'power3.inOut', 'expo.inOut', 'back.out(1.4)', 'sine.inOut', 'none'] as const;
 
 export const droneLookSchema = z.object({
-  size: z.number().min(0.08).max(0.8).default(0.3),
+  size: z.number().min(0.08).max(0.8).default(0.2),
   /** Airframe size as a fraction of the largest that still clears the neighbouring drone. */
-  body: z.number().min(0.35).max(1).default(0.85),
+  body: z.number().min(0.35).max(1).default(1),
   glow: z.number().min(0).max(3).default(1.2),
   twinkle: z.number().min(0).max(1).default(0.25),
   trails: z.boolean().default(true),
@@ -28,7 +28,7 @@ export const droneLookSchema = z.object({
   colors: z.array(hex).min(1).max(3).default(['#ffd27a', '#ff8fb1', '#7cf7e4']),
   gradientAxis: z.enum(AXES).default('y'),
   swarm: z.number().min(0).max(1).default(0.25),
-  hoverBob: z.number().min(0).max(1).default(0.2),
+  hoverBob: z.number().min(0).max(1).default(0.06),
 });
 
 export const physicsSettingsSchema = z.object({
@@ -59,7 +59,7 @@ export const sceneSettingsSchema = z.object({
   autoOrbit: z.number().min(0).max(1).default(0),
   bloom: z
     .object({
-      strength: z.number().min(0).max(3).default(0.7),
+      strength: z.number().min(0).max(3).default(0.45),
       radius: z.number().min(0).max(1).default(0.6),
       threshold: z.number().min(0).max(1).default(0.1),
     })
@@ -81,6 +81,9 @@ export const flightSchema = z.object({
   separation: z.number().min(0.5).max(4).default(1.5),
 });
 
+/** How a formation moves while it holds. All are smooth fields over the whole formation, so neighbours move together. */
+export const MOTIONS = ['none', 'flap', 'wave', 'pulse', 'sway'] as const;
+
 export const cameraShotSchema = z.object({ preset: z.enum(CAMERA_PRESETS) });
 
 export const transitionSchema = z.object({
@@ -96,6 +99,8 @@ export const keyframeSchema = z.object({
   name: z.string().default('Formation'),
   formation: z.object({ sourceId: z.string(), input: z.unknown() }),
   hold: z.number().min(0).max(30).default(2.5),
+  motion: z.enum(MOTIONS).default('none'),
+  motionAmount: z.number().min(0).max(1).default(0.5),
   /** Degrees per second the formation turns about the vertical axis, like a hologram on a turntable. */
   spin: z.number().min(-60).max(60).default(0),
   transition: transitionSchema.prefault({}),
@@ -107,7 +112,7 @@ export const showSchema = z.object({
   version: z.number().int().default(SHOW_VERSION),
   id: z.string(),
   name: z.string().min(1).max(60),
-  droneCount: z.number().int().min(100).max(20000).default(1200),
+  droneCount: z.number().int().min(100).max(20000).default(800),
   keyframes: z.array(keyframeSchema).max(40),
   look: droneLookSchema.prefault({}),
   scene: sceneSettingsSchema.prefault({}),
