@@ -1,5 +1,5 @@
 import { SpatialGrid } from '../formations/spatialGrid';
-import { detourWeight, flightPose, localProgress } from '../sim/path';
+import { carryWeight, detourWeight, flightPose, localProgress } from '../sim/path';
 
 /** Detour weight above which a drone counts as in transit (roughly the middle 80% of its flight). */
 const IN_TRANSIT = 0.3;
@@ -24,6 +24,8 @@ interface PlanOptions {
   iterations?: number;
   /** Largest detour allowed, in world units. */
   maxDetour?: number;
+  /** Momentum each drone carries into the transition (see `carryWeight`); part of the path, so it is planned around. */
+  carry?: Float32Array;
 }
 
 /**
@@ -33,7 +35,7 @@ interface PlanOptions {
  * Repeat until clean. End poses are never moved, so formations stay exact.
  */
 export function planPaths(from: Float32Array, to: Float32Array, delays: Float32Array, options: PlanOptions): PathPlan {
-  const { stagger, separation, samples = 14, iterations = 12, maxDetour = 8 } = options;
+  const { stagger, separation, samples = 14, iterations = 12, maxDetour = 8, carry } = options;
   const launch = options.launch ? 1 : 0;
   const count = from.length / 3;
   const detours = new Float32Array(count * 3);
@@ -50,10 +52,13 @@ export function planPaths(from: Float32Array, to: Float32Array, delays: Float32A
     minSeparation = Infinity;
     for (let s = 1; s < samples; s++) {
       const progress = s / samples;
+      const coasting = carryWeight(progress);
       for (let i = 0; i < count; i++) {
         const local = localProgress(progress, stagger, delays[i]);
         weights[i] = detourWeight(local);
-        poses.set(flightPose(pose, from, to, detours, i, local, launch), i * 3);
+        flightPose(pose, from, to, detours, i, local, launch);
+        if (carry) for (let k = 0; k < 3; k++) pose[k] += carry[i * 3 + k] * coasting;
+        poses.set(pose, i * 3);
       }
       grid.rebuild(count);
       for (let i = 0; i < count; i++) {

@@ -3,7 +3,8 @@ import { expose, transfer } from 'comlink';
 import { bake } from '@/engine/formations/sources/baked';
 import { type GlbOptions, sampleGlb } from '@/engine/formations/sources/model';
 import { generateFormation } from '@/engine/formations/registry';
-import type { FormationData } from '@/engine/types';
+import { type CompiledShow, compileShow } from '@/engine/timeline/compile';
+import type { FormationData, Show } from '@/engine/types';
 
 const running = new Map<number, AbortController>();
 
@@ -20,6 +21,16 @@ const api = {
     } finally {
       running.delete(requestId);
     }
+  },
+  /**
+   * Assign every drone a target, stretch transitions to the fleet's limits and plan
+   * conflict-free routes. This is the heaviest step of an edit, so it happens here and the
+   * page keeps rendering while it runs.
+   */
+  compile(show: Show, formations: FormationData[]): CompiledShow {
+    const compiled = compileShow(show, formations);
+    const buffers = [compiled.ground, ...compiled.frames].flatMap((f) => [f.positions.buffer, f.colors.buffer, f.delays.buffer, f.detours.buffer]);
+    return transfer(compiled, [...new Set(buffers)] as Transferable[]);
   },
   /** Abort a request; takes effect at the generator's next checkpoint. */
   cancel(requestId: number) {

@@ -42,7 +42,7 @@ export type StorageNode = StorageBufferNode<'vec4'>;
 
 /**
  * Every buffer is vec4 so GPU storage alignment and CPU uploads agree:
- *   position xyz_, velocity xyz_, color rgb_, start xyz+delay, target xyz_, startColor rgb_, targetColor rgb_, override (detour xyz_ | physics xyz+weight)
+ *   position xyz+ax, velocity xyz+ay, color rgb+az, start xyz+delay, target xyz+carryX, startColor rgb+carryY, targetColor rgb+carryZ, override (detour xyz_ | physics xyz+weight)
  */
 export interface SimBuffers {
   position: StorageNode;
@@ -90,10 +90,12 @@ export function upload(node: StorageNode, src: Float32Array, w?: Float32Array | 
 
 /** Load a transition into the buffers shared by both simulators. */
 export function uploadFrame(b: SimBuffers, from: CompiledFrame, to: CompiledFrame) {
+  // Momentum (xyz) rides in the spare w of target / startColor / targetColor: no storage buffer to spare.
+  const carry = (axis: number) => (to.carry ? to.carry.filter((_, i) => i % 3 === axis) : 0);
   upload(b.start, from.positions, to.delays);
-  upload(b.target, to.positions);
-  upload(b.startColor, from.colors, 1);
-  upload(b.targetColor, to.colors, 1);
+  upload(b.target, to.positions, carry(0));
+  upload(b.startColor, from.colors, carry(1));
+  upload(b.targetColor, to.colors, carry(2));
   upload(b.override, to.detours, 0);
 }
 
@@ -118,3 +120,11 @@ export const GROUND_Y = 0.34;
 export const FLOOR_Y = 0.3;
 /** Shared spring constants so GPU and CPU paths feel the same. */
 export const SPRING = { stiffness: 14, damping: 5.5 } as const;
+/**
+ * How quickly an airframe's attitude follows the acceleration asked of it, in seconds (a time
+ * constant). A quadcopter cannot change its tilt instantly; without this every drone would snap
+ * to its lean angle on the first frame of a flight.
+ */
+export const ATTITUDE_RESPONSE = 0.28;
+/** Fraction of the way attitude moves towards its target in a step of `dt` seconds. */
+export const attitudeBlend = (dt: number) => 1 - Math.exp(-dt / ATTITUDE_RESPONSE);

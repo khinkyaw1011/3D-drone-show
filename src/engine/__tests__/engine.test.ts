@@ -167,19 +167,26 @@ describe('player', () => {
     const { player, steps } = stubPlayer();
     player.load(show, compileShow(show, formations));
 
+    // Show time follows real time while playing (so a hitch never reads as a burst of speed)...
+    const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
     player.play();
     player.update(null as never, 0.016);
+    await wait(30);
     player.update(null as never, 0.016);
     const flying = player.motionTime;
-    expect(flying).toBeCloseTo(0.032);
+    expect(flying).toBeGreaterThan(0.02);
+    expect(flying).toBeLessThan(0.3);
 
+    // ...and stops dead while paused, however long that lasts.
     player.pause();
+    await wait(30);
     player.update(null as never, 0.016);
     player.update(null as never, 0.016);
     expect(player.motionTime).toBe(flying);
     expect(steps.slice(-2).map((s) => s.dt)).toEqual([0, 0]);
 
     player.play();
+    await wait(20);
     player.update(null as never, 0.016);
     expect(player.motionTime).toBeGreaterThan(flying);
     player.dispose();

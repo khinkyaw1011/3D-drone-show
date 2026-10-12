@@ -1,10 +1,10 @@
 import gsap from 'gsap';
-import { detourWeight, flightPose, localProgress, smooth } from './path';
+import { carryWeight, detourWeight, flightPose, localProgress, smooth } from './path';
 import { SHOW_VOLUME } from '../formations/fit';
 import { hash01 } from '../formations/order';
 import type { CompiledFrame } from '../timeline/compile';
 import type { PhysicsEffect } from '../types';
-import { FLOOR_Y, GROUND_Y, SIM_MODE, SPRING, type Simulator, createBuffers, defaultSimParams, uploadFrame } from './Simulator';
+import { FLOOR_Y, GROUND_Y, SIM_MODE, attitudeBlend, SPRING, type Simulator, createBuffers, defaultSimParams, uploadFrame } from './Simulator';
 
 const { clamp, interpolate: lerp } = gsap.utils;
 
@@ -77,7 +77,9 @@ export class CpuSimulator implements Simulator {
     const to = [0, 0, 0];
     const pose = [0, 0, 0];
     const live = rawDt > 0;
+    const coasting = carryWeight(progress);
     const dt = Math.min(Math.max(rawDt, 1e-4), 1 / 20);
+    const attitude = attitudeBlend(dt);
     const snap = this.pendingSnap;
     this.pendingSnap = false;
 
@@ -100,7 +102,9 @@ export class CpuSimulator implements Simulator {
       // Same path function as the GPU and the planner, then the planned detour for this drone.
       flightPose(pose, from, to, null, 0, local, launch);
       const bulge = detourWeight(local);
-      for (let k = 0; k < 3; k++) pose[k] += D[o + k] * bulge;
+      // Planned detour, plus the momentum carried into this transition (same terms as the GPU and the planner).
+      const carry = [T[o + 3], SC[o + 3], TC[o + 3]];
+      for (let k = 0; k < 3; k++) pose[k] += D[o + k] * bulge + carry[k] * coasting;
 
       // Acceleration rides in the spare w of position / velocity / colour, as on the GPU.
       const accel = [P[o + 3], V[o + 3], C[o + 3]];
@@ -112,7 +116,7 @@ export class CpuSimulator implements Simulator {
           V[a] = 0;
         } else if (mode === SIM_MODE.ease) {
           const next = pose[k]; // planned route: no noise, see GpuSimulator
-          V[a] = clamp(-60, 60, (next - P[a]) / dt);
+          V[a] = clamp(-60, 60, (next - P[a]) / Math.max(rawDt, 1e-4)); // over the time that really passed
           P[a] = next;
         } else if (mode === SIM_MODE.spring) {
           const goal = local > 0.0001 ? to[k] : from[k];
@@ -129,7 +133,8 @@ export class CpuSimulator implements Simulator {
         else if (mode === SIM_MODE.ease) {
           // Exact acceleration of the planned route (see GpuSimulator).
           const localRate = rate * (1 + stagger);
-          accel[k] = local > 0.0001 && local < 0.9999 ? clamp(-12, 12, (to[k] - from[k]) * (6 - 12 * local) * localRate * localRate) : 0;
+          const demanded = local > 0.0001 && local < 0.9999 ? clamp(-12, 12, (to[k] - from[k]) * (6 - 12 * local) * localRate * localRate) : 0;
+          accel[k] += (demanded - accel[k]) * attitude; // the airframe takes a moment to tilt
         } else accel[k] += (clamp(-12, 12, (V[a] - before) / dt) - accel[k]) * 0.06;
       }
       if (mode === SIM_MODE.physics && P[o + 1] < GROUND_Y) {

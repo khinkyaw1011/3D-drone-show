@@ -23,7 +23,7 @@ import { SHOW_VOLUME } from '../formations/fit';
 import { LAUNCH } from './path';
 import type { CompiledFrame } from '../timeline/compile';
 import type { PhysicsEffect } from '../types';
-import { FLOOR_Y, GROUND_Y, SIM_MODE, SPRING, type Simulator, type StorageNode, createBuffers, defaultSimParams, uploadFrame } from './Simulator';
+import { FLOOR_Y, GROUND_Y, SIM_MODE, attitudeBlend, SPRING, type Simulator, type StorageNode, createBuffers, defaultSimParams, uploadFrame } from './Simulator';
 
 const CENTER = vec3(...SHOW_VOLUME.center);
 const EFFECT_ID: Record<PhysicsEffect, number> = { drop: 0, burst: 1, wind: 2 };
@@ -49,6 +49,9 @@ export class GpuSimulator implements Simulator {
     /** 1 while show time is advancing, 0 while paused. */
     live: uniform(1),
     rate: uniform(0),
+    attitude: uniform(1),
+    /** Seconds of show time since the previous step, uncapped. */
+    span: uniform(0.016),
     spinStart: uniform(0),
     spinTarget: uniform(0),
     launch: uniform(0),
@@ -82,17 +85,26 @@ export class GpuSimulator implements Simulator {
       return vec3(mix(from.x, to.x, slide), mix(from.y, to.y, rise), mix(from.z, to.z, slide));
     };
 
+    /** Momentum carried into this transition, easing out (see `carryWeight` in path.ts). */
+    const coast = () =>
+      vec3(b.target.element(instanceIndex).w, b.startColor.element(instanceIndex).w, b.targetColor.element(instanceIndex).w).mul(
+        u.progress.mul(float(1).sub(u.progress).pow(3)),
+      );
+
     this.updateNode = Fn(() => {
       const start = b.start.element(instanceIndex);
-      const from = spin(start, u.spinStart);
-      const to = spin(b.target.element(instanceIndex), u.spinTarget);
+      // These are used inside the mode branches AND after them. They must be real variables
+      // declared up here: an expression first evaluated inside a branch is not reliably
+      // available after it in the generated shader (colours and attitude silently read 0).
+      const from = spin(start, u.spinStart).toVar();
+      const to = spin(b.target.element(instanceIndex), u.spinTarget).toVar();
       const P = b.position.element(instanceIndex).xyz.toVar();
       const V = b.velocity.element(instanceIndex).xyz.toVar();
       // Acceleration rides in the spare w of position / velocity / colour (no storage buffer to spare).
       const before = vec3(V).toVar(); // a copy: `V` is about to change
       const A = vec3(b.position.element(instanceIndex).w, b.velocity.element(instanceIndex).w, b.color.element(instanceIndex).w).toVar();
-      const local = localProgress(start);
-      const eased = smoothstep(0, 1, local);
+      const local = localProgress(start).toVar();
+      const eased = smoothstep(0, 1, local).toVar();
       const seed = hash(instanceIndex);
       const noise = mx_noise_vec3(P.mul(0.11).add(vec3(u.time.mul(0.22), seed.mul(9), u.time.mul(0.13))));
       const dt = max(u.dt, 0.0001);
@@ -101,8 +113,9 @@ export class GpuSimulator implements Simulator {
         // Scrubbable: pose is a pure function of progress, with a noise arc mid-flight.
         // Planned route: exactly the eased path plus its de-conflicting detour. No noise, so the
         // separation worked out before take-off holds and a paused fleet does not jitter.
-        const next = flightPath(from, to, local).add(b.override.element(instanceIndex).xyz.mul(sin(local.mul(Math.PI))));
-        V.assign(clamp(next.sub(P).div(dt), vec3(-60), vec3(60)));
+        const next = flightPath(from, to, local).add(b.override.element(instanceIndex).xyz.mul(sin(local.mul(Math.PI)))).add(coast());
+        // Velocity over the time that really passed (not the integration step, which is capped).
+        V.assign(clamp(next.sub(P).div(max(u.span, 0.0001)), vec3(-60), vec3(60)));
         P.assign(next);
       })
         .ElseIf(u.mode.equal(SIM_MODE.spring), () => {
@@ -133,10 +146,12 @@ export class GpuSimulator implements Simulator {
       If(u.live.greaterThan(0.5), () => {
         If(u.mode.equal(SIM_MODE.ease), () => {
           // On a planned route acceleration is known exactly: the second derivative of the eased
-          // path. No frame-to-frame differencing, so the airframe's lean is perfectly steady.
+          // path. No frame-to-frame differencing, so what the drone is asked for is perfectly steady...
           const inFlight = step(0.0001, local).mul(step(local, 0.9999));
           const localRate = u.rate.mul(u.stagger.add(1));
-          A.assign(clamp(to.sub(from).mul(float(6).sub(local.mul(12))).mul(localRate).mul(localRate).mul(inFlight), vec3(-12), vec3(12)));
+          const demanded = clamp(to.sub(from).mul(float(6).sub(local.mul(12))).mul(localRate).mul(localRate).mul(inFlight), vec3(-12), vec3(12));
+          // ...and the airframe takes a moment to tilt to it.
+          A.assign(mix(A, demanded, u.attitude));
         }).Else(() => {
           // Integrated flight (spring, physics): estimate it from the change in velocity, heavily smoothed.
           A.assign(mix(A, clamp(V.sub(before).div(dt), vec3(-12), vec3(12)), 0.06));
@@ -155,9 +170,9 @@ export class GpuSimulator implements Simulator {
       const start = b.start.element(instanceIndex);
       const local = localProgress(start);
       const eased = smoothstep(0, 1, local);
-      const pose = flightPath(spin(start, u.spinStart), spin(b.target.element(instanceIndex), u.spinTarget), local).add(
-        b.override.element(instanceIndex).xyz.mul(sin(local.mul(Math.PI))),
-      );
+      const pose = flightPath(spin(start, u.spinStart), spin(b.target.element(instanceIndex), u.spinTarget), local)
+        .add(b.override.element(instanceIndex).xyz.mul(sin(local.mul(Math.PI))))
+        .add(coast());
       b.position.element(instanceIndex).assign(vec4(pose, 0));
       b.velocity.element(instanceIndex).assign(vec4(0));
       b.color.element(instanceIndex).assign(vec4(mix(b.startColor.element(instanceIndex), b.targetColor.element(instanceIndex), eased).xyz, 0));
@@ -213,6 +228,8 @@ export class GpuSimulator implements Simulator {
     u.spinTarget.value = params.spinTarget;
     u.launch.value = params.launch;
     u.live.value = dt > 0 ? 1 : 0;
+    u.span.value = Math.max(dt, 1e-4);
+    u.attitude.value = attitudeBlend(Math.min(dt, 1 / 20));
     u.dt.value = Math.min(Math.max(dt, 1e-4), 1 / 20);
     u.time.value = time;
     if (this.pendingSnap) {

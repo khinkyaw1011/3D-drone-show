@@ -25,6 +25,8 @@ Skyloom is a virtual drone-show studio (Next.js App Router, three.js WebGPU/TSL,
 - Settings controls shared by the landing deck and the studio live in `components/show/settings.tsx`. Add a control there once rather than in each panel.
 - Anything that should stop when the show is paused must run on the show clock (`player.motionTime` / the `clock` uniform), not TSL `time`.
 - WebGPU allows 8 storage buffers per shader stage; `SimBuffers` is at that limit. Acceleration is packed into the spare `w` of position / velocity / colour.
+- In TSL compute functions, anything used both inside an `If` branch and after it must be a `.toVar()` declared before the branch; otherwise it silently reads zero afterwards on WebGPU.
+- Step the simulation by `playheadDelta()` (how far the show clock moved), never by frame delta or wall time.
 - A new resettable setting must be listed under its feature in `engine/presets/reset.ts`, or its reset button will not see it.
 - Firework timing lives in `FIREWORK_SCHEDULE` (`engine/materials/lighting.ts`), shared by the shader and the ground light. Do not move it back into shader-only hashes.
 - Heavy work (sampling, model parsing) runs in the comlink worker (`src/workers/sampler.worker.ts`). Keep `./worker-shim` as its first import.

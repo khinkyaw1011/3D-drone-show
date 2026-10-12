@@ -30,6 +30,7 @@ export function Drones({ player, look, power, spacing, pushToy = false }: Drones
   const size = useThree((s) => s.size);
   const quadRef = useRef<Mesh>(null);
   const uniforms = useMemo(() => createDroneUniforms(), []);
+  const goal = useRef({ body: uniforms.body.value, size: uniforms.size.value, glow: uniforms.glow.value });
   const sprite = useMemo(() => {
     const { material } = createDroneMaterial(sim.buffers, uniforms);
     return { material, geometry: new PlaneGeometry(1, 1) };
@@ -56,10 +57,11 @@ export function Drones({ player, look, power, spacing, pushToy = false }: Drones
 
   useEffect(() => {
     // Never draw a drone wider than the gap to its neighbour: real fleets do not touch.
-    uniforms.body.value = Math.min(1.1, Math.max(0.1, spacing * 0.95 * look.body));
-    // The LED is a lamp on the airframe, never bigger than the drone carrying it (when airframes are drawn).
-    uniforms.size.value = Math.min(look.size, uniforms.body.value * 0.55);
-    uniforms.glow.value = look.glow;
+    const body = Math.min(1.1, Math.max(0.1, spacing * 0.95 * look.body));
+    // The LED is a lamp on the airframe, never bigger than the drone carrying it.
+    // Sizes and glow are targets: the frame loop eases towards them, so nothing pops when a new
+    // formation changes the fleet's spacing or a slider moves.
+    goal.current = { body, size: Math.min(look.size, body * 0.55), glow: look.glow };
     uniforms.twinkle.value = look.twinkle;
     uniforms.trail.value = look.trails ? 1 : 0;
     uniforms.bob.value = look.hoverBob;
@@ -68,6 +70,10 @@ export function Drones({ player, look, power, spacing, pushToy = false }: Drones
   const scratch = useMemo(() => ({ plane: new Plane(), hit: new Vector3(), normal: new Vector3() }), []);
 
   useFrame(({ camera, pointer, raycaster }, dt) => {
+    const ease = Math.min(1, dt * 3.5);
+    uniforms.body.value += (goal.current.body - uniforms.body.value) * ease;
+    uniforms.size.value += (goal.current.size - uniforms.size.value) * ease;
+    uniforms.glow.value += (goal.current.glow - uniforms.glow.value) * ease;
     const cam = camera as PerspectiveCamera;
     uniforms.pixelScale.value = (2 * Math.tan((cam.fov * Math.PI) / 360)) / size.height;
     uniforms.power.value += (power - uniforms.power.value) * Math.min(1, dt * 4);

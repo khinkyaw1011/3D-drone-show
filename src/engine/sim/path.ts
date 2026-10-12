@@ -21,6 +21,14 @@ export const localProgress = (progress: number, stagger: number, delay: number) 
 /** How far along the detour bulge a drone is (0 at both ends, 1 mid-flight). */
 export const detourWeight = (local: number) => Math.sin(local * Math.PI);
 
+/**
+ * Momentum: a drone that was already moving when a new flight began keeps that velocity and
+ * eases out of it. `carry` (entry velocity x flight duration) is scaled by this weight, which
+ * has slope 1 at the start (so the velocity is continuous) and is back to 0 well before arrival.
+ * It follows the transition's overall progress, not the per-drone stagger: nobody waits to start coasting.
+ */
+export const carryWeight = (progress: number) => progress * (1 - progress) ** 3;
+
 /** Write the pose of drone `i` into `out` (xyz). `stride` is 3 or 4 for the from/to arrays. */
 export function flightPose(
   out: number[] | Float32Array,

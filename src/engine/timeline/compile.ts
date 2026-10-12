@@ -13,6 +13,8 @@ export interface CompiledFrame {
   delays: Float32Array; // 0..1 launch delay per drone
   /** Planned mid-flight detour per drone (xyz) for the transition INTO this frame. */
   detours: Float32Array;
+  /** Momentum carried into this transition per drone (xyz, world units): entry velocity x duration. Timeline frames have none. */
+  carry?: Float32Array;
   /** Transition length actually flown, in seconds (>= the keyframe's own duration). */
   duration: number;
   /** Flight statistics for the transition into this frame. */
@@ -26,6 +28,9 @@ export interface CompiledShow {
   /** Tightest neighbour spacing across all formations (world units): how big a drone may be drawn. */
   spacing: number;
 }
+
+/** Most a drone may coast on its entry momentum, per axis, in world units. */
+const MAX_CARRY = 8;
 
 const GROUND_COLOR = [0.5, 0.42, 0.28];
 
@@ -86,6 +91,8 @@ interface TransitionOptions {
   planned: boolean;
   /** Nearest-neighbour spacing of the departing formation, if known. */
   spacingFrom?: number;
+  /** Velocity each drone has as the transition begins (xyz, units/s), for a live re-form of a moving fleet. */
+  entryVelocity?: Float32Array;
 }
 
 /**
@@ -97,8 +104,8 @@ export function planTransition(
   to: Float32Array,
   delays: Float32Array,
   flight: Show['flight'],
-  { stagger, launch, duration: requested, planned, spacingFrom = Infinity }: TransitionOptions,
-): Pick<CompiledFrame, 'detours' | 'duration' | 'stats'> {
+  { stagger, launch, duration: requested, planned, spacingFrom = Infinity, entryVelocity }: TransitionOptions,
+): Pick<CompiledFrame, 'detours' | 'duration' | 'stats' | 'carry'> {
   const count = to.length / 3;
   let farthest = 0;
   for (let i = 0; i < to.length; i += 3) farthest = Math.max(farthest, Math.hypot(to[i] - from[i], to[i + 1] - from[i + 1], to[i + 2] - from[i + 2]));
@@ -112,12 +119,15 @@ export function planTransition(
     : requested;
   // Never ask for more clearance than the formations themselves provide.
   const clearance = Math.min(flight.separation / UNIT_METERS, formationSpacing(to) * 0.85, spacingFrom * 0.85);
+  // Momentum as a displacement budget: velocity x duration, capped so a fast fleet cannot overshoot wildly.
+  const carry = entryVelocity && entryVelocity.map((v) => Math.min(MAX_CARRY, Math.max(-MAX_CARRY, v * duration)));
   const plan =
     flight.realistic && planned && farthest > 1e-3
-      ? planPaths(from, to, delays, { stagger, launch, separation: clearance, iterations: count > 6000 ? 4 : 12 })
+      ? planPaths(from, to, delays, { stagger, launch, separation: clearance, iterations: count > 6000 ? 4 : 12, carry })
       : { detours: new Float32Array(count * 3), minSeparation: 0, conflicts: 0 };
   return {
     detours: plan.detours,
+    carry,
     duration,
     stats: { peakSpeed: peakSpeed(farthest, duration, stagger, launch) * UNIT_METERS, minSeparation: plan.minSeparation * UNIT_METERS, conflicts: plan.conflicts },
   };

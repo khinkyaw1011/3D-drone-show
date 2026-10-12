@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { generateFormation } from '../formations/registry';
 import { parseShow } from '../presets/schema';
 import { compileShow } from '../timeline/compile';
-import { formationSpacing } from '../timeline/planPaths';
+import { carryWeight } from '../sim/path';
+import { formationSpacing, planPaths } from '../timeline/planPaths';
 import { fleetSpacing } from '../formations/relax';
 
 const show = parseShow({
@@ -57,5 +58,26 @@ describe('formation spacing', () => {
       const formation = await generateFormation('shape', { shape }, { count: 1200 });
       expect(formationSpacing(formation.positions), shape).toBeGreaterThan(fleetSpacing(1200) * 0.9);
     }
+  });
+});
+
+describe('momentum between flights', () => {
+  it('starts a new flight at the velocity the drone already had, and has let go of it by arrival', () => {
+    const [velocity, duration] = [3, 4]; // units/s, seconds
+    const carry = velocity * duration;
+    const step = 1e-4; // a sliver of progress = step * duration seconds
+    expect((carry * carryWeight(step)) / (step * duration)).toBeCloseTo(velocity, 2);
+    expect(carryWeight(0)).toBe(0);
+    expect(carryWeight(1)).toBe(0);
+    // Never coasts further than a small fraction of the budget.
+    expect(Math.max(...Array.from({ length: 101 }, (_, i) => carryWeight(i / 100)))).toBeLessThan(0.11);
+  });
+
+  it('is part of the planned route, so drones coasting together still keep their gap', async () => {
+    const from = (await generateFormation('shape', { shape: 'sphere' }, { count: 400 })).positions;
+    const to = (await generateFormation('shape', { shape: 'cube' }, { count: 400 })).positions;
+    const carry = Float32Array.from({ length: from.length }, (_, i) => (i % 3 === 0 ? 5 : 0)); // everyone drifting +x
+    const plan = planPaths(from, to, new Float32Array(400), { stagger: 0.25, launch: false, separation: 0.2, carry });
+    expect(plan.conflicts).toBe(0);
   });
 });

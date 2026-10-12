@@ -37,6 +37,13 @@ Where the build departs from, or sharpens, the original spec, and why.
 - **Drones never go below the ground.** The simulators clamp height in every mode and the draw position is clamped again after formation movement.
 - **Ground lighting.** Grass and trees are lit by a shared scene light: the fleet's average colour (falling off with distance from the show, on faces turned towards it) and firework flashes. Burst timing comes from a CPU-side schedule shared with the firework shader, so the flashes are in step; their colour and position are approximated (one light for the whole field). There are no cast shadows.
 - **Wind** (direction, strength) bends the grass as a cantilever and sways the trees in the vertex shader, and is the same setting that pushes drones in wind moments.
+- **Changing formation without a hitch.** Found by measuring frame-to-frame change from the browser's own compositor frames while clicking shapes. Four separate causes, all fixed:
+  - Compiling a show (assignment and route planning) froze the page for 100–200 ms. It now runs in the worker.
+  - GSAP's clock and the render loop tick at different points in a frame, so after any hitch the pose advanced by more show time than the simulation step assumed and every drone registered a one-frame burst of speed. The simulation now steps by how far the playhead itself moved (`playheadDelta`).
+  - In the compute shader, values first evaluated inside a mode branch (`local`, `eased`, `from`, `to`) read as zero after it, so on WebGPU colours did not blend during flights and acceleration was always zero. They are now `toVar()`s declared before the branches. Any value used both inside and after an `If` in TSL must be.
+  - Drone size and glow were applied instantly when a new formation changed the fleet's spacing; they now ease.
+- **Momentum.** A fleet re-formed mid-flight keeps each drone's velocity and eases out of it (`carryWeight` in `sim/path.ts`), stored in the spare `w` of the target / startColor / targetColor buffers and included in route planning.
+- **Attitude response.** The lean follows demanded acceleration with a 0.28 s time constant; without it every airframe snapped to its tilt on the first frame of a flight.
 - **Paused means still.** The simulator and the shaders run on the player's show clock, which only advances while playing, and planned routes carry no noise. A paused fleet holds position exactly; only propellers and LED twinkle keep going.
 - **Formation movement** (flap, wave, pulse, sway) is a smooth displacement field applied in the vertex shader while a formation holds. Neighbours move together, but it is not part of route planning, so the separation figure does not cover it.
 

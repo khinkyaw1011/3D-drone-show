@@ -2,7 +2,7 @@ import gsap from 'gsap';
 import type { Renderer } from 'three/webgpu';
 import { SHOW_VOLUME } from '../formations/fit';
 import { SIM_MODE, type Simulator } from '../sim/Simulator';
-import { detourWeight, flightPose, localProgress, smooth, spinXZ } from '../sim/path';
+import { carryWeight, detourWeight, flightPose, localProgress, smooth, spinXZ } from '../sim/path';
 import { type Segment, type TimelineCursor, buildTimeline, locate } from '../timeline/buildTimeline';
 import { type CompiledFrame, type CompiledShow, planTransition } from '../timeline/compile';
 import type { PhysicsEffect, Show } from '../types';
@@ -66,6 +66,9 @@ export class ShowPlayer {
   /** Frame-by-frame export keeps the simulation integrating while the GSAP clock is paused. */
   private stepping = false;
   private lastProgress = 0;
+  private lastUpdateAt = performance.now();
+  private lastPlayhead = 0;
+  private lastSource: object | null = null;
   private spans = new WeakMap<CompiledFrame, number>();
   /** Seconds of show time: advances only while playing. Drives noise, hover drift and formation movement. */
   motionTime = 0;
@@ -230,7 +233,7 @@ export class ShowPlayer {
   }
 
   /** Where every drone is right now (and its colour), rebuilt on the CPU from the loaded transition. */
-  private capturePose(): CompiledFrame {
+  private capturePose(): CompiledFrame & { velocity?: Float32Array } {
     const count = this.sim.count;
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
@@ -246,28 +249,42 @@ export class ShowPlayer {
       return ground ? { ...ground, ...blank } : { positions, colors, ...blank };
     }
 
-    const { progress, stagger, spinStart, spinTarget, launch } = this.sim.params;
+    const { progress, rate, stagger, spinStart, spinTarget, launch } = this.sim.params;
     const { from, to } = loaded;
     const [cx, , cz] = SHOW_VOLUME.center;
     const a = [0, 0, 0];
     const b = [0, 0, 0];
     const pose = [0, 0, 0];
-    for (let i = 0; i < count; i++) {
-      const o = i * 3;
-      const local = localProgress(progress, stagger, to.delays[i]);
-      [a[0], a[2]] = spinXZ(from.positions[o], from.positions[o + 2], cx, cz, spinStart);
-      [b[0], b[2]] = spinXZ(to.positions[o], to.positions[o + 2], cx, cz, spinTarget);
-      a[1] = from.positions[o + 1];
-      b[1] = to.positions[o + 1];
-      flightPose(pose, a, b, null, 0, local, launch);
-      const bulge = detourWeight(local);
-      const eased = smooth(local);
-      for (let k = 0; k < 3; k++) {
-        positions[o + k] = pose[k] + to.detours[o + k] * bulge;
-        colors[o + k] = from.colors[o + k] + (to.colors[o + k] - from.colors[o + k]) * eased;
+    /** The fleet's pose at transition progress `p`: the same function the simulators evaluate. */
+    const poseAt = (p: number, out: Float32Array, tint?: Float32Array) => {
+      const coasting = carryWeight(p);
+      for (let i = 0; i < count; i++) {
+        const o = i * 3;
+        const local = localProgress(p, stagger, to.delays[i]);
+        [a[0], a[2]] = spinXZ(from.positions[o], from.positions[o + 2], cx, cz, spinStart);
+        [b[0], b[2]] = spinXZ(to.positions[o], to.positions[o + 2], cx, cz, spinTarget);
+        a[1] = from.positions[o + 1];
+        b[1] = to.positions[o + 1];
+        flightPose(pose, a, b, null, 0, local, launch);
+        const bulge = detourWeight(local);
+        const eased = smooth(local);
+        for (let k = 0; k < 3; k++) {
+          out[o + k] = pose[k] + to.detours[o + k] * bulge + (to.carry ? to.carry[o + k] * coasting : 0);
+          if (tint) tint[o + k] = from.colors[o + k] + (to.colors[o + k] - from.colors[o + k]) * eased;
+        }
       }
+    };
+    poseAt(progress, positions, colors);
+
+    // Velocity right now, from the same path a moment earlier: what each drone carries into its next flight.
+    let velocity: Float32Array | undefined;
+    const lookBack = 0.05; // seconds of show time
+    if (rate > 1e-4 && this.playing) {
+      const earlier = new Float32Array(count * 3);
+      poseAt(Math.max(0, progress - rate * lookBack), earlier);
+      velocity = positions.map((value, i) => (value - earlier[i]) / lookBack);
     }
-    return { positions, colors, ...blank };
+    return { positions, colors, ...blank, velocity };
   }
 
   /**
@@ -276,7 +293,7 @@ export class ShowPlayer {
    * formation already on stage. The formation's rotation is taken at that same moment, so a
    * spinning formation never snaps back to an earlier angle.
    */
-  private startLiveFlight(pose: CompiledFrame, index: number, resumeAt?: number) {
+  private startLiveFlight(pose: CompiledFrame & { velocity?: Float32Array }, index: number, resumeAt?: number) {
     const { show, compiled, clock } = this;
     const segment = this.segments[index];
     if (!show || !compiled || !clock || !segment) return;
@@ -289,6 +306,7 @@ export class ShowPlayer {
       launch: false,
       duration: MIN_FLY_SECONDS,
       planned: true,
+      entryVelocity: pose.velocity,
     });
     const target: CompiledFrame = { ...frame, ...plan };
     this.sim.setFrame(pose, target, false);
@@ -344,6 +362,27 @@ export class ShowPlayer {
     this.physicsActive = effect;
   }
 
+  /**
+   * Seconds of show time since the previous update, read from the playhead itself.
+   * GSAP advances its clock on its own tick, which is not in step with the render loop: after
+   * any hitch the clock catches up on a different frame than a wall-clock timer would say. Using
+   * the playhead's own movement means the simulation always steps by exactly the time its
+   * pose advanced, so a hitch can never read as a one-frame burst of speed.
+   */
+  private playheadDelta(): number {
+    const source = this.live?.tween ?? this.clock;
+    const now = performance.now();
+    const real = Math.min((now - this.lastUpdateAt) / 1000, 0.5) * this.timeScale;
+    this.lastUpdateAt = now;
+    const playhead = source?.time() ?? 0;
+    const moved = playhead - this.lastPlayhead;
+    const continuous = source === this.lastSource && moved >= 0 && moved < 0.5 * Math.max(1, this.timeScale);
+    this.lastPlayhead = playhead;
+    this.lastSource = source ?? null;
+    // A new flight, a seek or a loop restart has no meaningful delta: fall back to real time for that one step.
+    return continuous ? moved : real;
+  }
+
   /** How fast transition progress is advancing per second of show time, smoothed; the simulator derives acceleration from it. */
   private trackRate(dt: number) {
     const p = this.sim.params;
@@ -359,7 +398,7 @@ export class ShowPlayer {
     const { sim, show, compiled } = this;
     if (!show || !compiled) return;
     // Paused means paused: no integration and a frozen clock, so drones hold position like real ones.
-    const dt = this.stepping ? frameDt : this.playing ? frameDt * this.timeScale : 0;
+    const dt = this.stepping ? frameDt : this.playing ? this.playheadDelta() : 0;
     this.motionTime += dt;
     const elapsed = this.motionTime;
     const p = sim.params;
