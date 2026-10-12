@@ -134,6 +134,9 @@ export function EnvironmentPicker() {
 }
 
 /** How many drones, and how each one looks. */
+/** Airframe glow the "realistic lighting" switch sets: mostly lamp-lit, with just enough colour to read from the crowd. */
+const REALISTIC_GLOW = 0.15;
+
 export function DroneSection(group: SectionProps) {
   const { t, run, setLook, reset } = useSettings();
   const look = useStudio((s) => s.show.look);
@@ -154,6 +157,12 @@ export function DroneSection(group: SectionProps) {
       <SliderField label={t('droneSize')} value={look.body} min={0.35} max={1} format={percent} onChange={(body) => setLook({ body })} />
       <SliderField label={t('ledSize')} value={look.size} min={0.08} max={0.8} onChange={(size) => setLook({ size })} />
       <SliderField label={t('glow')} value={look.glow} min={0} max={3} onChange={(glow) => setLook({ glow })} />
+      <SwitchField
+        label={t('realisticLight')}
+        hint={t('realisticLightHint')}
+        value={look.bodyGlow < 0.5}
+        onChange={(realistic) => setLook({ bodyGlow: realistic ? REALISTIC_GLOW : 1 })}
+      />
       <SliderField label={t('bodyGlow')} hint={t('bodyGlowHint')} value={look.bodyGlow} min={0} max={1} format={percent} onChange={(bodyGlow) => setLook({ bodyGlow })} />
       <SliderField label={t('twinkle')} value={look.twinkle} min={0} max={1} onChange={(twinkle) => setLook({ twinkle })} />
       <SwitchField label={t('trails')} value={look.trails} onChange={(trails) => setLook({ trails })} />

@@ -46,7 +46,7 @@ export function createDroneUniforms() {
     /** How much night-sky light falls on the airframes (they emit none of their own). */
     ambient: uniform(0.3),
     /** 0 = realistic lamp lighting, 1 = the whole airframe glows in its LED colour. */
-    bodyGlow: uniform(0.3),
+    bodyGlow: uniform(1),
     /** 0..1 LED brightness (dimmed during a "power off" drop). */
     power: uniform(1),
     /** World-space point drones shy away from (studio cursor toy) and how hard. */

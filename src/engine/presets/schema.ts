@@ -23,7 +23,7 @@ export const droneLookSchema = z.object({
   body: z.number().min(0.35).max(1).default(1),
   glow: z.number().min(0).max(3).default(1.2),
   /** 0 = airframe lit only by its own lamp and the sky (realistic); 1 = the whole airframe glows in its colour. */
-  bodyGlow: z.number().min(0).max(1).default(0.3),
+  bodyGlow: z.number().min(0).max(1).default(1),
   twinkle: z.number().min(0).max(1).default(0.25),
   trails: z.boolean().default(true),
   colorMode: z.enum(COLOR_MODES).default('formation'),

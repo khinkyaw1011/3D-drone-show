@@ -616,6 +616,8 @@
     "droneSize": "機体サイズ",
     "ledSize": "LED サイズ",
     "glow": "輝き",
+    "realisticLight": "リアルなライティング",
+    "realisticLightHint": "暗い機体が自分のランプで照らされ、陰影がつきます。オフ：機体全体が色で光ります。",
     "bodyGlow": "機体の発光",
     "bodyGlowHint": "0% はリアル：機体は自分のランプだけで照らされます。100% で機体全体が色で光ります。",
     "twinkle": "きらめき",
