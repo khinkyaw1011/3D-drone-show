@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, Clapperboard, ImageUp, Palette, Pause, Play, Repeat, Rocket, SkipBack, SkipForward, Sparkles, Wand2, Wind, X } from 'lucide-react';
+import { ChevronDown, Clapperboard, Gauge, ImageUp, Palette, Pause, Play, Repeat, Rocket, SkipBack, SkipForward, Sparkles, Wand2, Wind, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type FormEvent, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -47,6 +47,10 @@ function Chip({ active, className, ...props }: React.ComponentProps<'button'> & 
     />
   );
 }
+
+/** Speeds the transport bar's speed button steps through. */
+const QUICK_SPEEDS = [0.5, 1, 2, 4];
+const speedLabel = (speed: number) => `${Number(speed.toFixed(2))}\u00d7`;
 
 /**
  * The show's control deck: everything a visitor needs to make the show their own without
@@ -100,7 +104,13 @@ export function QuickControls({ className }: { className?: string }) {
   return (
     <section
       {...getRootProps({ 'aria-label': t('label') })}
-      className={cn('glass w-full outline-none', isDragActive && 'border-cyan ring-2 ring-cyan/40', className)}
+      className={cn(
+        'glass w-full outline-none',
+        // On a phone the open deck sits over the page: make it opaque enough that nothing shows through it.
+        open && 'max-lg:!bg-ink/92',
+        isDragActive && 'border-cyan ring-2 ring-cyan/40',
+        className,
+      )}
     >
       <input {...getInputProps()} />
       <header className="flex items-center gap-3 px-3.5 pt-2.5 sm:px-4">
@@ -133,9 +143,10 @@ export function QuickControls({ className }: { className?: string }) {
 
       {/* Transport stays reachable even when the deck is collapsed. */}
       <div className="flex flex-wrap items-center gap-2 px-3.5 py-3 sm:px-4">
-        <Button size="sm" className="rounded-full px-4" onClick={() => run({ type: 'playback.toggle' })}>
+        <Button size="sm" className="rounded-full px-4 max-[380px]:px-3" onClick={() => run({ type: 'playback.toggle' })}>
           {playback.playing ? <Pause /> : <Play />}
-          {playback.playing ? t('pause') : t('play')}
+          {/* The narrowest phones keep the whole transport on one row by dropping this label. */}
+          <span className="max-[380px]:sr-only">{playback.playing ? t('pause') : t('play')}</span>
         </Button>
         <Button variant="outline" size="icon-sm" aria-label={t('previous')} onClick={() => run({ type: 'playback.step', direction: -1 })}>
           <SkipBack />
@@ -143,9 +154,16 @@ export function QuickControls({ className }: { className?: string }) {
         <Button variant="outline" size="icon-sm" aria-label={t('next')} onClick={() => run({ type: 'playback.step', direction: 1 })}>
           <SkipForward />
         </Button>
-        <Button variant="outline" size="sm" onClick={() => run({ type: 'playback.seek', t: 0 }, { type: 'playback.play' })}>
+        <Button
+          variant="outline"
+          size="sm"
+          aria-label={t('relaunch')}
+          title={t('relaunch')}
+          className="max-sm:px-2"
+          onClick={() => run({ type: 'playback.seek', t: 0 }, { type: 'playback.play' })}
+        >
           <Rocket />
-          {t('relaunch')}
+          <span className="max-sm:sr-only">{t('relaunch')}</span>
         </Button>
         <Button
           variant="outline"
@@ -156,6 +174,18 @@ export function QuickControls({ className }: { className?: string }) {
           onClick={() => run({ type: 'playback.setLoop', loop: !playback.loop })}
         >
           <Repeat />
+        </Button>
+        {/* Speed is one tap away even with the deck collapsed; the slider in the Show tab sets any value. */}
+        <Button
+          variant="outline"
+          size="sm"
+          aria-label={`${t('speed')}: ${speedLabel(playback.speed)}`}
+          title={t('speed')}
+          className={cn('ml-auto min-w-[4.25rem] px-2.5 font-mono text-xs', playback.speed !== 1 && 'border-cyan/60 text-cyan')}
+          onClick={() => run({ type: 'playback.setSpeed', speed: QUICK_SPEEDS.find((speed) => speed > playback.speed) ?? QUICK_SPEEDS[0] })}
+        >
+          <Gauge />
+          {speedLabel(playback.speed)}
         </Button>
       </div>
 
@@ -175,7 +205,7 @@ export function QuickControls({ className }: { className?: string }) {
           </TabsList>
           <p className="mx-3.5 mt-2.5 text-xs leading-snug text-muted-foreground sm:mx-4">{t(`about.${tab}`)}</p>
 
-          <div className="scrollbar-thin max-h-[38svh] overflow-y-auto px-3.5 pb-4 pt-3.5 sm:px-4 lg:max-h-[calc(100svh-19rem)]">
+          <div className="scrollbar-thin max-h-[36svh] overflow-y-auto overscroll-contain px-3.5 pb-4 pt-3.5 sm:px-4 lg:max-h-[calc(100svh-19rem)]">
             <MissingFiles className="mb-3.5" />
             <TabsContent value="show" className="space-y-4">
               <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('formations')}>
@@ -247,7 +277,7 @@ export function QuickControls({ className }: { className?: string }) {
                   min={0.25}
                   max={8}
                   step={0.25}
-                  format={(v) => (v === 1 ? t('realTime') : `${v.toFixed(2)}×`)}
+                  format={(v) => (v === 1 ? t('realTime') : speedLabel(v))}
                   onChange={(speed) => run({ type: 'playback.setSpeed', speed })}
                 />
               </div>

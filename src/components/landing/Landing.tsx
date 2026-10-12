@@ -105,9 +105,10 @@ export function Landing() {
             </div>
           </div>
 
-          {/* Always-available way in and out of the 3D view, and a cue that the page continues below. */}
+          {/* Always-available way in and out of the 3D view (on phones the hero button is the way in, so this
+              only appears as the way out), and a cue that the page continues below. */}
           {hydrated && !walking && (
-            <div className="absolute left-3 top-[4.25rem] z-20 sm:left-4">
+            <div className={cn('absolute left-3 top-[4.25rem] z-20 sm:left-4', !exploring && 'max-lg:hidden')}>
               <Button
                 size="sm"
                 variant="outline"
