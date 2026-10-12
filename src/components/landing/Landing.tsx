@@ -2,7 +2,7 @@
 
 import { ArrowDown, ArrowRight, Box, Gauge, ImageUp, Move3d, Share2, Shapes, Type, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { FleetStats } from '@/components/show/FleetStats';
 import { LiveShow } from '@/components/show/LiveShow';
 import { QuickControls } from '@/components/show/QuickControls';
@@ -16,7 +16,6 @@ import { useImmersive } from '@/hooks/useImmersive';
 import { useInView } from '@/hooks/useInView';
 import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
-import { DEFAULT_SHOW_ID } from '@/engine/presets/builtin';
 import { dispatch } from '@/store/dispatch';
 
 const STEPS = ['design', 'animate', 'share'] as const;
@@ -53,13 +52,6 @@ export function Landing() {
   const [exploring, setExploring] = useState(false);
   const immersive = exploring || walking;
   useImmersive(exploring && !walking, () => setExploring(false));
-  // Every visit opens on the default show, lifting off from the launch deck by itself.
-  const opened = useRef(false);
-  useEffect(() => {
-    if (!hydrated || opened.current) return;
-    opened.current = true;
-    void dispatch({ type: 'preset.apply', presetId: DEFAULT_SHOW_ID });
-  }, [hydrated]);
 
   return (
     <>

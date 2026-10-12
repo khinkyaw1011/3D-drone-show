@@ -1,7 +1,7 @@
 /** Seek to a time, or to the start of a keyframe's transition (the player knows the real timings). */
 export type SeekRequest = { t?: number; keyframe?: number; nonce: number };
 
-/** Transport state. Never persisted and never part of undo history. */
+/** Transport state. Only `speed` and `loop` are persisted (they are preferences); never part of undo history. */
 export interface PlaybackSlice {
   playback: {
     playing: boolean;

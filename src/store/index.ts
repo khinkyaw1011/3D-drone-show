@@ -14,10 +14,19 @@ import { INSPECTOR_TABS, type UiSlice, initialUiSlice } from './slices/ui';
 export type StudioState = ShowSlice & PlaybackSlice & UiSlice & PresetsSlice;
 
 /** Bump with any change to the persisted shape, and extend `migratePersisted` (+ its test). */
-export const PERSIST_VERSION = 3;
+export const PERSIST_VERSION = 4;
 export const PERSIST_KEY = 'skyloom';
 
-type Persisted = Pick<StudioState, 'show' | 'userPresets'> & { ui: StudioState['ui'] };
+/** The part of the transport that is a preference (how fast, whether to loop), as opposed to where the playhead is. */
+type Transport = Pick<StudioState['playback'], 'speed' | 'loop'>;
+type Persisted = Pick<StudioState, 'show' | 'userPresets'> & { ui: StudioState['ui']; transport: Transport };
+
+function sanitizeTransport(raw: unknown): Transport {
+  const fallback = initialPlaybackSlice().playback;
+  const stored = (raw ?? {}) as Partial<Transport>;
+  const speed = typeof stored.speed === 'number' && Number.isFinite(stored.speed) ? Math.min(8, Math.max(0.25, stored.speed)) : fallback.speed;
+  return { speed, loop: typeof stored.loop === 'boolean' ? stored.loop : fallback.loop };
+}
 
 const safeShow = (raw: unknown): Show | null => {
   const parsed = showSchema.safeParse(migrateShow(raw));
@@ -41,6 +50,8 @@ export function migratePersisted(persisted: unknown): Persisted {
     show: safeShow(raw.show) ?? fallback,
     userPresets: (Array.isArray(raw.userPresets) ? raw.userPresets : []).map(safeShow).filter((s): s is Show => !!s),
     ui: sanitizeUi(raw.ui),
+    // v4: playback speed and loop are remembered too (before, a reload put them back to the defaults).
+    transport: sanitizeTransport(raw.transport),
   };
 }
 
@@ -73,11 +84,21 @@ export const useStudio = create<StudioState>()(
       name: PERSIST_KEY,
       version: PERSIST_VERSION,
       storage: createJSONStorage(() => localStorage),
-      partialize: (state): Persisted => ({ show: state.show, userPresets: state.userPresets, ui: state.ui }),
+      // Every setting a visitor can tweak is in here: the show (look, scene, flight, formations), UI
+      // preferences, and the transport preferences. Only the live playhead is left out.
+      partialize: (state): Persisted => ({
+        show: state.show,
+        userPresets: state.userPresets,
+        ui: state.ui,
+        transport: { speed: state.playback.speed, loop: state.playback.loop },
+      }),
       migrate: migratePersisted,
       // Always re-validate what comes out of storage, even at the current version: the schema fills in
       // settings added since the show was saved, so a stored show can never be missing a field.
-      merge: (persisted, current) => ({ ...current, ...migratePersisted(persisted) }),
+      merge: (persisted, current) => {
+        const { transport, ...stored } = migratePersisted(persisted);
+        return { ...current, ...stored, playback: { ...current.playback, ...transport } };
+      },
     },
   ),
 );

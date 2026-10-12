@@ -118,3 +118,28 @@ describe('shows saved before a setting existed', () => {
     expect(show.scene.starSize).toBeGreaterThan(0);
   });
 });
+
+describe('remembered settings', () => {
+  it('keeps playback speed and loop across a reload, and repairs bad stored values', async () => {
+    const { migratePersisted } = await import('@/store');
+    expect(migratePersisted({ transport: { speed: 2.5, loop: false } }).transport).toEqual({ speed: 2.5, loop: false });
+    expect(migratePersisted({ transport: { speed: 99, loop: 'yes' } }).transport).toEqual({ speed: 8, loop: true });
+    // Stored before v4: no transport at all.
+    expect(migratePersisted({}).transport).toEqual({ speed: 1, loop: true });
+  });
+
+  it('keeps every tweak made to the look, scene and flight', async () => {
+    const { migratePersisted } = await import('@/store');
+    const base = migratePersisted({}).show;
+    const tweaked = {
+      ...base,
+      droneCount: 600,
+      look: { ...base.look, glow: 2.2, size: 0.3, bodyGlow: 0.15, colorMode: 'rainbow' },
+      flight: { ...base.flight, maxSpeed: 9 },
+      scene: { ...base.scene, cameraPreset: 'top-down', stars: 0.8, fireworks: { ...base.scene.fireworks, intensity: 0.6 } },
+    };
+    const restored = migratePersisted(JSON.parse(JSON.stringify({ show: tweaked }))).show;
+    expect(restored).toEqual(tweaked);
+  });
+});
+
