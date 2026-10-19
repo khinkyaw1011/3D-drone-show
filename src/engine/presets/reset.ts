@@ -12,6 +12,7 @@ const OWNED = {
   sky: [
     ['scene', 'sky'],
     ['scene', 'ground'],
+    ['scene', 'landmarks'],
     ['scene', 'ambient'],
     ['scene', 'stars'],
     ['scene', 'starSize'],

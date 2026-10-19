@@ -4,11 +4,12 @@ import { X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { SelectField, SliderField } from '@/components/controls/fields';
 import { BUILTIN_SHOWS } from '@/engine/presets/builtin';
-import { CAMERA_PRESETS } from '@/engine/presets/schema';
+import { CAMERA_PRESETS, LANDMARKS } from '@/engine/presets/schema';
 import { cn } from '@/lib/utils';
 import { useStudio } from '@/store';
 import { ModelAnimation } from '../FileTools';
-import { VIEW_ICONS } from '../icons';
+import { LANDMARK_ICONS, VIEW_ICONS } from '../icons';
+import { landmarkHint } from '../settings';
 import { useShowActions } from '../useShowActions';
 import { Chip, speedLabel } from './Chip';
 
@@ -83,6 +84,36 @@ export function ViewChips() {
   );
 }
 
+/** Sights around the site, each switched on and off on its own. Beside the views, since they are what you look at. */
+export function LandmarkChips() {
+  const t = useTranslations('Settings');
+  const tOptions = useTranslations('Options');
+  const { run } = useShowActions();
+  const landmarks = useStudio((s) => s.show.scene.landmarks);
+  const ground = useStudio((s) => s.show.scene.ground);
+  const hint = landmarkHint(t, ground, landmarks);
+  // Keep the list in its canonical order, whatever order the chips were tapped in.
+  const toggle = (id: (typeof LANDMARKS)[number]) =>
+    run({ type: 'scene.set', patch: { landmarks: LANDMARKS.filter((l) => (l === id ? !landmarks.includes(l) : landmarks.includes(l))) } });
+  return (
+    <div role="group" aria-label={t('landmarks')}>
+      <p className="mb-1.5 text-[0.8125rem] text-foreground/85">{t('landmarks')}</p>
+      <div className="flex flex-wrap gap-1.5">
+        {LANDMARKS.map((id) => {
+          const Icon = LANDMARK_ICONS[id];
+          return (
+            <Chip key={id} active={landmarks.includes(id)} className="flex items-center gap-1.5" onClick={() => toggle(id)}>
+              <Icon className="size-3.5" aria-hidden="true" />
+              {tOptions(`landmark.${id}`)}
+            </Chip>
+          );
+        })}
+      </div>
+      {hint && <p className="mt-1.5 text-xs leading-snug text-muted-foreground">{hint}</p>}
+    </div>
+  );
+}
+
 /** Which show is loaded: the built-in ones and the visitor's saved presets. */
 export function ShowPicker() {
   const t = useTranslations('Quick');
@@ -127,6 +158,7 @@ export function ShowTab() {
       <FormationChips />
       <ModelAnimation keyframe={current} />
       <ViewChips />
+      <LandmarkChips />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
         <ShowPicker />
         <SpeedSlider />

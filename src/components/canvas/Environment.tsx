@@ -2,10 +2,9 @@
 
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
-import { BoxGeometry, CircleGeometry, CylinderGeometry, type Group, type InstancedMesh, MeshBasicNodeMaterial, Object3D, PlaneGeometry } from 'three/webgpu';
-import { floor, mx_cell_noise_float, normalLocal, positionWorld, smoothstep, step, uniform, uv, vec3 } from 'three/tsl';
+import { CircleGeometry, CylinderGeometry, type Group, MeshBasicNodeMaterial, PlaneGeometry } from 'three/webgpu';
+import { normalLocal, smoothstep, step, uv, vec3 } from 'three/tsl';
 import { PAD_SURFACE, padLayout } from '@/engine/formations/fit';
-import { seededRng } from '@/engine/formations/sample';
 import { FIREWORK_COUNT, FIREWORK_SHELLS, FIREWORK_STYLE, createFireworksMaterial } from '@/engine/materials/fireworks';
 import type { SceneLight } from '@/engine/materials/lighting';
 import { createSkyMaterial, horizonColor } from '@/engine/materials/sky';
@@ -40,50 +39,6 @@ function Water({ scene, tier }: { scene: SceneSettings; tier: QualityTier }) {
       </mesh>
     </>
   );
-}
-
-const BUILDINGS = 150;
-
-/** A dark skyline ring behind the show with a few lit windows; one instanced draw call. */
-function City({ scene }: { scene: SceneSettings }) {
-  const { geometry, material, lights } = useMemo(() => {
-    const lights = uniform(0.5);
-    const material = new MeshBasicNodeMaterial({ fog: false });
-    // Small, sparse, dim windows: a skyline at night should sit well below the drones' brightness.
-    const cell = floor(vec3(positionWorld.x.mul(1.7), positionWorld.y.mul(1.5), positionWorld.z.mul(1.7)));
-    const lit = step(0.93, mx_cell_noise_float(cell)).mul(step(0.6, positionWorld.y));
-    material.colorNode = vec3(0.003, 0.0035, 0.006).add(vec3(1, 0.74, 0.4).mul(lit).mul(lights));
-    return { geometry: new BoxGeometry(1, 1, 1).translate(0, 0.5, 0), material, lights };
-  }, []);
-  useEffect(() => {
-    lights.value = scene.ambient * 0.35;
-  }, [lights, scene.ambient]);
-  useEffect(
-    () => () => {
-      geometry.dispose();
-      material.dispose();
-    },
-    [geometry, material],
-  );
-
-  const place = (mesh: InstancedMesh | null) => {
-    if (!mesh) return;
-    const rng = seededRng(42);
-    const dummy = new Object3D();
-    for (let i = 0; i < BUILDINGS; i++) {
-      // Arc of towers behind and beside the stage, taller towards the back.
-      const angle = Math.PI * (0.08 + 0.84 * (i / BUILDINGS)) + (rng() - 0.5) * 0.04;
-      const radius = 120 + rng() * 80;
-      dummy.position.set(Math.cos(angle) * radius, 0, -Math.sin(angle) * radius + 20);
-      dummy.scale.set(5 + rng() * 8, 4 + rng() * rng() * 20, 5 + rng() * 8);
-      dummy.rotation.y = rng() * 0.6;
-      dummy.updateMatrix();
-      mesh.setMatrixAt(i, dummy.matrix);
-    }
-    mesh.instanceMatrix.needsUpdate = true;
-  };
-
-  return <instancedMesh ref={place} args={[geometry, material, BUILDINGS]} frustumCulled={false} />;
 }
 
 const GOLD = ['#ffd27a', '#fff4d6', '#ffb84d'];
@@ -204,14 +159,9 @@ export function LaunchPad({ count }: { count: number }) {
   );
 }
 
-/** Ground: a meadow, reflective water, a city skyline over water, or nothing. */
+/** Ground: a meadow, reflective water, or nothing. */
 export function Ground({ scene, tier, count, light }: { scene: SceneSettings; tier: QualityTier; count: number; light: SceneLight }) {
   if (scene.ground === 'none') return null;
   if (scene.ground === 'field') return <Field scene={scene} tier={tier} count={count} light={light} />;
-  return (
-    <>
-      <Water scene={scene} tier={tier} />
-      {scene.ground === 'city' && <City scene={scene} />}
-    </>
-  );
+  return <Water scene={scene} tier={tier} />;
 }

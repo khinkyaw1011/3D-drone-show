@@ -129,9 +129,16 @@
     },
     "ground": {
       "water": "Water",
-      "city": "City",
       "none": "None",
       "field": "Field"
+    },
+    "landmark": {
+      "tower": "Tower",
+      "pagoda": "Pagoda",
+      "wheel": "Big wheel",
+      "bridge": "Bridge",
+      "mountain": "Mountain",
+      "boats": "Boats"
     },
     "camera": {
       "spectator": "Spectator",
@@ -715,6 +722,9 @@
     "environment": "Environment",
     "sky": "Sky",
     "ground": "Ground",
+    "landmarks": "Landmarks",
+    "landmarksNoGround": "Landmarks need a ground to stand on.",
+    "landmarksNoWater": "Boats need water: choose Water as the ground.",
     "stars": "Stars",
     "starSize": "Star size",
     "fog": "Haze",

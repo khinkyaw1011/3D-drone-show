@@ -1,4 +1,25 @@
-import { ArrowDownToLine, Drone, Eye, Footprints, Gauge, type LucideIcon, MoonStar, Orbit, Palette, PartyPopper, Satellite, Spotlight, Users, ZoomIn } from 'lucide-react';
+import {
+  ArrowDownToLine,
+  Bridge,
+  Drone,
+  Eye,
+  FerrisWheel,
+  Footprints,
+  Gauge,
+  Landmark,
+  type LucideIcon,
+  MoonStar,
+  MountainSnow,
+  Orbit,
+  Palette,
+  PartyPopper,
+  RadioTower,
+  Sailboat,
+  Satellite,
+  Spotlight,
+  Users,
+  ZoomIn,
+} from 'lucide-react';
 import type { SceneSettings } from '@/engine/types';
 
 /** One icon per camera view, wherever views are listed. */
@@ -10,6 +31,16 @@ export const VIEW_ICONS: Record<SceneSettings['cameraPreset'], LucideIcon> = {
   'low-hero': ArrowDownToLine,
   'top-down': Satellite,
   'fly-around': Orbit,
+};
+
+/** One icon per landmark, wherever landmarks are listed. */
+export const LANDMARK_ICONS: Record<SceneSettings['landmarks'][number], LucideIcon> = {
+  tower: RadioTower,
+  pagoda: Landmark,
+  wheel: FerrisWheel,
+  bridge: Bridge,
+  mountain: MountainSnow,
+  boats: Sailboat,
 };
 
 /** One icon per settings group. */

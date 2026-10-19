@@ -129,9 +129,16 @@
     },
     "ground": {
       "water": "水面",
-      "city": "街",
       "none": "なし",
       "field": "草原"
+    },
+    "landmark": {
+      "tower": "タワー",
+      "pagoda": "仏塔",
+      "wheel": "観覧車",
+      "bridge": "橋",
+      "mountain": "山",
+      "boats": "ボート"
     },
     "camera": {
       "spectator": "観客席",
@@ -715,6 +722,9 @@
     "environment": "環境",
     "sky": "空",
     "ground": "地面",
+    "landmarks": "名所",
+    "landmarksNoGround": "名所を置くには地面が必要です。",
+    "landmarksNoWater": "ボートには水面が必要です。地面を「水面」にしてください。",
     "stars": "星",
     "starSize": "星の大きさ",
     "fog": "もや",

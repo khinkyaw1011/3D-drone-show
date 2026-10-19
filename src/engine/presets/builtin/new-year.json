@@ -16,7 +16,7 @@
   },
   "scene": {
     "sky": "deep-space",
-    "ground": "city",
+    "ground": "water",
     "fog": 0.15,
     "autoOrbit": 0,
     "bloom": {

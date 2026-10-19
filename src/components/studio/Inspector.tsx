@@ -6,7 +6,7 @@ import type { z } from 'zod';
 import { FieldGroup, SegmentedField, SelectField, SliderField, SwitchField, TextField } from '@/components/controls/fields';
 import { SchemaForm } from '@/components/controls/SchemaForm';
 import { FormationThumb } from '@/components/show/FormationThumb';
-import { ColorControls, ColorSection, DroneSection, EnvironmentPicker, FireworksSection, FlightSection, ScopeReset, SkySection, VenueSection, useSettings } from '@/components/show/settings';
+import { ColorControls, ColorSection, DroneSection, EnvironmentPicker, FireworksSection, FlightSection, LandmarksField, ScopeReset, SkySection, VenueSection, useSettings } from '@/components/show/settings';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ModelAnimation } from '@/components/show/FileTools';
 import { getSource } from '@/engine/formations/registry';
@@ -205,6 +205,7 @@ export function Inspector() {
               onChange={(cameraPreset) => setScene({ cameraPreset })}
             />
             <SliderField label={t('autoOrbit')} value={scene.autoOrbit} min={0} max={1} onChange={(autoOrbit) => setScene({ autoOrbit })} />
+            <LandmarksField />
           </FieldGroup>
           <FieldGroup title={t('toys')}>
             <SwitchField label={t('pushToy')} hint={t('pushToyHint')} value={pushToy} onChange={(on) => run({ type: 'ui.set', patch: { pushToy: on } })} />

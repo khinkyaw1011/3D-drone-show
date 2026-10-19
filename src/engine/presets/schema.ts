@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 /** Bump when the persisted/shared Show shape changes, and add a step in `migrateShow`. */
-export const SHOW_VERSION = 2;
+export const SHOW_VERSION = 4;
 
 export const vec3Schema = z.tuple([z.number(), z.number(), z.number()]);
 const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/);
@@ -9,7 +9,11 @@ const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 export const COLOR_MODES = ['formation', 'solid', 'gradient', 'palette', 'rainbow', 'random', 'height'] as const;
 export const AXES = ['x', 'y', 'z'] as const;
 export const SKY_PRESETS = ['midnight', 'aurora', 'dusk', 'deep-space'] as const;
-export const GROUNDS = ['field', 'water', 'city', 'none'] as const;
+export const GROUNDS = ['field', 'water', 'none'] as const;
+/** Sights around the show site, each switched on separately. */
+export const LANDMARKS = ['tower', 'pagoda', 'wheel', 'bridge', 'mountain', 'boats'] as const;
+/** Grounds with water for boats to float on. */
+export const hasWater = (ground: (typeof GROUNDS)[number]) => ground === 'water';
 export const CAMERA_PRESETS = ['spectator', 'walk', 'close-up', 'front', 'low-hero', 'top-down', 'fly-around'] as const;
 export const ORDERS = ['random', 'radial', 'top-down', 'by-color'] as const;
 export const EFFECTS = ['drop', 'burst', 'wind'] as const;
@@ -67,6 +71,8 @@ export const venueSchema = z.object({
 export const sceneSettingsSchema = z.object({
   sky: z.enum(SKY_PRESETS).default('midnight'),
   ground: z.enum(GROUNDS).default('water'),
+  /** Landmarks standing around the site; shown whenever there is a ground. */
+  landmarks: z.array(z.enum(LANDMARKS)).default([]),
   stars: z.number().min(0).max(1).default(0.35),
   /** Brightness of everything that is not a drone (sky glow, city lights), so the LEDs can stand out. */
   ambient: z.number().min(0).max(1).default(0.3),
@@ -155,6 +161,14 @@ export function migrateShow(raw: unknown): unknown {
     const look = show.look as Record<string, unknown> | undefined;
     if (look && look.bodyGlow === 1) show.look = Object.fromEntries(Object.entries(look).filter(([key]) => key !== 'bodyGlow'));
     show.version = 2;
+  }
+  // v3 added `scene.landmarks`; older shows have none, which the schema default fills in.
+  if ((show.version as number) < 3) show.version = 3;
+  // v4 removed the city skyline ground; it stood over water, so those shows keep the water.
+  if ((show.version as number) < 4) {
+    const scene = show.scene as Record<string, unknown> | undefined;
+    if (scene?.ground === 'city') show.scene = { ...scene, ground: 'water' };
+    show.version = 4;
   }
   return show;
 }

@@ -138,6 +138,36 @@ export function SegmentedField<T extends string>({ label, value, options, onChan
   );
 }
 
+/** Any number of short options switched on and off independently; wraps on narrow panels. */
+export function MultiToggleField<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+  hint,
+}: Omit<ChoiceProps<T>, 'value' | 'onChange'> & { value: readonly T[]; onChange: (value: T[]) => void }) {
+  return (
+    <FieldShell label={label} hint={hint}>
+      <ToggleGroup
+        type="multiple"
+        variant="outline"
+        size="sm"
+        value={[...value]}
+        // Keep the options' own order, whatever order they were clicked in.
+        onValueChange={(v) => onChange(options.map((o) => o.value).filter((o) => v.includes(o)))}
+        aria-label={label}
+        className="flex w-full flex-wrap"
+      >
+        {options.map((o) => (
+          <ToggleGroupItem key={o.value} value={o.value} className="min-w-0 flex-1 px-2 text-xs">
+            <span className="truncate">{o.label}</span>
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
+    </FieldShell>
+  );
+}
+
 export function TextField({
   label,
   value,

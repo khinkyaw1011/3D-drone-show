@@ -14,7 +14,7 @@ import { INSPECTOR_TABS, type UiSlice, initialUiSlice } from './slices/ui';
 export type StudioState = ShowSlice & PlaybackSlice & UiSlice & PresetsSlice;
 
 /** Bump with any change to the persisted shape, and extend `migratePersisted` (+ its test). */
-export const PERSIST_VERSION = 4;
+export const PERSIST_VERSION = 6;
 export const PERSIST_KEY = 'skyloom';
 
 /** The part of the transport that is a preference (how fast, whether to loop), as opposed to where the playhead is. */
@@ -47,6 +47,7 @@ export function migratePersisted(persisted: unknown): Persisted {
   const raw = (persisted ?? {}) as Partial<Record<keyof Persisted, unknown>>;
   const fallback = initialShowSlice().show;
   return {
+    // v5: shows gained `scene.landmarks` (show v3); v6: the city ground became water (show v4). `safeShow` migrates both.
     show: safeShow(raw.show) ?? fallback,
     userPresets: (Array.isArray(raw.userPresets) ? raw.userPresets : []).map(safeShow).filter((s): s is Show => !!s),
     ui: sanitizeUi(raw.ui),

@@ -324,3 +324,34 @@ describe('show migration v1 -> v2', () => {
   });
 });
 
+describe('show migration v2 -> v3', () => {
+  it('gives older shows no landmarks, keeps chosen ones, and resets them with the sky', async () => {
+    const { parseShow, SHOW_VERSION } = await import('../presets/schema');
+    const { isScopeChanged, resetScope } = await import('../presets/reset');
+    const base = { id: 'a', name: 'A', keyframes: [] };
+    const old = parseShow({ ...base, version: 2, scene: { ground: 'field' } });
+    expect(old.version).toBe(SHOW_VERSION);
+    expect(old.scene.landmarks).toEqual([]);
+    expect(old.scene.ground).toBe('field');
+    const chosen = parseShow({ ...base, scene: { landmarks: ['tower', 'wheel'] } });
+    expect(chosen.scene.landmarks).toEqual(['tower', 'wheel']);
+    expect(isScopeChanged(chosen, 'sky')).toBe(true);
+    resetScope(chosen, 'sky');
+    expect(chosen.scene.landmarks).toEqual([]);
+    expect(parseShow({ ...base, scene: { landmarks: ['boats'] } }).scene.landmarks).toEqual(['boats']);
+    const { hasWater } = await import('../presets/schema');
+    expect(['water', 'field', 'none'].map((g) => hasWater(g as never))).toEqual([true, false, false]);
+  });
+});
+
+describe('show migration v3 -> v4', () => {
+  it('turns the removed city ground into water and leaves other grounds alone', async () => {
+    const { parseShow } = await import('../presets/schema');
+    const base = { id: 'a', name: 'A', keyframes: [] };
+    const city = parseShow({ ...base, version: 3, scene: { ground: 'city', fog: 0.4 } });
+    expect(city.scene.ground).toBe('water');
+    expect(city.scene.fog).toBe(0.4);
+    expect(parseShow({ ...base, version: 3, scene: { ground: 'field' } }).scene.ground).toBe('field');
+  });
+});
+

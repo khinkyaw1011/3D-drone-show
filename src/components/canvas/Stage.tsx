@@ -13,6 +13,7 @@ import { useCompiledShow } from '@/hooks/useCompiledShow';
 import { CameraRig, ViewOffset } from './CameraRig';
 import { Drones } from './Drones';
 import { Fireworks, Ground, LaunchPad, Sky, VenueLights } from './Environment';
+import { Landmarks } from './Landmarks';
 import { PostFX } from './PostFX';
 import { WalkControls } from './WalkControls';
 
@@ -200,6 +201,7 @@ export function Stage({
       <Sky scene={scene} />
       <Ground scene={scene} tier={capabilities.tier} count={count} light={light} />
       {scene.ground !== 'none' && <LaunchPad count={count} />}
+      {scene.ground !== 'none' && <Landmarks scene={scene} />}
       <Fireworks scene={scene} colors={look.colors} />
       <VenueLights scene={scene} colors={look.colors} />
       {player && (

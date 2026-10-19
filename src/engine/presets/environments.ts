@@ -14,10 +14,10 @@ type EnvironmentPatch = Partial<Omit<SceneSettings, 'bloom' | 'physics' | 'firew
 export const ENVIRONMENTS: Record<string, EnvironmentPatch> = {
   meadow: { sky: 'midnight', ground: 'field', ambient: 0.3, stars: 0.6, starSize: 0.3, milkyWay: 0.5, fog: 0.1, venue: { beams: 0.2, glow: 0.6 }, fireworks: { intensity: 0 } },
   lakeside: { sky: 'dusk', ground: 'water', ambient: 0.3, stars: 0.35, starSize: 0.3, milkyWay: 0.2, fog: 0.15, venue: { beams: 0.25, glow: 0.5 }, fireworks: { intensity: 0 } },
-  city: { sky: 'midnight', ground: 'city', ambient: 0.35, stars: 0.2, starSize: 0.25, milkyWay: 0.05, fog: 0.25, venue: { beams: 0.5, glow: 0.4 }, fireworks: { intensity: 0 } },
+  city: { sky: 'midnight', ground: 'water', ambient: 0.35, stars: 0.2, starSize: 0.25, milkyWay: 0.05, fog: 0.25, venue: { beams: 0.5, glow: 0.4 }, fireworks: { intensity: 0 } },
   festival: {
     sky: 'midnight',
-    ground: 'city',
+    ground: 'water',
     ambient: 0.3,
     stars: 0.3,
     starSize: 0.3,

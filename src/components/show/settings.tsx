@@ -3,11 +3,11 @@
 import { type DroneLighting, LIGHTING_GLOW, bodyGlowOf } from '@/lib/site';
 import { Minus, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { ColorSwatch, FieldGroup, FieldShell, ResetButton, SegmentedField, SelectField, SliderField, SwitchField } from '@/components/controls/fields';
+import { ColorSwatch, FieldGroup, FieldShell, MultiToggleField, ResetButton, SegmentedField, SelectField, SliderField, SwitchField } from '@/components/controls/fields';
 import { Button } from '@/components/ui/button';
 import { type ResetScope, isScopeChanged } from '@/engine/presets/reset';
 import { ENVIRONMENTS, environmentSwatch, matchEnvironment } from '@/engine/presets/environments';
-import { AXES, COLOR_MODES, FIREWORK_PALETTES, FIREWORK_STYLES, GROUNDS, SKY_PRESETS } from '@/engine/presets/schema';
+import { AXES, COLOR_MODES, FIREWORK_PALETTES, FIREWORK_STYLES, GROUNDS, LANDMARKS, SKY_PRESETS, hasWater } from '@/engine/presets/schema';
 import type { DroneLook, SceneSettings } from '@/engine/types';
 import { cn, formatNumber } from '@/lib/utils';
 import { FLEET } from '@/engine/renderer/capabilities';
@@ -209,6 +209,30 @@ export function FlightSection(group: SectionProps) {
   );
 }
 
+/** Why chosen landmarks are not showing, if they are not: no ground at all, or boats without water. */
+export function landmarkHint(t: (key: 'landmarksNoGround' | 'landmarksNoWater') => string, ground: SceneSettings['ground'], landmarks: SceneSettings['landmarks']) {
+  if (ground === 'none') return t('landmarksNoGround');
+  if (landmarks.includes('boats') && !hasWater(ground)) return t('landmarksNoWater');
+  return undefined;
+}
+
+/** Which landmarks stand around the site. In the sky settings and beside the camera views. */
+export function LandmarksField() {
+  const { t, setScene } = useSettings();
+  const tOptions = useTranslations('Options');
+  const landmarks = useStudio((s) => s.show.scene.landmarks);
+  const ground = useStudio((s) => s.show.scene.ground);
+  return (
+    <MultiToggleField
+      label={t('landmarks')}
+      hint={landmarkHint(t, ground, landmarks)}
+      value={landmarks}
+      options={LANDMARKS.map((value) => ({ value, label: tOptions(`landmark.${value}`) }))}
+      onChange={(next) => setScene({ landmarks: next })}
+    />
+  );
+}
+
 /** Sky, ground, stars and how bright the backdrop is. */
 export function SkySection(group: SectionProps) {
   const { t, setScene, reset } = useSettings();
@@ -218,6 +242,7 @@ export function SkySection(group: SectionProps) {
     <FieldGroup title={t('skyGroup')} description={t('about.sky')} icon={GROUP_ICONS.sky} action={reset('sky')} {...group}>
       <SelectField label={t('sky')} value={scene.sky} options={SKY_PRESETS.map((value) => ({ value, label: tOptions(`sky.${value}`) }))} onChange={(sky) => setScene({ sky })} />
       <SegmentedField label={t('ground')} value={scene.ground} options={GROUNDS.map((value) => ({ value, label: tOptions(`ground.${value}`) }))} onChange={(ground) => setScene({ ground })} />
+      <LandmarksField />
       <SliderField label={t('ambient')} value={scene.ambient} min={0} max={1} onChange={(ambient) => setScene({ ambient })} />
       <SliderField label={t('stars')} value={scene.stars} min={0} max={1} onChange={(stars) => setScene({ stars })} />
       <SliderField label={t('starSize')} value={scene.starSize} min={0} max={1} onChange={(starSize) => setScene({ starSize })} />
