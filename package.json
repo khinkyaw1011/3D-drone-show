@@ -2,6 +2,11 @@
   "name": "nextjs-drone",
   "version": "0.1.0",
   "private": true,
+  "description": "Design a 3D drone light show in the browser: a fleet lifts off from a launch pad, flies at real-world speeds along collision-checked routes, and builds volumetric formations from shapes, words, pictures and 3D models. English, Japanese and Myanmar.",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
